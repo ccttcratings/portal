@@ -4,8 +4,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     /* ----------------------------------------------------
-       THE FIX: Intercept Dark Reader for the Blue Hub Button 
+       THE FIX: Universal dark-mode coverage
+       prefers-color-scheme handles native system dark mode on
+       any browser/device; the Dark Reader attribute rule is kept
+       as a fallback so the desktop Dark Reader look is identical.
        ---------------------------------------------------- */
+    @media (prefers-color-scheme: dark) {
+      .hub { background-color: #132646 !important; color: #a8c7fa !important; }
+    }
     html[data-darkreader-scheme="dark"] .hub {
       background-color: #132646 !important;
       color: #a8c7fa !important;
