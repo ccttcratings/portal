@@ -25,8 +25,8 @@
     
     /* Standard Light Mode Declarations */
     .preview { background-color: #c5eec5; color: #573a1e; }
-    .edit { background-color: #ffa5a5; color: #573a1e; margin-bottom: 12px; }
-    .hub { background-color: #c9daf8; color: #573a1e; }
+    .edit { background-color: #ffa5a5; color: #573a1e; }
+    .hub { background-color: #c9daf8; color: #573a1e; margin-top: 100px; }
     .copy-btn { background-color: #d9d2e9; color: #573a1e; font-size: 14px; font-weight: bold; padding: 14px; margin: 12px 0; border: 2px solid #000; border-radius: 8px; cursor: pointer; }
     .copy-btn:active { transform: scale(0.98); }
     .copy-btn.copied { background-color: #a8c7a8; }
@@ -38,18 +38,20 @@
   <div class="card">
     <h2>View Mode Portal</h2>
     <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">Preview Mode <span class="subtext">(works on most devices)</span></a>
+    <button class="copy-btn" data-label="Copy Preview Mode URL" onclick="copyUrl(this, previewUrl)">Copy Preview Mode URL</button>
     <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">Edit Mode <span class="subtext">(annoying banner at top)</span></a>
-    <button class="copy-btn" onclick="copyUrl(this)">Copy URL</button>
+    <button class="copy-btn" data-label="Copy Edit Mode URL" onclick="copyUrl(this, editUrl)">Copy Edit Mode URL</button>
     <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">Portal Hub<span class="subtext">(hub of redundant portals)</span></a>
   </div>
   <script>
-    const targetUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
-    function copyUrl(btn) {
-      navigator.clipboard.writeText(targetUrl).then(() => {
+    const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
+    const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
+    function copyUrl(btn, url) {
+      navigator.clipboard.writeText(url).then(() => {
         btn.textContent = "Copied!";
         btn.classList.add("copied");
         setTimeout(() => {
-          btn.textContent = "Copy URL";
+          btn.textContent = btn.getAttribute("data-label");
           btn.classList.remove("copied");
         }, 2000);
       });
