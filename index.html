@@ -25,9 +25,11 @@
     
     /* Standard Light Mode Declarations */
     .preview { background-color: #c5eec5; color: #573a1e; }
-    .edit { background-color: #ffa5a5; color: #573a1e; margin-bottom: 200px; }
+    .edit { background-color: #ffa5a5; color: #573a1e; margin-bottom: 12px; }
     .hub { background-color: #c9daf8; color: #573a1e; }
-    .purple-link { background-color: #d9d2e9; color: #573a1e; font-size: 7px; font-weight: bold; padding: 8px; }
+    .copy-btn { background-color: #d9d2e9; color: #573a1e; font-size: 14px; font-weight: bold; padding: 14px; margin: 12px 0; border: 2px solid #000; border-radius: 8px; cursor: pointer; }
+    .copy-btn:active { transform: scale(0.98); }
+    .copy-btn.copied { background-color: #a8c7a8; }
     
     .subtext { display: block; font-size: 12px; font-weight: normal; opacity: 0.8; margin-top: 4px; }
   </style>
@@ -37,8 +39,21 @@
     <h2>View Mode Portal</h2>
     <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">Preview Mode <span class="subtext">(works on most devices)</span></a>
     <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">Edit Mode <span class="subtext">(annoying banner at top)</span></a>
-    <div class="btn purple-link" style="font-size: 7px; word-break: break-all; text-align: left; padding: 10px;">https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061</div>
+    <button class="copy-btn" onclick="copyUrl(this)">Copy URL</button>
     <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">Portal Hub<span class="subtext">(hub of redundant portals)</span></a>
   </div>
+  <script>
+    const targetUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
+    function copyUrl(btn) {
+      navigator.clipboard.writeText(targetUrl).then(() => {
+        btn.textContent = "Copied!";
+        btn.classList.add("copied");
+        setTimeout(() => {
+          btn.textContent = "Copy URL";
+          btn.classList.remove("copied");
+        }, 2000);
+      });
+    }
+  </script>
 </body>
 </html>
