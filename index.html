@@ -11,8 +11,8 @@
        actually rendering the page dark.
        ---------------------------------------------------- */
     html[data-darkreader-scheme="dark"] .hub {
-      background-color: #132646 !important;
-      color: #a8c7fa !important;
+      background: linear-gradient(180deg, #3ba8d6 0%, #1a7daa 40%, #0e5f80 100%) !important;
+      color: #000 !important;
     }
 
     /* Core Layout Styles */
@@ -20,13 +20,34 @@
     .card { background: #fce5cd; max-width: 400px; margin: 0 auto; padding: 6px 20px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
     h2 { color: #000; margin-bottom: 42px; font-size: 30px; }
     p { color: #e07474; font-size: 16px; margin-bottom: 30px; }
-    .btn { display: block; text-decoration: none; padding: 10px; margin: 2px 0; border: 2px solid #000; border-radius: 8px; font-weight: bold; font-size: 20px; transition: transform 0.1s; }
-    .btn:active { transform: scale(0.98); }
-    
-    /* Standard Light Mode Declarations */
-    .preview { background-color: #c5eec5; color: #573a1e; margin-bottom: 2px; }
-    .edit { background-color: #ffa5a5; color: #573a1e; margin-top: 20px; margin-bottom: 2px; }
-    .hub { background-color: #c9daf8; color: #573a1e; margin-top: 100px; }
+    /* Glass Button Base - glossy gel + perspective angle */
+    .btn {
+      position: relative; display: block; text-decoration: none;
+      padding: 14px; margin: 2px 0; border-radius: 12px;
+      font-weight: bold; font-size: 20px; color: #000;
+      transform: perspective(500px) rotateY(-12deg);
+      box-shadow: 2px 0 0 4px rgba(0,0,0,.2), 0 6px 0 var(--dark), 0 10px 16px rgba(0,0,0,.35);
+      overflow: hidden; border: none;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .btn::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+      background: linear-gradient(180deg, rgba(255,255,255,.4) 0%, rgba(255,255,255,.05) 100%);
+      border-radius: 8px 8px 50% 50%; pointer-events: none;
+    }
+    .btn::before {
+      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(to right, transparent, rgba(255,255,255,.3), transparent);
+      transition: 0.5s; z-index: 1; pointer-events: none;
+    }
+    .btn:hover::before { left: 100%; }
+    .btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 2px 0 var(--dark), 0 4px 10px rgba(0,0,0,.25); }
+    .btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 0 0 var(--dark), 0 2px 6px rgba(0,0,0,.2); }
+
+    /* Glass Colors */
+    .preview { background: linear-gradient(180deg, #4caf50 0%, #2e7d32 40%, #1b5e20 100%); --dark: #145218; }
+    .edit { background: linear-gradient(180deg, #f06060 0%, #c02020 40%, #901010 100%); --dark: #700; margin-top: 20px; margin-bottom: 2px; }
+    .hub { background: linear-gradient(180deg, #3ba8d6 0%, #1a7daa 40%, #0e5f80 100%); --dark: #0a4a60; margin-top: 100px; }
     .copy-btn { background-color: #d9d2e9; color: #573a1e; font-size: 14px; font-weight: bold; padding: 10px; margin: 2px 0; border: 2px solid #000; border-radius: 8px; cursor: pointer; width: 100%; box-sizing: border-box; }
     .copy-btn:active { transform: scale(0.98); }
     .copy-btn.copied { background-color: #a8c7a8; }
