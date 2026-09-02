@@ -66,6 +66,14 @@
     .copy-btn.copied { background: linear-gradient(180deg, #a8c7a8 0%, #88b088 40%, #709870 100%); --dark: #5a805a; }
     
     .subtext { display: block; font-size: 12px; font-weight: normal; opacity: 0.8; margin-top: 4px; }
+
+    /* Neon overrides — odd days */
+    html.neon .preview { background: linear-gradient(180deg, #00ff00 0%, #00cc00 40%, #009900 100%); --dark: #006600; }
+    html.neon .edit { background: linear-gradient(180deg, #ff0000 0%, #cc0000 40%, #990000 100%); --dark: #660000; }
+    html.neon .hub { background: linear-gradient(180deg, #22eeff 0%, #00ccdd 40%, #00aabb 100%); --dark: #008899; }
+    html.neon .copy-btn { background: linear-gradient(180deg, #bf00ff 0%, #9900dd 40%, #7700bb 100%); box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #550099, 0 6px 10px rgba(0,0,0,.25); }
+    html.neon .copy-btn:hover { box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 1px 0 #550099, 0 3px 8px rgba(0,0,0,.2); }
+    html.neon .copy-btn:active { box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 0 0 #550099, 0 2px 4px rgba(0,0,0,.15); }
   </style>
 </head>
 <body>
@@ -78,6 +86,7 @@
     <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span></a>
   </div>
   <script>
+    if (new Date().getDate() % 2) document.documentElement.classList.add('neon');
     const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
     const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
     function copyUrl(btn, url) {
