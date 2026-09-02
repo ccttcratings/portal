@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script>var p=new URLSearchParams(location.search);if(p.has('neon')||(!p.has('normal')&&new Date().getDate()%2))document.documentElement.classList.add('neon')</script>
   <style>
     /* ----------------------------------------------------
        THE FIX: Intercept Dark Reader for the Blue Hub Button 
@@ -86,9 +87,6 @@
     <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span></a>
   </div>
   <script>
-    const p = new URLSearchParams(location.search);
-    if (p.has('neon') || (!p.has('normal') && new Date().getDate() % 2))
-      document.documentElement.classList.add('neon');
     const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
     const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
     function copyUrl(btn, url) {
