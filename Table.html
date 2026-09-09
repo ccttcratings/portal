@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blue Table Tennis Table - Player View</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #72a67a;
+    }
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+  <div id="canvas-container"></div>
+
+  <script>
+    (function() {
+      // Dimensions (in meters) - widened far end, narrower near end
+      const TABLE_LEN = 2.74;
+      const W_NEAR = 1.36;
+      const W_FAR = 2.48;
+      const NET_Z = -0.38; // Net closer to player to reveal vast opposite court
+      const TABLE_H = 0.76;
+      const TOP_THICK = 0.03;
+      const NET_H = 0.1525;
+      const NET_OVERHANG = 0.16;
+
+      function getW(z) {
+        const t = (z + TABLE_LEN / 2) / TABLE_LEN;
+        return W_NEAR + (W_FAR - W_NEAR) * Math.max(0, Math.min(1, t));
+      }
+
+      const W_AT_NET = getW(NET_Z);
+      const NET_LEN = W_AT_NET + NET_OVERHANG * 2;
+
+      const container = document.getElementById('canvas-container');
+      const scene = new THREE.Scene();
+      const bgHex = 0x72a67a; // Calibrated darker light-green
+      scene.background = new THREE.Color(bgHex);
+      scene.fog = new THREE.FogExp2(bgHex, 0.05);
+
+      // Camera: Player perspective elevated to look down across the closer net
+      const camera = new THREE.PerspectiveCamera(52, window.innerWidth / window.innerHeight, 0.05, 50);
+      camera.position.set(0, TABLE_H + 0.44, -TABLE_LEN / 2 - 0.16);
+      camera.lookAt(0, TABLE_H + 0.06, 0.42);
+
+      const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.06;
+      container.appendChild(renderer.domElement);
+
+      // Lighting
+      const ambient = new THREE.AmbientLight(0xffffff, 1.1);
+      scene.add(ambient);
+
+      const mainLight = new THREE.DirectionalLight(0xffffff, 1.65);
+      mainLight.position.set(0, TABLE_H + 3.2, -0.4);
+      mainLight.castShadow = true;
+      mainLight.shadow.mapSize.width = 2048;
+      mainLight.shadow.mapSize.height = 2048;
+      mainLight.shadow.bias = -0.0004;
+      scene.add(mainLight);
+
+      const fillLight = new THREE.DirectionalLight(0xecfdf5, 0.75);
+      fillLight.position.set(0.6, TABLE_H + 2.5, 2.0);
+      scene.add(fillLight);
+
+      const blueBounce = new THREE.DirectionalLight(0x93c5fd, 0.35);
+      blueBounce.position.set(0, 0.2, 0);
+      scene.add(blueBounce);
+
+      // Procedural Table Top Texture with deep competition blue gradient and satin finish
+      function makeTableTexture() {
+        const c = document.createElement('canvas');
+        c.width = 2048;
+        c.height = 2048;
+        const ctx = c.getContext('2d');
+        
+        // Deep competition blue gradient
+        const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+        grad.addColorStop(0, '#1c4998');
+        grad.addColorStop(0.5, '#2055b0');
+        grad.addColorStop(1, '#1a4694');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, c.width, c.height);
+
+        // Center satin sheen
+        const rad = ctx.createRadialGradient(c.width * 0.5, c.height * 0.48, 120, c.width * 0.5, c.height * 0.5, c.width * 0.85);
+        rad.addColorStop(0, 'rgba(255, 255, 255, 0.09)');
+        rad.addColorStop(1, 'rgba(0, 0, 0, 0.04)');
+        ctx.fillStyle = rad;
+        ctx.fillRect(0, 0, c.width, c.height);
+
+        // Net seam under net at NET_Z
+        const seamT = (NET_Z + TABLE_LEN / 2) / TABLE_LEN;
+        const seamY = Math.round(c.height * (1 - seamT));
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.45)';
+        ctx.fillRect(0, seamY - 1, c.width, 2);
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.anisotropy = 8;
+        return tex;
+      }
+
+      // Procedural Net Texture
+      function makeNetTexture() {
+        const c = document.createElement('canvas');
+        c.width = 512;
+        c.height = 128;
+        const ctx = c.getContext('2d');
+        ctx.clearRect(0, 0, c.width, c.height);
+
+        // White top tape
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, c.width, 14);
+
+        // Bottom binding cord
+        ctx.fillRect(0, c.height - 4, c.width, 4);
+
+        // Tournament blue mesh grid (Donic Stress official net)
+        ctx.strokeStyle = '#1e40af';
+        // White top tape (15mm binding) - clean solid white without dots
+        c.width = 512;
+        c.height = 256;
+        ctx.clearRect(0, 0, c.width, c.height);
+
+        const tapeH = 15;
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, c.width, tapeH);
+        ctx.fillRect(0, c.height - 4, c.width, 4);
+
+        // Tournament blue mesh weave grid (starts cleanly below white tape)
+        const gridSize = 6;
+        ctx.strokeStyle = '#1e40af';
+        ctx.lineWidth = 1.3;
+        for (let x = 0; x <= c.width; x += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(x, tapeH);
+          ctx.lineTo(x, c.height - 4);
+          ctx.stroke();
+        }
+        for (let y = tapeH + gridSize; y <= c.height - 4; y += gridSize) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(c.width, y);
+          ctx.stroke();
+        }
+
+        const tex = new THREE.CanvasTexture(c);
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.repeat.set(14, 1);
+        return tex;
+      }
+
+      function makeDonicStressTexture() {
+        const c = document.createElement('canvas');
+        c.width = 1024;
+        c.height = 256;
+        const ctx = c.getContext('2d');
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        if (!ctx) return tex;
+
+        // Base: Satin silver/gray metallic aluminum plate
+        const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+        grad.addColorStop(0, '#f1f5f9');
+        grad.addColorStop(0.35, '#dbe2ec');
+        grad.addColorStop(0.65, '#bdc7d5');
+        grad.addColorStop(1, '#a1acbc');
+        ctx.fillStyle = grad;
+        ctx.fillRect(0, 0, c.width, c.height);
+
+        // Brushed metal horizontal streaks
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+        for (let y = 3; y < c.height; y += 4) {
+          ctx.fillRect(0, y, c.width, 1.2);
+        }
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+        for (let y = 5; y < c.height; y += 6) {
+          ctx.fillRect(0, y, c.width, 1.2);
+        }
+
+        // Outer beveled frame
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 6;
+        ctx.strokeRect(3, 3, c.width - 6, c.height - 6);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(8, 8, c.width - 16, c.height - 16);
+
+        // Corner mounting hex screws
+        [[22, 22], [c.width - 22, 22], [22, c.height - 22], [c.width - 22, c.height - 22]].forEach(([rx, ry]) => {
+          ctx.beginPath();
+          ctx.arc(rx, ry, 8, 0, Math.PI * 2);
+          ctx.fillStyle = '#64748b';
+          ctx.fill();
+          ctx.strokeStyle = '#f8fafc';
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+
+          ctx.beginPath();
+          for (let a = 0; a < 6; a++) {
+            const rad = (a * Math.PI) / 3;
+            const hx = rx + Math.cos(rad) * 4;
+            const hy = ry + Math.sin(rad) * 4;
+            if (a === 0) ctx.moveTo(hx, hy);
+            else ctx.lineTo(hx, hy);
+          }
+          ctx.closePath();
+          ctx.fillStyle = '#0f172a';
+          ctx.fill();
+        });
+
+        const cx = c.width / 2;
+
+        // Line 3: 4 Bold Red Diagonal Stripes
+        const stripeW = 32;
+        const stripeH = 22;
+        const stripeGap = 18;
+        const totalW = 4 * stripeW + 3 * stripeGap;
+        const startX = cx - totalW / 2 + 14;
+        const startY = 212;
+        const slantX = 14;
+
+        ctx.fillStyle = '#dc2626';
+        for (let i = 0; i < 4; i++) {
+          const sx = startX + i * (stripeW + stripeGap);
+          ctx.beginPath();
+          ctx.moveTo(sx + slantX, startY);
+          ctx.lineTo(sx + slantX + stripeW, startY);
+          ctx.lineTo(sx + stripeW, startY + stripeH);
+          ctx.lineTo(sx, startY + stripeH);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        return tex;
+      }
+
+      function makeWoodFloorTexture() {
+        const c = document.createElement('canvas');
+        c.width = 2048;
+        c.height = 2048;
+        const ctx = c.getContext('2d');
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(6, 4);
+        tex.anisotropy = 8;
+        if (!ctx) return tex;
+
+        const woodColors = [
+          '#ebd7b2', '#dfc59e', '#d8bc92', '#e3cca3',
+          '#eddab9', '#d3b589', '#e0c79b', '#eeddc1',
+          '#dabf96', '#cfae7d', '#e5ceab', '#ddc295',
+          '#e8d2a8', '#d6b986', '#ebd5ad',
+        ];
+
+        const plankWidth = 32;
+        const numColumns = Math.ceil(c.width / plankWidth);
+
+        for (let col = 0; col < numColumns; col++) {
+          const colX = col * plankWidth;
+          let currentY = 0;
+          let segIndex = 0;
+          while (currentY < c.height) {
+            const segH = Math.min(c.height - currentY, 200 + ((col * 37 + segIndex * 89) % 280));
+            const colorIdx = (col * 7 + segIndex * 13 + ((col * 11) % 5)) % woodColors.length;
+            ctx.fillStyle = woodColors[colorIdx];
+            ctx.fillRect(colX, currentY, plankWidth, segH);
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+            ctx.fillRect(colX + 6, currentY, 1.2, segH);
+            ctx.fillRect(colX + 18, currentY, 1.2, segH);
+            ctx.fillStyle = 'rgba(100, 65, 25, 0.07)';
+            ctx.fillRect(colX + 12, currentY, 1.2, segH);
+            ctx.fillRect(colX + 24, currentY, 1.2, segH);
+
+            ctx.fillStyle = 'rgba(75, 45, 15, 0.35)';
+            ctx.fillRect(colX, currentY, plankWidth, 1.5);
+
+            currentY += segH;
+            segIndex++;
+          }
+          ctx.fillStyle = 'rgba(75, 45, 15, 0.28)';
+          ctx.fillRect(colX + plankWidth - 1, 0, 1.2, c.height);
+        }
+
+        return tex;
+      }
+
+
+
+
+      function makePostTexture() {
+        const c = document.createElement('canvas');
+        c.width = 512;
+        c.height = 1024;
+        const ctx = c.getContext('2d');
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        if (!ctx) return tex;
+
+        // Base light satin tournament silver
+        ctx.fillStyle = '#f1f5f9';
+        ctx.fillRect(0, 0, c.width, c.height);
+
+        // Front-facing cylindrical lighting gradient (center = 256 facing player)
+        const frontGrad = ctx.createLinearGradient(128, 0, 384, 0);
+        frontGrad.addColorStop(0.00, '#788494');
+        frontGrad.addColorStop(0.12, '#9ba7b6');
+        frontGrad.addColorStop(0.28, '#d4dce6');
+        frontGrad.addColorStop(0.44, '#ffffff'); // Bright specular highlight streak
+        frontGrad.addColorStop(0.56, '#f8fafc');
+        frontGrad.addColorStop(0.72, '#d4dce6');
+        frontGrad.addColorStop(0.88, '#9ba7b6');
+        frontGrad.addColorStop(1.00, '#788494');
+        ctx.fillStyle = frontGrad;
+        ctx.fillRect(128, 0, 256, c.height);
+
+        // Rear-facing cylindrical lighting gradient
+        const rearGrad1 = ctx.createLinearGradient(384, 0, 512, 0);
+        rearGrad1.addColorStop(0.0, '#788494');
+        rearGrad1.addColorStop(0.4, '#c0cad6');
+        rearGrad1.addColorStop(0.85, '#f8fafc');
+        rearGrad1.addColorStop(1.0, '#ffffff');
+        ctx.fillStyle = rearGrad1;
+        ctx.fillRect(384, 0, 128, c.height);
+
+        const rearGrad2 = ctx.createLinearGradient(0, 0, 128, 0);
+        rearGrad2.addColorStop(0.0, '#ffffff');
+        rearGrad2.addColorStop(0.15, '#f8fafc');
+        rearGrad2.addColorStop(0.6, '#c0cad6');
+        rearGrad2.addColorStop(1.0, '#788494');
+        ctx.fillStyle = rearGrad2;
+        ctx.fillRect(0, 0, 128, c.height);
+
+        // Horizontal brushed micro-grain
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+        for (let y = 2; y < c.height; y += 4) {
+          ctx.fillRect(0, y, c.width, 1);
+        }
+        ctx.fillStyle = 'rgba(15, 23, 42, 0.05)';
+        for (let y = 4; y < c.height; y += 6) {
+          ctx.fillRect(0, y, c.width, 1);
+        }
+
+        // Top shadow
+        const topShadow = ctx.createLinearGradient(0, 0, 0, 32);
+        topShadow.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
+        topShadow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+        ctx.fillStyle = topShadow;
+        ctx.fillRect(0, 0, c.width, 32);
+
+        // Bottom shadow
+        const botShadow = ctx.createLinearGradient(0, c.height - 48, 0, c.height);
+        botShadow.addColorStop(0, 'rgba(15, 23, 42, 0)');
+        botShadow.addColorStop(1, 'rgba(15, 23, 42, 0.40)');
+        ctx.fillStyle = botShadow;
+        ctx.fillRect(0, c.height - 48, c.width, 48);
+
+        return tex;
+      }
+
+      // Table Top Slab (tapered)
+      const tableGeo = new THREE.BoxGeometry(1, TOP_THICK, TABLE_LEN, 1, 1, 1);
+      const pos = tableGeo.attributes.position;
+      for (let i = 0; i < pos.count; i++) {
+        const x = pos.getX(i);
+        const z = pos.getZ(i);
+        pos.setX(i, x * getW(z));
+      }
+      pos.needsUpdate = true;
+      tableGeo.computeVertexNormals();
+
+      const sideMat = new THREE.MeshStandardMaterial({ color: 0x173a78, roughness: 0.4, metalness: 0.05 });
+      const edgeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3 });
+      const topMat = new THREE.MeshStandardMaterial({ map: makeTableTexture(), roughness: 0.38, metalness: 0.03 });
+      const botMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8 });
+
+      const tableMaterials = [
+        sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
+      ];
+      const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
+      tableTop.position.set(0, TABLE_H - TOP_THICK / 2, 0);
+      tableTop.castShadow = true;
+      tableTop.receiveShadow = true;
+      scene.add(tableTop);
+
+      // 100% Mathematically Straight Center Division Line & ITTF Boundary Lines
+      // Rendered as flush planar quads perfectly matching the tapered table corners
+      const lineMat = new THREE.MeshStandardMaterial({
+        color: 0xf8fafc,
+        roughness: 0.25,
+        polygonOffset: true,
+        polygonOffsetFactor: -2,
+        polygonOffsetUnits: -2,
+        side: THREE.DoubleSide
+      });
+
+      const LINE_W = 0.02;
+      const CENTER_W_NEAR = 0.009; // 9mm at near/bottom player edge for 3D depth effect
+      const CENTER_W_FAR = 0.003;  // 3mm at opponent far/top edge
+      const zNear = -TABLE_LEN / 2;
+      const zFar = TABLE_LEN / 2;
+      const lineY = TABLE_H + 0.0004;
+
+      const linePositions = [];
+      function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
+        linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
+        linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
+      }
+
+      // Left Sideline: flush with left edge
+      addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
+      // Right Sideline: flush with right edge
+      addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
+      // Near End Line
+      addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
+      // Far End Line
+      addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
+      // Center Division Line: wider at near edge for 3D effect
+      addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
+
+      const linesGeo = new THREE.BufferGeometry();
+      linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+      linesGeo.computeVertexNormals();
+      const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+      scene.add(linesMesh);
+
+      // Steel End Aprons (protruding side aprons deleted)
+      const apronMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.6, roughness: 0.35 });
+
+      const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
+      const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
+      playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+      scene.add(playerApron);
+
+      const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
+      const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
+      oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+      scene.add(oppApron);
+
+      // Legs
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.75, roughness: 0.3 });
+      const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
+      const lz = TABLE_LEN / 2 - 0.28;
+      const lx_near = getW(-lz) / 2 - 0.14;
+      const lx_far = getW(lz) / 2 - 0.14;
+
+      [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+        const leg = new THREE.Mesh(legGeo, legMat);
+        leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
+        leg.castShadow = true;
+        scene.add(leg);
+      });
+
+      // Net Assembly (closer to player at NET_Z)
+      const netMat = new THREE.MeshStandardMaterial({
+        map: makeNetTexture(),
+        transparent: true,
+        alphaTest: 0.1,
+        side: THREE.DoubleSide,
+        roughness: 0.9,
+        depthWrite: false
+      });
+      const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
+      netMesh.position.set(0, TABLE_H + NET_H / 2, NET_Z);
+      netMesh.castShadow = true;
+      scene.add(netMesh);
+
+      // Net Top White Cord
+      const cordMesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.003, 0.003, NET_LEN, 12),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+      );
+      cordMesh.rotation.z = Math.PI / 2;
+      cordMesh.position.set(0, TABLE_H + NET_H, NET_Z);
+      scene.add(cordMesh);
+
+      // Net Posts & Professional Donic Stress Silver/Gray Brand Net Assembly
+      const silverMat = new THREE.MeshStandardMaterial({
+        color: 0xf1f5f9,
+        metalness: 0.55,
+        roughness: 0.22,
+      });
+      const blackPolymerMat = new THREE.MeshStandardMaterial({
+        color: 0x18181b,
+        metalness: 0.12,
+        roughness: 0.55,
+      });
+      const steelMat = new THREE.MeshStandardMaterial({
+        color: 0xe2e8f0,
+        metalness: 0.92,
+        roughness: 0.18,
+      });
+      const clampPadMat = new THREE.MeshStandardMaterial({
+        color: 0x09090b,
+        roughness: 0.85,
+      });
+      const donicBadgeMat = new THREE.MeshStandardMaterial({
+        map: makeDonicStressTexture(),
+        roughness: 0.25,
+        metalness: 0.20,
+        side: THREE.FrontSide,
+      });
+      const postMat = new THREE.MeshStandardMaterial({
+        map: makePostTexture(),
+        roughness: 0.22,
+        metalness: 0.45,
+      });
+      const chromeMat = new THREE.MeshStandardMaterial({
+        color: 0xf8fafc,
+        metalness: 0.95,
+        roughness: 0.12,
+      });
+
+      const postH = NET_H + 0.013;
+      const postCenterY = TABLE_H + (NET_H - 0.007) / 2;
+
+      
+
+      [-1, 1].forEach((sign) => {
+        const tableEdgeX = sign * (W_AT_NET / 2);
+        const px = sign * (W_AT_NET / 2 + NET_OVERHANG);
+
+        // 1. Table Clamp: Upper Jaw in Silver/Gray Metal with Protective Pad
+        const topJaw = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.008, 0.068), silverMat);
+        topJaw.position.set(tableEdgeX - sign * 0.021, TABLE_H + 0.004, NET_Z);
+        topJaw.castShadow = true;
+        scene.add(topJaw);
+
+        const rubberPad = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.0025, 0.065), clampPadMat);
+        rubberPad.position.set(tableEdgeX - sign * 0.021, TABLE_H + 0.0006, NET_Z);
+        scene.add(rubberPad);
+
+        // 2. Table Clamp: Vertical Body along table edge (Silver/Gray)
+        const clampBody = new THREE.Mesh(new THREE.BoxGeometry(0.020, TOP_THICK + 0.028, 0.068), silverMat);
+        clampBody.position.set(tableEdgeX + sign * 0.010, TABLE_H - TOP_THICK / 2 - 0.005, NET_Z);
+        clampBody.castShadow = true;
+        scene.add(clampBody);
+
+        // 3. Lower Clamp Body & Tightening Mechanism (Inner Knob Under Table)
+        const lowerJaw = new THREE.Mesh(new THREE.BoxGeometry(0.048, 0.010, 0.068), silverMat);
+        lowerJaw.position.set(tableEdgeX - sign * 0.021, TABLE_H - TOP_THICK - 0.024, NET_Z);
+        scene.add(lowerJaw);
+
+        const clampScrew = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.034, 16), steelMat);
+        clampScrew.position.set(tableEdgeX - sign * 0.021, TABLE_H - TOP_THICK - 0.022, NET_Z);
+        scene.add(clampScrew);
+
+        const clampScrewPad = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.014, 0.004, 16), blackPolymerMat);
+        clampScrewPad.position.set(tableEdgeX - sign * 0.021, TABLE_H - TOP_THICK - 0.003, NET_Z);
+        scene.add(clampScrewPad);
+
+        // Signature Donic Stress Black 4-Wing Star Knob
+        const starKnobHub = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.016, 20), blackPolymerMat);
+        starKnobHub.position.set(tableEdgeX - sign * 0.021, TABLE_H - TOP_THICK - 0.042, NET_Z);
+        scene.add(starKnobHub);
+
+        const starWing1 = new THREE.Mesh(new THREE.BoxGeometry(0.036, 0.013, 0.012), blackPolymerMat);
+        starWing1.position.set(tableEdgeX - sign * 0.021, TABLE_H - TOP_THICK - 0.042, NET_Z);
+        scene.add(starWing1);
+
+        const starWing2 = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.013, 0.036), blackPolymerMat);
+        starWing2.position.set(tableEdgeX - sign * 0.021, TABLE_H - TOP_THICK - 0.042, NET_Z);
+        scene.add(starWing2);
+
+        // 4. Cantilever Outrigger Arm Chassis (Silver/Gray) extending to tournament post
+        const armSpan = 0.174;
+        const armCenterX = sign * (W_AT_NET / 2 + armSpan / 2);
+
+        const armBeam = new THREE.Mesh(new THREE.BoxGeometry(armSpan, 0.050, 0.038), silverMat);
+        armBeam.position.set(armCenterX, TABLE_H - 0.008, NET_Z);
+        armBeam.castShadow = true;
+        scene.add(armBeam);
+
+        const topFlange = new THREE.Mesh(new THREE.BoxGeometry(armSpan, 0.004, 0.042), silverMat);
+        topFlange.position.set(armCenterX, TABLE_H + 0.017, NET_Z);
+        scene.add(topFlange);
+
+        const bottomFlange = new THREE.Mesh(new THREE.BoxGeometry(armSpan, 0.004, 0.042), silverMat);
+        bottomFlange.position.set(armCenterX, TABLE_H - 0.033, NET_Z);
+        scene.add(bottomFlange);
+
+        // 5. Large Donic Brand Logo Plates on Horizontal Net Post Holders
+        // Badge plates removed
+
+        // 6. Upright Tournament Post in Satin Silver Metal with 3D Cylindrical Shading
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, postH, 32), postMat);
+        post.position.set(px, postCenterY, NET_Z);
+        post.castShadow = true;
+        scene.add(post);
+
+        // Flat Black Polymer Top Cap Plug
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.004, 32), blackPolymerMat);
+        cap.position.set(px, TABLE_H + NET_H + 0.005, NET_Z);
+        scene.add(cap);
+
+        // Silver Base Post Collar directly under vertical post
+        const baseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.020, 24), silverMat);
+        baseCollar.position.set(px, TABLE_H - 0.010, NET_Z);
+        scene.add(baseCollar);
+
+        // 7. Outer Height-Adjustment Mechanism (Directly Below Upright Post)
+        const heightRod = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.022, 16), steelMat);
+        heightRod.position.set(px, TABLE_H - 0.035, NET_Z);
+        scene.add(heightRod);
+
+        const heightKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.016, 24), blackPolymerMat);
+        heightKnob.position.set(px, TABLE_H - 0.048, NET_Z);
+        scene.add(heightKnob);
+      });
+
+      // 1. Light brown/tan wooden basketball court floor with vertical planks
+      const woodFloorTex = makeWoodFloorTexture();
+      const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(40, 36),
+        new THREE.MeshStandardMaterial({ map: woodFloorTex, roughness: 0.32, metalness: 0.03 })
+      );
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.set(0, 0, -1);
+      floor.receiveShadow = true;
+      scene.add(floor);
+
+      // 2. Flat vertical back wall creating a 100% straight horizontal line where it meets the floor
+      const BACK_WALL_Z = 7.0;
+      const wall = new THREE.Mesh(
+        new THREE.PlaneGeometry(44, 16),
+        new THREE.MeshStandardMaterial({ color: bgHex, roughness: 0.88, metalness: 0.02 })
+      );
+      wall.position.set(0, 8.0, BACK_WALL_Z);
+      wall.rotation.set(0, 0, 0);
+      scene.add(wall);
+
+      // Architectural straight baseboard along the line between floor and back wall
+      const baseboard = new THREE.Mesh(
+        new THREE.BoxGeometry(44, 0.12, 0.04),
+        new THREE.MeshStandardMaterial({ color: 0x487050, roughness: 0.85, metalness: 0.05 })
+      );
+      baseboard.position.set(0, 0.06, BACK_WALL_Z - 0.02);
+      scene.add(baseboard);
+
+      // Render function
+      function render() {
+        renderer.render(scene, camera);
+      }
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.fov = window.innerWidth < window.innerHeight ? 60 : 52;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        render();
+      });
+
+      // Static render
+      render();
+    })();
+  </script>
+</body>
+</html>
