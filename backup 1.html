@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Mode Portal + Table Serve Animation</title>
+
+    <meta name="color-scheme" content="dark">
+    <script>
+        var p = new URLSearchParams(location.search);
+        if (p.has('neon') || (!p.has('normal') && new Date().getDate() % 2)) {
+            document.documentElement.classList.add('neon');
+            document.documentElement.setAttribute('data-darkreader-scheme', 'dark');
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #fce5cd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        /* Portal card UI */
+        .card {
+            background: #fce5cd;
+            max-width: 400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 10px 30px 10px; /* more top padding */
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.0);
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+                    opacity: 0;
+            transform: scale(0.98);
+            pointer-events: none;
+        }
+
+        h2 { color: #000; margin-bottom: 60px; font-size: 30px; }
+        p { color: #e07474; font-size: 16px; margin-bottom: 30px; }
+
+        .btn {
+            position: relative; display: block; text-decoration: none;
+            padding: 14px; margin: 2px 0; border-radius: 12px;
+            font-weight: bold; font-size: 20px; color: #000;
+            transform: perspective(500px) rotateY(-12deg);
+            box-shadow: 2px 0 0 4px rgba(0,0,0,.2), 0 6px 0 var(--dark), 0 10px 16px rgba(0,0,0,.35);
+            overflow: hidden; border: none;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .btn::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.15) 100%);
+            border-radius: 8px 8px 50% 50%; pointer-events: none;
+        }
+        .btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,.3), transparent);
+            transition: 0.5s; z-index: 1; pointer-events: none;
+        }
+        .btn:hover::before { left: 100%; }
+        .btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 2px 0 var(--dark), 0 4px 10px rgba(0,0,0,.25); }
+        .btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 0 0 var(--dark), 0 2px 6px rgba(0,0,0,.2); }
+
+        .preview { background: linear-gradient(180deg, #6abf6e 0%, #3a9e3e 40%, #288028 100%); --dark: #1c6a1c; }
+        .edit { background: linear-gradient(180deg, #e87070 0%, #c84040 40%, #a02020 100%); --dark: #801818; margin-top: 20px; margin-bottom: 2px; }
+        .hub { background: linear-gradient(180deg, #3ba8d6 0%, #1a7daa 40%, #0e5f80 100%); --dark: #0a4a60; margin-top: 80px; }
+
+.copy-btn {
+        position: relative; display: block; background: linear-gradient(180deg, #a048a0 0%, #883088 40%, #682068 100%);
+        color: #000; font-size: 13px; font-weight: bold; padding: 16px 14px; margin: 20px 0 40px;
+        border: none; border-radius: 8px; width: 100%; box-sizing: border-box;
+        transform: perspective(500px) rotateY(-12deg);
+        box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #501850, 0 6px 10px rgba(0,0,0,.25);
+        overflow: hidden; transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+        .copy-btn::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.15) 100%);
+            border-radius: 6px 6px 50% 50%; pointer-events: none;
+        }
+        .copy-btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 1px 0 #501850, 0 3px 8px rgba(0,0,0,.2); }
+        .copy-btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 0 0 #501850, 0 2px 4px rgba(0,0,0,.15); }
+        .copy-btn.copied { background: linear-gradient(180deg, #a8c7a8 0%, #88b088 40%, #709870 100%); --dark: #5a805a; }
+
+        .subtext { display: block; font-size: 12px; font-weight: normal; opacity: 0.8; margin-top: 4px; }
+
+        html.neon .preview { background: linear-gradient(180deg, #00ff00 0%, #00cc00 40%, #009900 100%); --dark: #006600; }
+        html.neon .edit { background: linear-gradient(180deg, #ff0000 0%, #cc0000 40%, #990000 100%); --dark: #660000; }
+        html.neon .hub { background: linear-gradient(180deg, #0bcade 0%, #09a3b5 40%, #077c9c 100%); --dark: #055f7d; }
+        html.neon .copy-btn { background: linear-gradient(180deg, #bf00ff 0%, #9900dd 40%, #7700bb 100%); box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #550099, 0 6px 10px rgba(0,0,0,.25); }
+        html.neon body { background: #4e2a05; }
+        html.neon .card { background: #4e2a05; }
+        html.neon p { color: #ffb3b3; }
+
+        /* Three.js canvas container */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            display: none;
+            z-index: 1;
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="card" id="portal-card">
+        <h2>View Mode Portal</h2>
+
+        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
+            Preview Mode <span class="subtext">(works on most devices)</span>
+        </a>
+
+        <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
+            Copy Preview Mode URL
+        </button>
+
+        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
+            Edit Mode <span class="subtext">(annoying banner at top)</span>
+        </a>
+
+        <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
+            Copy Edit Mode URL
+        </button>
+
+        <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+            Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
+        </a>
+    </div>
+
+    <script>
+        const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
+        const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
+
+        function copyUrl(btn, url) {
+            navigator.clipboard.writeText(url).then(() => {
+                btn.textContent = "Copied!";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = btn.getAttribute("data-label");
+                    btn.classList.remove("copied");
+                }, 2000);
+            });
+        }
+
+        document.getElementById('copy-preview-btn').onclick = function () {
+            copyUrl(this, previewUrl);
+        };
+        document.getElementById('copy-edit-btn').onclick = function () {
+            copyUrl(this, editUrl);
+        };
+    </script>
+
+    <script>
+        (function () {
+            const TABLE_LEN = 2.74;
+            const W_NEAR = 1.36;
+            const W_FAR = 2.48;
+            const NET_Z = -0.38;
+            const TABLE_H = 0.76;
+            const TOP_THICK = 0.03;
+            const NET_H = 0.1525;
+            const NET_OVERHANG = 0.16;
+
+            function getW(z) {
+                const t = (z + TABLE_LEN / 2) / TABLE_LEN;
+                return W_NEAR + (W_FAR - W_NEAR) * Math.max(0, Math.min(1, t));
+            }
+
+            const W_AT_NET = getW(NET_Z);
+            const NET_LEN = W_AT_NET + NET_OVERHANG * 2;
+
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const bgHex = 0x72a67a;
+            scene.background = new THREE.Color(bgHex);
+            scene.fog = new THREE.FogExp2(bgHex, 0.04);
+
+            const camera = new THREE.PerspectiveCamera(64, 1, 0.05, 50);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.06;
+            container.appendChild(renderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 1.05);
+            scene.add(ambient);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.55);
+            mainLight.position.set(0, TABLE_H + 3.2, -0.4);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.bias = 0.0001;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.DirectionalLight(0xecfdf5, 0.65);
+            fillLight.position.set(0.6, TABLE_H + 2.5, 2.0);
+            scene.add(fillLight);
+
+            const blueBounce = new THREE.DirectionalLight(0x243750, 0.10);
+            blueBounce.position.set(0, 0.2, 0);
+            scene.add(blueBounce);
+
+            function makeTableTexture() {
+                const c = document.createElement('canvas');
+                c.width = 2048;
+                c.height = 2048;
+                const ctx = c.getContext('2d');
+
+                const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+                grad.addColorStop(0.00, '#040d24');
+                grad.addColorStop(0.25, '#06132f');
+                grad.addColorStop(0.50, '#091e48');
+                grad.addColorStop(0.75, '#06132d');
+                grad.addColorStop(1.00, '#030a1c');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                const imgData = ctx.getImageData(0, 0, c.width, c.height);
+                const data = imgData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const noise = (Math.random() - 0.5) * 3.5;
+                    data[i] = Math.min(255, Math.max(0, data[i] + noise));
+                    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+                }
+                ctx.putImageData(imgData, 0, 0);
+
+                const seamT = (NET_Z + TABLE_LEN / 2) / TABLE_LEN;
+                const seamY = Math.round(c.height * (1 - seamT));
+                ctx.fillStyle = 'rgba(1, 4, 10, 0.75)';
+                ctx.fillRect(0, seamY - 1, c.width, 2);
+
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                tex.anisotropy = 8;
+                return tex;
+            }
+
+            function makeNetTexture() {
+                const c = document.createElement('canvas');
+                c.width = 512;
+                c.height = 256;
+                const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                const tapeH = 15;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, c.width, tapeH);
+                ctx.fillRect(0, c.height - 4, c.width, 4);
+
+                const gridSize = 9;
+                ctx.strokeStyle = '#1a1d24';
+                ctx.lineWidth = 2.4;
+                for (let x = 0; x <= c.width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, tapeH);
+                    ctx.lineTo(x, c.height - 4);
+                    ctx.stroke();
+                }
+                for (let y = tapeH + gridSize; y <= c.height - 4; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(c.width, y);
+                    ctx.stroke();
+                }
+
+                const tex = new THREE.CanvasTexture(c);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.ClampToEdgeWrapping;
+                tex.repeat.set(14, 1);
+                return tex;
+            }
+
+            const ANGLE_DEG = 40;
+            const TAN_40 = Math.tan(THREE.MathUtils.degToRad(ANGLE_DEG));
+
+            function makeDonicStressTexture() {
+                const c = document.createElement('canvas');
+                c.width = 1024;
+                c.height = 368;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
+
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                const xOuter = 1016;
+                const xInner = 8;
+                const yTop = 8;
+                const yDonic = 115;
+                const yBottom = c.height;
+                const cornerR = 56;
+
+                const canvas_dy = yBottom - yDonic;
+                const canvas_dx = 269;
+                const xSlopeEnd = xOuter - canvas_dx;
+
+                ctx.beginPath();
+                ctx.moveTo(xInner, yBottom);
+                ctx.lineTo(xInner, yTop + cornerR);
+                ctx.quadraticCurveTo(xInner, yTop, xInner + cornerR, yTop);
+                ctx.lineTo(xOuter, yTop);
+                ctx.lineTo(xOuter, yDonic);
+                ctx.lineTo(xSlopeEnd, yBottom);
+                ctx.lineTo(xInner, yBottom);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+                grad.addColorStop(0, '#f1f5f9');
+                grad.addColorStop(0.35, '#dbe2ec');
+                grad.addColorStop(0.65, '#bdc7d5');
+                grad.addColorStop(1, '#a1acbc');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.save();
+                ctx.clip();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                for (let y = 3; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+                for (let y = 5; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.restore();
+
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(620, yDonic);
+                ctx.transform(1, 0, -0.22, 1, 0, 0);
+                ctx.font = '900 148px "Arial Black", Impact, -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#050507';
+                ctx.lineWidth = 7;
+                ctx.strokeStyle = '#050507';
+                ctx.strokeText('DONIC', 0, 0);
+                ctx.fillText('DONIC', 0, 0);
+                ctx.font = 'bold 28px sans-serif';
+                ctx.fillText('®', 295, -45);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(580, 196);
+                ctx.font = '900 64px "Arial Black", Impact, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#dc2626';
+                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = '#dc2626';
+                ctx.strokeText('•S•T•R•E•S•S•', 0, 0);
+                ctx.fillText('•S•T•R•E•S•S•', 0, 0);
+                ctx.restore();
+
+                ctx.save();
+                ctx.fillStyle = '#dc2626';
+                const stripeW = 76;
+                const stripeGap = 76;
+                const stripeH = 76;
+                const startY = 244;
+                const slantX = -(stripeH * (canvas_dx / canvas_dy));
+                const outerStripeTopRight = xOuter - ((startY - yDonic) / canvas_dy) * canvas_dx;
+
+                ctx.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    const topRight = outerStripeTopRight - i * (stripeW + stripeGap);
+                    const topLeft = topRight - stripeW;
+                    ctx.moveTo(topLeft, startY);
+                    ctx.lineTo(topRight, startY);
+                    ctx.lineTo(topRight + slantX, startY + stripeH);
+                    ctx.lineTo(topLeft + slantX, startY + stripeH);
+                    ctx.closePath();
+                }
+                ctx.fill();
+                ctx.restore();
+
+                const cropAmount = 64;
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = c.width;
+                tempCanvas.height = c.height;
+                const tctx = tempCanvas.getContext('2d');
+
+                tctx.drawImage(
+                    c,
+                    0, 0, c.width, c.height - cropAmount,
+                    0, 0, c.width, c.height
+                );
+
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+
+                return tex;
+            }
+
+            function makeDonicStressTextureRight() {
+                const c = document.createElement('canvas');
+                c.width = 1024;
+                c.height = 368;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
+
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                const xOuter = 4;
+                const xInner = 1020;
+                const yTop = 4;
+                const yDonic = 101;
+                const yBottom = c.height;
+                const cornerR = 56;
+
+                const canvas_dy = yBottom - yDonic;
+                const canvas_dx = 269;
+                const xSlopeEnd = xOuter + canvas_dx;
+
+                ctx.beginPath();
+                ctx.moveTo(xOuter, yDonic);
+                ctx.lineTo(xSlopeEnd, yBottom);
+                ctx.lineTo(xInner, yBottom);
+                ctx.lineTo(xInner, yTop + cornerR);
+                ctx.quadraticCurveTo(xInner, yTop, xInner - cornerR, yTop);
+                ctx.lineTo(xOuter, yTop);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+                grad.addColorStop(0, '#f1f5f9');
+                grad.addColorStop(0.35, '#dbe2ec');
+                grad.addColorStop(0.65, '#bdc7d5');
+                grad.addColorStop(1, '#a1acbc');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.save();
+                ctx.clip();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                for (let y = 3; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+                for (let y = 5; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.restore();
+
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(404, yDonic);
+                ctx.transform(1, 0, -0.45, 1, 0, 0);
+                ctx.font = 'italic 900 148px "Arial Black", Impact, -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#050507';
+                ctx.lineWidth = 7;
+                ctx.strokeStyle = '#050507';
+                ctx.strokeText('DONIC', 0, 0);
+                ctx.fillText('DONIC', 0, 0);
+                ctx.font = 'bold 28px sans-serif';
+                ctx.fillText('®', 295, -45);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(444, 196);
+                ctx.font = '900 64px "Arial Black", Impact, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#dc2626';
+                ctx.lineWidth = 2.5;
+                ctx.strokeStyle = '#dc2626';
+                ctx.strokeText('•S•T•R•E•S•S•', 0, 0);
+                ctx.fillText('•S•T•R•E•S•S•', 0, 0);
+                ctx.restore();
+
+                ctx.save();
+                ctx.fillStyle = '#dc2626';
+                const stripeW = 76;
+                const stripeGap = 76;
+                const stripeH = 76;
+                const startY = 244;
+                const slantX = +(stripeH * (canvas_dx / canvas_dy));
+                const outerStripeTopLeft = xOuter + ((startY - yDonic) / canvas_dy) * canvas_dx;
+
+                ctx.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    const topLeft = outerStripeTopLeft + i * (stripeW + stripeGap);
+                    const topRight = topLeft + stripeW;
+                    ctx.moveTo(topLeft, startY);
+                    ctx.lineTo(topRight, startY);
+                    ctx.lineTo(topRight + slantX, startY + stripeH);
+                    ctx.lineTo(topLeft + slantX, startY + stripeH);
+                    ctx.closePath();
+                }
+                ctx.fill();
+                ctx.restore();
+
+                const cropAmount = 64;
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = c.width;
+                tempCanvas.height = c.height;
+                const tctx = tempCanvas.getContext('2d');
+
+                tctx.drawImage(
+                    c,
+                    0, 0, c.width, c.height - cropAmount,
+                    0, 0, c.width, c.height
+                );
+
+                ctx.clearRect(0, 0, c.width, c.height);
+                ctx.drawImage(tempCanvas, 0, 0);
+
+                return tex;
+            }
+
+            function makeWoodFloorTexture() {
+                const c = document.createElement('canvas');
+                c.width = 2048;
+                c.height = 2048;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+                tex.repeat.set(6, 4);
+                tex.anisotropy = 8;
+                if (!ctx) return tex;
+
+                const woodColors = [
+                    '#7a5228', '#6b451f', '#5e3c1a', '#724b23',
+                    '#66411d', '#583616', '#754d25', '#633e1c',
+                    '#533214', '#6c4620', '#503013', '#734c24',
+                    '#5c3a19', '#67421e', '#523114',
+                ];
+
+                const plankWidth = 32;
+                const numColumns = Math.ceil(c.width / plankWidth);
+
+                for (let col = 0; col < numColumns; col++) {
+                    const colX = col * plankWidth;
+                    let currentY = 0;
+                    let segIndex = 0;
+                    while (currentY < c.height) {
+                        const segH = Math.min(c.height - currentY, 200 + ((col * 37 + segIndex * 89) % 280));
+                        const colorIdx = (col * 7 + segIndex * 13 + ((col * 11) % 5)) % woodColors.length;
+                        ctx.fillStyle = woodColors[colorIdx];
+                        ctx.fillRect(colX, currentY, plankWidth, segH);
+
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                        ctx.fillRect(colX + 6, currentY, 1.2, segH);
+                        ctx.fillRect(colX + 18, currentY, 1.2, segH);
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+                        ctx.fillRect(colX + 12, currentY, 1.2, segH);
+                        ctx.fillRect(colX + 24, currentY, 1.2, segH);
+                        ctx.fillStyle = 'rgba(25, 12, 4, 0.45)';
+                        ctx.fillRect(colX, currentY, plankWidth, 1.5);
+
+                        currentY += segH;
+                        segIndex++;
+                    }
+                    ctx.fillStyle = 'rgba(25, 12, 4, 0.38)';
+                    ctx.fillRect(colX + plankWidth - 1, 0, 1.2, c.height);
+                }
+
+                return tex;
+            }
+
+            function makePostTexture() {
+                const c = document.createElement('canvas');
+                c.width = 512;
+                c.height = 1024;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
+
+                ctx.fillStyle = '#f1f5f9';
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                const frontGrad = ctx.createLinearGradient(128, 0, 384, 0);
+                frontGrad.addColorStop(0.00, '#788494');
+                frontGrad.addColorStop(0.12, '#9ba7b6');
+                frontGrad.addColorStop(0.28, '#d4dce6');
+                frontGrad.addColorStop(0.44, '#ffffff');
+                frontGrad.addColorStop(0.56, '#f8fafc');
+                frontGrad.addColorStop(0.72, '#d4dce6');
+                frontGrad.addColorStop(0.88, '#9ba7b6');
+                frontGrad.addColorStop(1.00, '#788494');
+                ctx.fillStyle = frontGrad;
+                ctx.fillRect(128, 0, 256, c.height);
+
+                const rearGrad1 = ctx.createLinearGradient(384, 0, 512, 0);
+                rearGrad1.addColorStop(0.0, '#788494');
+                rearGrad1.addColorStop(0.4, '#c0cad6');
+                rearGrad1.addColorStop(0.85, '#f8fafc');
+                rearGrad1.addColorStop(1.0, '#ffffff');
+                ctx.fillStyle = rearGrad1;
+                ctx.fillRect(384, 0, 128, c.height);
+
+                const rearGrad2 = ctx.createLinearGradient(0, 0, 128, 0);
+                rearGrad2.addColorStop(0.0, '#ffffff');
+                rearGrad2.addColorStop(0.15, '#f8fafc');
+                rearGrad2.addColorStop(0.6, '#c0cad6');
+                rearGrad2.addColorStop(1.0, '#788494');
+                ctx.fillStyle = rearGrad2;
+                ctx.fillRect(0, 0, 128, c.height);
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+                for (let y = 2; y < c.height; y += 4) {
+                    ctx.fillRect(0, y, c.width, 1);
+                }
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.05)';
+                for (let y = 4; y < c.height; y += 6) {
+                    ctx.fillRect(0, y, c.width, 1);
+                }
+
+                const topShadow = ctx.createLinearGradient(0, 0, 0, 32);
+                topShadow.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
+                topShadow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+                ctx.fillStyle = topShadow;
+                ctx.fillRect(0, 0, c.width, 32);
+
+                const botShadow = ctx.createLinearGradient(0, c.height - 48, 0, c.height);
+                botShadow.addColorStop(0, 'rgba(15, 23, 42, 0)');
+                botShadow.addColorStop(1, 'rgba(15, 23, 42, 0.40)');
+                ctx.fillStyle = botShadow;
+                ctx.fillRect(0, c.height - 48, c.width, 48);
+
+                return tex;
+            }
+
+            const tableGeo = new THREE.BoxGeometry(1, TOP_THICK, TABLE_LEN, 1, 1, 1);
+            const pos = tableGeo.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+                pos.setX(i, x * getW(z));
+            }
+            pos.needsUpdate = true;
+            tableGeo.computeVertexNormals();
+
+            const sideMat = new THREE.MeshStandardMaterial({ color: 0x040e22, roughness: 0.45, metalness: 0.05, dithering: true });
+            const edgeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3 });
+            const topMat = new THREE.MeshStandardMaterial({ map: makeTableTexture(), roughness: 0.42, metalness: 0.03, dithering: true });
+            const botMat = new THREE.MeshStandardMaterial({ color: 0x070b14, roughness: 0.8 });
+
+            const tableMaterials = [
+                sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
+            ];
+            const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
+            tableTop.position.set(0, TABLE_H - TOP_THICK / 2, 0);
+            tableTop.castShadow = true;
+            tableTop.receiveShadow = false;
+            scene.add(tableTop);
+
+            const lineMat = new THREE.MeshStandardMaterial({
+                color: 0xf8fafc,
+                roughness: 0.25,
+                polygonOffset: true,
+                polygonOffsetFactor: -2,
+                polygonOffsetUnits: -2,
+                side: THREE.DoubleSide
+            });
+
+            const LINE_W = 0.02;
+            const CENTER_W_NEAR = 0.009;
+            const CENTER_W_FAR = 0.003;
+            const zNear = -TABLE_LEN / 2;
+            const zFar = TABLE_LEN / 2;
+            const lineY = TABLE_H + 0.0004;
+
+            const linePositions = [];
+            function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
+                linePositions.push(x0, lineY, z0, x1, lineY, z1, x2, lineY, z2);
+                linePositions.push(x0, lineY, z0, x2, lineY, z2, x3, lineY, z3);
+            }
+
+            addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
+            addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
+            addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
+            addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
+            addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
+
+            const linesGeo = new THREE.BufferGeometry();
+            linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            linesGeo.computeVertexNormals();
+            const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+            scene.add(linesMesh);
+
+            const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
+
+            const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
+            const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
+            playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+            scene.add(playerApron);
+
+            const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
+            const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
+            oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+            scene.add(oppApron);
+
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
+            const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
+            const lz = TABLE_LEN / 2 - 0.28;
+            const lx_near = getW(-lz) / 2 - 0.14;
+            const lx_far = getW(lz) / 2 - 0.14;
+
+            [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+                const leg = new THREE.Mesh(legGeo, legMat);
+                leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
+                leg.castShadow = true;
+                scene.add(leg);
+            });
+
+            const netMat = new THREE.MeshStandardMaterial({
+                map: makeNetTexture(),
+                transparent: true,
+                alphaTest: 0.1,
+                side: THREE.DoubleSide,
+                roughness: 0.9,
+                depthWrite: false
+            });
+            const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
+            netMesh.position.set(0, TABLE_H + NET_H / 2, NET_Z);
+            netMesh.castShadow = true;
+            scene.add(netMesh);
+
+            const cordMesh = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.003, 0.003, NET_LEN, 12),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+            );
+            cordMesh.rotation.z = Math.PI / 2;
+            cordMesh.position.set(0, TABLE_H + NET_H, NET_Z);
+            scene.add(cordMesh);
+
+            const silverMat = new THREE.MeshStandardMaterial({
+                color: 0xf1f5f9,
+                metalness: 0.55,
+                roughness: 0.22,
+            });
+            const blackPolymerMat = new THREE.MeshStandardMaterial({
+                color: 0x18181b,
+                metalness: 0.12,
+                roughness: 0.55,
+            });
+            const steelMat = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                metalness: 0.92,
+                roughness: 0.18,
+            });
+            const clampPadMat = new THREE.MeshStandardMaterial({
+                color: 0x09090b,
+                roughness: 0.85,
+            });
+
+            const donicBadgeMat = new THREE.MeshStandardMaterial({
+                map: makeDonicStressTexture(),
+                roughness: 0.25,
+                metalness: 0.20,
+                transparent: true,
+                side: THREE.FrontSide,
+                polygonOffset: true,
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12,
+            });
+            const donicBadgeMatRight = new THREE.MeshStandardMaterial({
+                map: makeDonicStressTextureRight(),
+                roughness: 0.25,
+                metalness: 0.20,
+                transparent: true,
+                side: THREE.FrontSide,
+                polygonOffset: true,
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12,
+            });
+            const postMat = new THREE.MeshStandardMaterial({
+                map: makePostTexture(),
+                roughness: 0.22,
+                metalness: 0.45,
+            });
+
+            const postH = NET_H + 0.013;
+            const postCenterY = TABLE_H + (NET_H - 0.007) / 2;
+
+            const badgeW = 0.216;
+            const badgeH = 0.069;
+
+            const rightBadgeGeo = new THREE.BufferGeometry();
+            rightBadgeGeo.setAttribute(
+                'position',
+                new THREE.BufferAttribute(
+                    new Float32Array([
+                        -badgeW / 2, -badgeH / 2, 0,
+                        -badgeW / 2,  badgeH / 2, 0,
+                         badgeW / 2,  badgeH / 2, 0,
+                        -badgeW / 2, -badgeH / 2, 0,
+                         badgeW / 2,  badgeH / 2, 0,
+                         badgeW / 2, -badgeH / 2, 0,
+                    ]),
+                    3
+                )
+            );
+            rightBadgeGeo.setAttribute(
+                'uv',
+                new THREE.BufferAttribute(
+                    new Float32Array([
+                        1, 0,
+                        1, 1,
+                        0, 1,
+                        1, 0,
+                        0, 1,
+                        0, 0,
+                    ]),
+                    2
+                )
+            );
+            rightBadgeGeo.computeVertexNormals();
+
+            [-1, 1].forEach((sign) => {
+                const tableEdgeX = sign * (W_AT_NET / 2);
+                const px = sign * (W_AT_NET / 2 + NET_OVERHANG);
+
+                const yTop = TABLE_H + 0.015;
+                const yDonicMid = TABLE_H - 0.006;
+                const dySlope = 0.034;
+                const yBottom = yDonicMid - dySlope;
+                const xInner = tableEdgeX - sign * 0.048;
+                const xOuter = px + sign * 0.008;
+
+                const runX = dySlope / TAN_40;
+                const xSlopeEnd = xOuter - sign * runX;
+                const cornerR = 0.012;
+
+                const rubberPad = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.0025, 0.065), clampPadMat);
+                rubberPad.position.set(tableEdgeX - sign * 0.024, TABLE_H + 0.0012, NET_Z);
+                scene.add(rubberPad);
+
+                const armShape = new THREE.Shape();
+                if (sign === 1) {
+                    armShape.moveTo(xInner, yBottom);
+                    armShape.lineTo(xInner, yTop - cornerR);
+                    armShape.quadraticCurveTo(xInner, yTop, xInner + cornerR, yTop);
+                    armShape.lineTo(xOuter, yTop);
+                    armShape.lineTo(xOuter, yDonicMid);
+                    armShape.lineTo(xSlopeEnd, yBottom);
+                    armShape.closePath();
+                } else {
+                    armShape.moveTo(xInner, yBottom);
+                    armShape.lineTo(xInner, yTop - cornerR);
+                    armShape.quadraticCurveTo(xInner, yTop, xInner - cornerR, yTop);
+                    armShape.lineTo(xOuter, yTop);
+                    armShape.lineTo(xOuter, yDonicMid);
+                    armShape.lineTo(xSlopeEnd, yBottom);
+                    armShape.closePath();
+                }
+
+                const armExtrudeGeo = new THREE.ExtrudeGeometry(armShape, {
+                    steps: 1,
+                    depth: 0.034,
+                    bevelEnabled: true,
+                    bevelThickness: 0.002,
+                    bevelSize: 0.002,
+                    bevelSegments: 2,
+                });
+                armExtrudeGeo.translate(0, 0, NET_Z - 0.017);
+                const armMesh = new THREE.Mesh(armExtrudeGeo, silverMat);
+                armMesh.castShadow = true;
+                scene.add(armMesh);
+
+                const armCenterX = (xInner + xOuter) / 2;
+                const armCenterY = (yTop + yBottom) / 2;
+
+                const badgeMat = sign === 1 ? donicBadgeMatRight : donicBadgeMat;
+                const frontBadge = new THREE.Mesh(rightBadgeGeo, badgeMat);
+                frontBadge.position.set(armCenterX, armCenterY, NET_Z - 0.021);
+                frontBadge.rotation.x = -0.20;
+                frontBadge.renderOrder = 999;
+                scene.add(frontBadge);
+
+                const heightRod = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.024, 16), steelMat);
+                heightRod.position.set(px, TABLE_H - 0.024, NET_Z);
+                scene.add(heightRod);
+
+                const heightKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.018, 24), blackPolymerMat);
+                heightKnob.position.set(px, TABLE_H - 0.040, NET_Z);
+                scene.add(heightKnob);
+
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, postH, 32), postMat);
+                post.position.set(px, postCenterY, NET_Z);
+                post.castShadow = true;
+                scene.add(post);
+
+                const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.004, 32), blackPolymerMat);
+                cap.position.set(px, TABLE_H + NET_H + 0.005, NET_Z);
+                scene.add(cap);
+
+                const baseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.020, 24), silverMat);
+                baseCollar.position.set(px, TABLE_H - 0.010, NET_Z);
+                scene.add(baseCollar);
+            });
+
+            const woodFloorTex = makeWoodFloorTexture();
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(40, 36),
+                new THREE.MeshStandardMaterial({ map: woodFloorTex, roughness: 0.38, metalness: 0.02 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(0, 0, -1);
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            const BACK_WALL_Z = 17.0;
+            const wall = new THREE.Mesh(
+                new THREE.PlaneGeometry(50, 16),
+                new THREE.MeshStandardMaterial({ color: bgHex, roughness: 0.88, metalness: 0.02, side: THREE.DoubleSide })
+            );
+            wall.position.set(0, 8.0, BACK_WALL_Z);
+            wall.rotation.set(0, 0, 0);
+            scene.add(wall);
+
+            const baseboardH = 0.20;
+            const baseboard = new THREE.Mesh(
+                new THREE.BoxGeometry(50, baseboardH, 0.04),
+                new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.30, metalness: 0.10 })
+            );
+            baseboard.position.set(0, baseboardH / 2, BACK_WALL_Z - 0.02);
+            scene.add(baseboard);
+
+            function render() {
+                renderer.render(scene, camera);
+            }
+
+            function autoSize() {
+                const vW = window.innerWidth;
+                const vH = window.innerHeight;
+                const isPortrait = vH > vW;
+
+                if (isPortrait) {
+                    container.style.width = vW + 'px';
+                    container.style.height = vH + 'px';
+                    container.style.boxShadow = 'none';
+
+                    camera.position.set(0, TABLE_H + 0.88, -TABLE_LEN / 2 - 1.15);
+                    camera.lookAt(0, TABLE_H + 0.18, 0.26);
+
+                    const SQUISH_LENS = 1.03;
+                    const aspect = (vW / vH) * SQUISH_LENS;
+
+                    camera.updateMatrixWorld(true);
+
+                    const postOuterX = W_AT_NET / 2 + NET_OVERHANG + 0.015;
+                    const rightPostWorld = new THREE.Vector3(postOuterX, postCenterY, NET_Z);
+                    const rightPostCam = rightPostWorld.clone().applyMatrix4(camera.matrixWorldInverse);
+
+                    const desiredPostPx = (vW / 2) - 16;
+                    const xRatio = Math.abs(rightPostCam.x / -rightPostCam.z);
+
+                    const tanHalfH = (xRatio * (vW / 2)) / desiredPostPx;
+                    const tanHalfV = tanHalfH / aspect;
+                    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(tanHalfV));
+
+                    camera.aspect = vW / vH;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(vW, vH);
+                } else {
+                    camera.position.set(0, TABLE_H + 0.64, -TABLE_LEN / 2 - 0.72);
+                    camera.lookAt(0, TABLE_H - 0.04, 0.32);
+                    container.style.boxShadow = '0 0 35px rgba(0, 0, 0, 0.28)';
+
+                    camera.updateMatrixWorld(true);
+
+                    const postOuterX = W_AT_NET / 2 + NET_OVERHANG + 0.015;
+                    const rightPostWorld = new THREE.Vector3(postOuterX, postCenterY, NET_Z);
+                    const rightPostCam = rightPostWorld.clone().applyMatrix4(camera.matrixWorldInverse);
+
+                    camera.fov = 64;
+                    const halfFovRad = THREE.MathUtils.degToRad(camera.fov / 2);
+                    const postPxFromCenter = Math.abs(rightPostCam.x / (-rightPostCam.z * Math.tan(halfFovRad))) * (vH / 2);
+                    const exactCropWidth = Math.round((postPxFromCenter + 25) * 2);
+                    const finalWidth = Math.min(vW, exactCropWidth);
+
+                    container.style.width = finalWidth + 'px';
+                    container.style.height = vH + 'px';
+
+                    camera.aspect = finalWidth / vH;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(finalWidth, vH);
+                }
+
+                render();
+            }
+
+            let portalTexture = null;
+
+            const portalPlaneGeo = new THREE.PlaneGeometry(1.6, 2.4, 32, 32);
+            const portalPlaneMat = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.0
+            });
+            const portalPlane = new THREE.Mesh(portalPlaneGeo, portalPlaneMat);
+            portalPlane.position.set(0, TABLE_H + 0.4, -0.2);
+            scene.add(portalPlane);
+
+            const shadowGeo = new THREE.PlaneGeometry(4, 4);
+            const shadowMat = new THREE.MeshBasicMaterial({
+                color: 0x000000,
+                transparent: true,
+                opacity: 0.0
+            });
+            const shadowPlane = new THREE.Mesh(shadowGeo, shadowMat);
+            shadowPlane.rotation.x = -Math.PI / 2;
+            shadowPlane.position.set(0, TABLE_H - 0.9, 0);
+            scene.add(shadowPlane);
+
+            let animActive = false;
+            let animStartTime = 0;
+            let phase = 0;
+
+            function startServeAnimation() {
+                if (animActive) return;
+
+                const card = document.getElementById('portal-card');
+                card.classList.add('hidden');
+
+                container.style.display = 'block';
+                container.style.width = "100vw";
+                container.style.height = "100vh";
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                autoSize();
+
+                html2canvas(document.body).then(canvas => {
+                    portalTexture = new THREE.CanvasTexture(canvas);
+                    portalTexture.colorSpace = THREE.SRGBColorSpace;
+
+                    portalPlaneMat.map = portalTexture;
+                    portalPlaneMat.opacity = 0.0;
+
+                    animActive = true;
+                    animStartTime = performance.now();
+                    phase = 1;
+
+                    portalPlane.visible = true;
+                    if (portalTexture) portalTexture.offset.set(0, 0);
+                    shadowMat.opacity = 0.0;
+                });
+            }
+
+            function renderLoop(now) {
+                requestAnimationFrame(renderLoop);
+
+                if (!animActive) {
+                    renderer.render(scene, camera);
+                    return;
+                }
+
+                const t = (now - animStartTime) / 1000;
+
+                if (phase === 1) {
+                    const duration = 1.2;
+                    const p = Math.min(t / duration, 1.0);
+
+                    const scale = 1.0 - 0.65 * p;
+                    portalPlane.scale.set(scale, scale, 1);
+
+                    portalPlane.position.y = TABLE_H + 0.4 + 0.6 * p;
+                    portalPlane.rotation.x = -0.35 * p;
+
+                    const warpAmount = 0.12 * p;
+                    const posAttr = portalPlaneGeo.attributes.position;
+                    for (let i = 0; i < posAttr.count; i++) {
+                        const x = posAttr.getX(i);
+                        const y = posAttr.getY(i);
+                        const z = posAttr.getZ(i);
+                        const edgeFactor = Math.sqrt(x * x + y * y) / 1.8;
+                        posAttr.setZ(i, z - warpAmount * edgeFactor);
+                    }
+                    posAttr.needsUpdate = true;
+
+                    if (p >= 1.0) {
+                        phase = 2;
+                        animStartTime = now;
+                    }
+                } else if (phase === 2) {
+                    const duration = 1.0;
+                    const p = Math.min(t / duration, 1.0);
+
+                    portalPlaneMat.opacity = 1.0 - p;  // never let it go above 0
+
+                     if (p >= 1.0) {
+                        phase = 3;
+                        animStartTime = now;
+                        portalPlane.visible = false;
+                    }
+                } else if (phase === 3) {
+                    const duration = 1.5;
+                    const p = Math.min(t / duration, 1.0);
+
+                    if (portalTexture) portalTexture.offset.y = 0.0 + 0.4 * p;
+
+                    shadowMat.opacity = 0.25 * p;
+
+                    if (p >= 1.0) {
+                        phase = 4;
+                        animStartTime = now;
+                    }
+                } else if (phase === 4) {
+                    const duration = 2.0;
+                    const p = Math.min(t / duration, 1.0);
+
+                    const startX = -0.6;
+                    const endX = 0.8;
+                    const x = startX + (endX - startX) * p;
+
+                    const arcHeight = 0.6;
+                    const dropRate = 1.2;
+                    const y = TABLE_H + 0.4 + arcHeight * (1 - Math.pow(2 * p - 1, 2)) - dropRate * p * 0.2;
+
+                    const z = -0.4 + 0.6 * p;
+
+                    shadowPlane.position.x = x;
+                    shadowPlane.position.z = z;
+                    shadowMat.opacity = 0.35 + 0.25 * p;
+
+                    if (p >= 1.0) {
+                        phase = 5;
+                        animStartTime = now;
+                    }
+                } else if (phase === 5) {
+                }
+
+                renderer.render(scene, camera);
+            }
+
+            requestAnimationFrame(renderLoop);
+
+            window.addEventListener('resize', () => {
+                if (animActive) {
+                    autoSize();
+                }
+            });
+            window.addEventListener('orientationchange', () => {
+                setTimeout(() => {
+                    if (animActive) {
+                        autoSize();
+                    }
+                }, 120);
+            });
+
+            const isEvenDate = (new Date().getDate() % 2 === 0);
+            const isNormalMode = !document.documentElement.classList.contains('neon');
+
+            const copyPreviewBtn = document.getElementById('copy-preview-btn');
+
+            if (copyPreviewBtn && isEvenDate && isNormalMode) {
+                copyPreviewBtn.addEventListener('click', () => {
+                    startServeAnimation();
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
