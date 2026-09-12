@@ -35,7 +35,7 @@
             font-family: inherit;
         }
 
-        /* Portal card UI - shadow removed */
+        /* Portal card UI */
         .card {
             background: #fce5cd;
             color-scheme: light;
@@ -44,23 +44,17 @@
             margin: 0 auto;
             padding: 24px 28px 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.0);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
             position: relative;
             z-index: 10;
-            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.25s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.25s ease;
         }
 
-        /* FRAME 1: Shrunk 5% (0.95), raised 28px, zero shadow */
+        /* FRAME 1: Exact replica shrunk by 5% and raised a bit, zero background revealed */
         .card.frame-1 {
             transform: scale(0.95) translateY(-28px);
-            box-shadow: none;
-        }
-
-        /* FRAME 2: Shrunk another 5% (0.90), raised 56px, zero shadow */
-        .card.frame-2 {
-            transform: scale(0.90) translateY(-56px);
-            box-shadow: none;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
         }
 
         h2 { 
@@ -154,33 +148,22 @@
         #canvas-container {
             position: fixed;
             top: 0;
-            left: 50%;
-            transform: translateX(-50%);
+            left: 0;
+            width: 100vw;
             height: 100vh;
             overflow: hidden;
+            margin: 0;
             display: none;
             z-index: 1;
         }
 
-        /* Frame 2 Circular Ball Silhouette Mask */
-        #frame2-overlay {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 100vh;
-            z-index: 2;
-            pointer-events: none;
-            display: none;
-        }
-
-        /* Frame Scrubber HUD */
+        /* Frame HUD */
         #scrub-hint {
             position: fixed;
             bottom: 18px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(15, 23, 42, 0.90);
+            background: rgba(15, 23, 42, 0.88);
             color: #f8fafc;
             padding: 9px 22px;
             border-radius: 20px;
@@ -199,13 +182,7 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-
-    <!-- Frame 2 Overlay Mask with true geometric circular arc -->
-    <svg id="frame2-overlay">
-        <path id="frame2-mask-path" fill="#fce5cd"></path>
-    </svg>
-
-    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames (0, 1, 2)</div>
+    <div id="scrub-hint">Frame: 1 (Shrunk 5%, raised) | Scroll: Up for Frame 0, Down for Frame 1</div>
 
     <div class="card" id="portal-card">
         <h2>View Mode Portal</h2>
@@ -256,7 +233,7 @@
 
     <script>
         (function () {
-            // Three.js table scene and assets preserved
+            // Three.js table scene and assets preserved for tomorrow's 3D animation stages
             const TABLE_LEN = 2.74;
             const W_NEAR = 1.82;
             const W_FAR = 1.67;
@@ -275,8 +252,6 @@
             }
 
             const container = document.getElementById('canvas-container');
-            const frame2Overlay = document.getElementById('frame2-overlay');
-            const frame2MaskPath = document.getElementById('frame2-mask-path');
             const scene = new THREE.Scene();
             const bgHex = 0x72a67a;
             scene.background = new THREE.Color(bgHex);
@@ -792,7 +767,6 @@
                 scene.add(leg);
             });
 
-            // Net Assembly using locked W_AT_NET
             const netMat = new THREE.MeshStandardMaterial({
                 map: makeNetTexture(),
                 transparent: true,
@@ -834,7 +808,6 @@
                 roughness: 0.85,
             });
 
-            // Decal materials
             const donicBadgeMat = new THREE.MeshStandardMaterial({
                 map: makeDonicStressTexture(),
                 roughness: 0.25,
@@ -1012,33 +985,6 @@
                 renderer.render(scene, camera);
             }
 
-            // Updates SVG mask curvature: True circular arc whose top is barely above the top of screen
-            function updateFrame2Mask() {
-                const vW = container.clientWidth || window.innerWidth;
-                const vH = container.clientHeight || window.innerHeight;
-
-                // Circle whose bottom touches screen bottom (vH) and whose top is barely bigger than screen top (-0.04 * vH)
-                const diam = 1.04 * vH;
-                const R = diam / 2;
-                const Yc = vH - R;
-
-                // Intersection with screen sides X = 0 and X = vW
-                const halfW = vW / 2;
-                const dySq = R * R - halfW * halfW;
-                const dy = Math.sqrt(Math.max(0, dySq));
-                const yEdge = Math.round(Yc + dy);
-
-                // Exact circular arc (A rx ry ...) passing through (vW/2, vH) and touching side edges at yEdge
-                const pathD = `M 0,0 L ${vW},0 L ${vW},${yEdge} A ${R} ${R} 0 0 1 0,${yEdge} Z`;
-                if (frame2MaskPath) {
-                    frame2MaskPath.setAttribute('d', pathD);
-                }
-                if (frame2Overlay) {
-                    frame2Overlay.style.width = vW + 'px';
-                    frame2Overlay.style.height = vH + 'px';
-                }
-            }
-
             function autoSize() {
                 const vW = window.innerWidth;
                 const vH = window.innerHeight;
@@ -1067,11 +1013,6 @@
                     camera.aspect = vW / vH;
                     camera.updateProjectionMatrix();
                     renderer.setSize(vW, vH);
-
-                    container.style.width = vW + 'px';
-                    container.style.height = vH + 'px';
-                    container.style.left = '50%';
-                    container.style.transform = 'translateX(-50%)';
                 } else {
                     camera.position.set(0, TABLE_H + 0.42, -TABLE_LEN / 2 - 0.72);
                     camera.lookAt(0, TABLE_H - 0.01, 0.32);
@@ -1090,15 +1031,12 @@
 
                     container.style.width = finalWidth + 'px';
                     container.style.height = vH + 'px';
-                    container.style.left = '50%';
-                    container.style.transform = 'translateX(-50%)';
 
                     camera.aspect = finalWidth / vH;
                     camera.updateProjectionMatrix();
                     renderer.setSize(finalWidth, vH);
                 }
 
-                updateFrame2Mask();
                 render();
             }
 
@@ -1109,53 +1047,32 @@
             });
 
             // =========================================================================
-            // FRAME CONTROLLER: FRAME 0 (100%), FRAME 1 (95%), FRAME 2 (90% + CIRCLE)
+            // FRAME 1 CONTROLLER (Exact replica, shrunk 5%, raised, zero background)
             // =========================================================================
             const card = document.getElementById('portal-card');
             const scrubHint = document.getElementById('scrub-hint');
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
 
-            let activeFrame = 0;
+            let activeFrame = 0; // 0 = original, 1 = Frame 1
 
             function applyFrame(frameNum) {
-                activeFrame = Math.max(0, Math.min(2, frameNum));
-
-                const isNeon = document.documentElement.classList.contains('neon');
-                if (frame2MaskPath) {
-                    frame2MaskPath.setAttribute('fill', isNeon ? '#4e2a05' : '#fce5cd');
-                }
+                activeFrame = frameNum;
 
                 if (activeFrame === 0) {
-                    // Frame 0: Original 100% portal page
-                    card.classList.remove('frame-1', 'frame-2');
+                    // Original un-shrunk portal page
+                    card.classList.remove('frame-1');
                     container.style.display = 'none';
-                    if (frame2Overlay) frame2Overlay.style.display = 'none';
                     if (scrubHint) {
                         scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
                     }
                 } else if (activeFrame === 1) {
-                    // FRAME 1: Shrunk 5% (0.95), raised 28px, zero shadow, zero background revealed
+                    // FRAME 1: Exact replica of portal page, shrunk by 5% and raised a bit
+                    // Shows NOTHING but portal content: container stays hidden so ZERO background is revealed
                     container.style.display = 'none';
-                    if (frame2Overlay) frame2Overlay.style.display = 'none';
-                    card.classList.remove('frame-2');
                     card.classList.add('frame-1');
                     if (scrubHint) {
                         scrubHint.style.display = 'block';
-                        scrubHint.textContent = "Frame: 1 (Shrunk 5%, raised 28px) | Scroll: Up for Frame 0, Down for Frame 2";
-                    }
-                } else if (activeFrame === 2) {
-                    // FRAME 2: Shrunk another 5% (0.90), raised 56px, zero shadow
-                    // Background revealed in bottom corners only via true circular arc
-                    container.style.display = 'block';
-                    autoSize();
-                    updateFrame2Mask();
-                    if (frame2Overlay) frame2Overlay.style.display = 'block';
-
-                    card.classList.remove('frame-1');
-                    card.classList.add('frame-2');
-                    if (scrubHint) {
-                        scrubHint.style.display = 'block';
-                        scrubHint.textContent = "Frame: 2 (Shrunk 10%, raised 56px, ball arc) | Scroll: Up for Frame 1";
+                        scrubHint.textContent = "Frame: 1 (Shrunk 5%, raised) | Scroll: Up for Frame 0, Down for Frame 1";
                     }
                 }
             }
@@ -1167,25 +1084,25 @@
                 });
             }
 
-            // Scroll wheel steps cleanly between Frame 0, Frame 1, and Frame 2
+            // Scroll wheel steps between Original (Frame 0) and Frame 1 for direct inspection
             window.addEventListener('wheel', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
                     if (e.deltaY > 0) {
-                        applyFrame(activeFrame + 1);
+                        applyFrame(1); // Frame 1
                     } else {
-                        applyFrame(activeFrame - 1);
+                        applyFrame(0); // Frame 0 (Original)
                     }
                 }
             }, { passive: false });
 
-            // Keyboard navigation (Arrow keys step through Frame 0, 1, 2)
+            // Keyboard navigation (Arrow keys step between Frame 0 and Frame 1)
             window.addEventListener('keydown', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
-                        applyFrame(activeFrame + 1);
+                        applyFrame(1);
                     } else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') {
-                        applyFrame(activeFrame - 1);
+                        applyFrame(0);
                     }
                 }
             });
