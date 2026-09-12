@@ -1,321 +1,1172 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
-  <script>var p=new URLSearchParams(location.search);if(p.has('neon')||(!p.has('normal')&&new Date().getDate()%2)){document.documentElement.classList.add('neon');document.documentElement.setAttribute('data-darkreader-scheme','dark')}</script>
-  <style>
-    
-    /* Core Layout Styles */
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #fce5cd; text-align: center; padding: 8px 24px; margin: 0; touch-action: none; }
-    
-/* PTR (Pull to Refresh) Styles */
-#ptr { position: fixed; top: 0; left: 50%; width: 64px; height: 64px; margin-left: -32px; margin-top: -68px; z-index: 9999; pointer-events: none; }
-#ptr img,
-#ptr svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 64px;
-  height: 64px;
-}
-#ptr img { display: none; }
-#ptr .ring { transform-origin: 32px 32px; transform-box: fill-box; transform-origin: center; }
-#ptr .tail { transform: none !important; }
-#ptr.spin .ring { animation: ptrSpin 0.7s linear infinite; }
-@keyframes ptrSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-    
-    /* Core Layout Styles */
-    .card { background: #fce5cd; max-width: 400px; margin: 0 auto; padding: 6px 20px 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
-    h2 { color: #000; margin-bottom: 42px; font-size: 30px; }
-    p { color: #e07474; font-size: 16px; margin-bottom: 30px; }
-    /* Glass Button Base - glossy gel + perspective angle */
-    .btn {
-      position: relative; display: block; text-decoration: none;
-      padding: 14px; margin: 2px 0; border-radius: 12px;
-      font-weight: bold; font-size: 20px; color: #000;
-      transform: perspective(500px) rotateY(-12deg);
-      box-shadow: 2px 0 0 4px rgba(0,0,0,.2), 0 6px 0 var(--dark), 0 10px 16px rgba(0,0,0,.35);
-      overflow: hidden; border: none;
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-    .btn::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
-      background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.15) 100%);
-      border-radius: 8px 8px 50% 50%; pointer-events: none;
-    }
-    .btn::before {
-      content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(to right, transparent, rgba(255,255,255,.3), transparent);
-      transition: 0.5s; z-index: 1; pointer-events: none;
-    }
-    .btn:hover::before { left: 100%; }
-    .btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 2px 0 var(--dark), 0 4px 10px rgba(0,0,0,.25); }
-    .btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 0 0 var(--dark), 0 2px 6px rgba(0,0,0,.2); }
-    
-    /* Glass Colors */
-    .preview { background: linear-gradient(180deg, #6abf6e 0%, #3a9e3e 40%, #288028 100%); --dark: #1c6a1c; }
-    .edit { background: linear-gradient(180deg, #e87070 0%, #c84040 40%, #a02020 100%); --dark: #801818; margin-top: 20px; margin-bottom: 2px; }
-    .hub { background: linear-gradient(180deg, #3ba8d6 0%, #1a7daa 40%, #0e5f80 100%); --dark: #0a4a60; margin-top: 100px; }
-    .copy-btn {
-      position: relative; display: block; background: linear-gradient(180deg, #a048a0 0%, #883088 40%, #682068 100%);
-      color: #000; font-size: 13px; font-weight: bold; padding: 16px 14px; margin: 20px 0 40px;
-      border: none; border-radius: 8px; cursor: pointer; width: 100%; box-sizing: border-box;
-      transform: perspective(500px) rotateY(-12deg);
-      box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #501850, 0 6px 10px rgba(0,0,0,.25);
-      overflow: hidden; transition: transform 0.4s ease, box-shadow 0.4s ease;
-    }
-    .copy-btn::after {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
-      background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.15) 100%);
-      border-radius: 6px 6px 50% 50%; pointer-events: none;
-    }
-    .copy-btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 1px 0 #501850, 0 3px 8px rgba(0,0,0,.2); }
-    .copy-btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 0 0 #501850, 0 2px 4px rgba(0,0,0,.15); }
-    .copy-btn.copied { background: linear-gradient(180deg, #a8c7a8 0%, #88b088 40%, #709870 100%); --dark: #5a805a; }
-    
-    .subtext { display: block; font-size: 12px; font-weight: normal; opacity: 0.8; margin-top: 4px; }
-    
-    /* Neon overrides — odd days */
-    html.neon .preview { background: linear-gradient(180deg, #00ff00 0%, #00cc00 40%, #009900 100%); --dark: #006600; }
-    html.neon .edit { background: linear-gradient(180deg, #ff0000 0%, #cc0000 40%, #990000 100%); --dark: #660000; }
-    html.neon .hub { background: linear-gradient(180deg, #0bcade 0%, #09a3b5 40%, #077c9c 100%); --dark: #055f7d; }
-    html.neon .copy-btn { background: linear-gradient(180deg, #bf00ff 0%, #9900dd 40%, #7700bb 100%); box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #550099, 0 6px 10px rgba(0,0,0,.25); }
-    html.neon .copy-btn:hover { box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 1px 0 #550099, 0 3px 8px rgba(0,0,0,.2); }
-    html.neon .copy-btn:active { box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 0 0 #550099, 0 2px 4px rgba(0,0,0,.15); }
-    html.neon .btn::after, html.neon .copy-btn::after {
-      background: linear-gradient(180deg, rgba(255,255,255,.8) 0%, rgba(255,255,255,.15) 100%) !important;
-    }
-    html.neon .preview::after {
-      background: linear-gradient(180deg, rgba(255,255,255,.9) 0%, rgba(255,255,255,.2) 100%) !important;
-    }
-    html.neon body { background: #4e2a05; }
-    html.neon .card { background: #4e2a05; }
-    html.neon h2 { color: #fff; }
-    html.neon p { color: #ffb3b3; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Mode Portal + Table Serve Animation</title>
+
+    <meta name="color-scheme" content="dark">
+    <script>
+        var p = new URLSearchParams(location.search);
+        if (p.has('neon') || (!p.has('normal') && new Date().getDate() % 2)) {
+            document.documentElement.classList.add('neon');
+            document.documentElement.setAttribute('data-darkreader-scheme', 'dark');
+        }
+    </script>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: transparent; /* Handled by ball-layer and 3D canvas */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        button, input, select, textarea {
+            font-family: inherit;
+        }
+
+        /* Three.js 3D Background Container */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+            z-index: 1;
+        }
+
+        /* Ball Wrapper: Creates the spherical boundary mask */
+        #ball-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #fce5cd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            transition: clip-path 0.3s ease, background-color 0.3s ease;
+            clip-path: circle(100vmax at 50% 50%); /* Frame 0: Fully covers screen */
+        }
+
+        html.neon #ball-layer {
+            background-color: #4e2a05;
+        }
+
+        /* FRAME 1: 100vmax (No background revealed) */
+        #ball-layer.frame-1 {
+            clip-path: circle(100vmax at 50% 50%);
+        }
+
+        /* FRAME 2: 50dvh (Touches top and bottom exactly, corners reveal background) */
+        #ball-layer.frame-2 {
+            clip-path: circle(50dvh at 50% 50%);
+        }
+
+        /* FRAME 3: 50dvh - 12px (Reveals a tiny bit more at top and bottom) */
+        #ball-layer.frame-3 {
+            clip-path: circle(calc(50dvh - 12px) at 50% 50%);
+        }
+
+        /* Portal card UI */
+        .card {
+            color-scheme: light;
+            max-width: 440px;
+            width: 92%;
+            padding: 24px 28px 20px;
+            border-radius: 12px;
+            text-align: center;
+            position: relative;
+            z-index: 10;
+            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            transform: scale(1) translateY(0); /* Frame 0 */
+        }
+
+        /* FRAME 1: Shrunk 5%, raised 24px */
+        .card.frame-1 {
+            transform: scale(0.95) translateY(-24px);
+        }
+
+        /* FRAME 2: Shrunk another 5% (0.90), raised another 24px */
+        .card.frame-2 {
+            transform: scale(0.90) translateY(-48px);
+        }
+
+        /* FRAME 3: Shrunk another 5% (0.85), raised another 24px */
+        .card.frame-3 {
+            transform: scale(0.85) translateY(-72px);
+        }
+
+        h2 { 
+            color: #000000 !important; 
+            margin-bottom: 48px; 
+            font-size: 30px; 
+            font-weight: 800;
+            display: block;
+        }
+        p { 
+            color: #e07474; 
+            font-size: 16px; 
+            margin-bottom: 30px; 
+        }
+
+        .btn {
+            position: relative; 
+            display: block; 
+            width: 100%;
+            text-decoration: none;
+            padding: 14px 16px; 
+            margin: 4px 0; 
+            border-radius: 12px;
+            font-weight: bold; 
+            font-size: 20px; 
+            color: #000;
+            transform: perspective(500px) rotateY(-12deg);
+            box-shadow: 2px 0 0 4px rgba(0,0,0,.2), 0 6px 0 var(--dark), 0 10px 16px rgba(0,0,0,.35);
+            overflow: hidden; 
+            border: none;
+            cursor: pointer;
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .btn::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.15) 100%);
+            border-radius: 8px 8px 50% 50%; pointer-events: none;
+        }
+        .btn::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(to right, transparent, rgba(255,255,255,.3), transparent);
+            transition: 0.5s; z-index: 1; pointer-events: none;
+        }
+        .btn:hover::before { left: 100%; }
+        .btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 2px 0 var(--dark), 0 4px 10px rgba(0,0,0,.25); }
+        .btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 4px rgba(0,0,0,.1), 0 0 0 var(--dark), 0 2px 6px rgba(0,0,0,.2); }
+
+        .preview { background: linear-gradient(180deg, #6abf6e 0%, #3a9e3e 40%, #288028 100%); --dark: #1c6a1c; }
+        .edit { background: linear-gradient(180deg, #e87070 0%, #c84040 40%, #a02020 100%); --dark: #801818; margin-top: 18px; margin-bottom: 4px; }
+        .hub { background: linear-gradient(180deg, #3ba8d6 0%, #1a7daa 40%, #0e5f80 100%); --dark: #0a4a60; margin-top: 80px; }
+
+        .copy-btn {
+            position: relative; 
+            display: block; 
+            background: linear-gradient(180deg, #a048a0 0%, #883088 40%, #682068 100%);
+            color: #000; 
+            font-size: 14px; 
+            font-weight: bold; 
+            padding: 14px 16px; 
+            margin: 16px 0 32px;
+            border: none; 
+            border-radius: 10px; 
+            width: 100%; 
+            cursor: pointer;
+            transform: perspective(500px) rotateY(-12deg);
+            box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #501850, 0 6px 10px rgba(0,0,0,.25);
+            overflow: hidden; 
+            transition: transform 0.4s ease, box-shadow 0.4s ease;
+        }
+        .copy-btn::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 45%;
+            background: linear-gradient(180deg, rgba(255,255,255,.7) 0%, rgba(255,255,255,.15) 100%);
+            border-radius: 6px 6px 50% 50%; pointer-events: none;
+        }
+        .copy-btn:hover { transform: perspective(500px) rotateY(0deg); box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 1px 0 #501850, 0 3px 8px rgba(0,0,0,.2); }
+        .copy-btn:active { transform: perspective(500px) rotateY(0deg) translateY(2px); box-shadow: 0 0 0 3px rgba(0,0,0,.08), 0 0 0 #501850, 0 2px 4px rgba(0,0,0,.15); }
+        .copy-btn.copied { background: linear-gradient(180deg, #a8c7a8 0%, #88b088 40%, #709870 100%); --dark: #5a805a; }
+
+        .subtext { display: block; font-size: 12px; font-weight: normal; opacity: 0.85; margin-top: 4px; }
+
+        html.neon .preview { background: linear-gradient(180deg, #00ff00 0%, #00cc00 40%, #009900 100%); --dark: #006600; }
+        html.neon .edit { background: linear-gradient(180deg, #ff0000 0%, #cc0000 40%, #990000 100%); --dark: #660000; }
+        html.neon .hub { background: linear-gradient(180deg, #0bcade 0%, #09a3b5 40%, #077c9c 100%); --dark: #055f7d; }
+        html.neon .copy-btn { background: linear-gradient(180deg, #bf00ff 0%, #9900dd 40%, #7700bb 100%); box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #550099, 0 6px 10px rgba(0,0,0,.25); }
+        html.neon h2 { color: #000 !important; }
+        html.neon p { color: #ffb3b3; }
+
+        /* Frame Scrubber HUD */
+        #scrub-hint {
+            position: fixed;
+            bottom: 18px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.90);
+            color: #f8fafc;
+            padding: 9px 22px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            z-index: 100;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+            backdrop-filter: blur(6px);
+        }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
-  <div class="card">
-<div id="ptr" style="position: relative; width: 64px; height: 64px; margin: 0 auto;">
-  <!-- PNG arrow (shown during pull) -->
-  <img id="ptrPNG"
-       src="arrow-with-fletchings.png"
-       width="64" height="64"
-       style="position: absolute; top: 0; left: 0; display: none;">
+    <div id="canvas-container"></div>
+    
+    <div id="ball-layer">
+        <div class="card" id="portal-card">
+            <h2>View Mode Portal</h2>
 
-  <!-- SVG spinner (shown after release) -->
-  <svg id="ptrSVG"
-       viewBox="0 0 64 64"
-       xmlns="http://www.w3.org/2000/svg"
-       style="position: absolute; top: 0; left: 0;">
-    <defs>
-      <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#4fc3f7"/>
-        <stop offset="100%" stop-color="#81d4fa"/>
-      </linearGradient>
-      <linearGradient id="lg16" href="#grad" x1="6.74" y1="7.02" x2="56.58" y2="7.02"
-        gradientTransform="matrix(-1.003,0,0,-0.997,63.53,63.67)" gradientUnits="userSpaceOnUse"/>
-      <linearGradient id="lg17" href="#grad" x1="27.86" y1="4.16" x2="40.35" y2="4.16"
-        gradientTransform="scale(1.041,0.961)" gradientUnits="userSpaceOnUse"/>
-    </defs>
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
+                Preview Mode <span class="subtext">(works on most devices)</span>
+            </a>
 
-    <circle cx="32" cy="32" r="30" fill="#1a1a1a"/>
-    <rect x="16.16" y="17.87" width="32" height="5" rx="1" fill="#5a3a1a"/>
-    <line x1="23" y1="29" x2="28" y2="31" stroke="#e05050" stroke-width="2" stroke-linecap="round"/>
-    <line x1="36" y1="31" x2="41" y2="29" stroke="#e05050" stroke-width="2" stroke-linecap="round"/>
-    <path d="m39,42.45q-7,-5-14,0" fill="none" stroke="#e05050" stroke-width="2" stroke-linecap="round"/>
+            <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
+                Copy Preview Mode URL
+            </button>
 
-    <polygon points="28,10 38,-4 56,-14 48,0 36,14 30,22 22,22"
-      fill="#2d8a2d" stroke="#1a6a1a" stroke-width="0.5" transform="translate(14.5,-2.1)"/>
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
+                Edit Mode <span class="subtext">(annoying banner at top)</span>
+            </a>
 
-    <line x1="40.76" y1="18.18" x2="60.64" y2="-6.78" stroke="#1a6a1a" stroke-width="0.8"/>
+            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
+                Copy Edit Mode URL
+            </button>
 
-    <g class="ring">
-      <path d="m14.53,45.67a22,22,0,1,1,21,8"
-        fill="none" stroke="url(#lg16)" stroke-width="6" stroke-linecap="round"/>
-    </g>
+            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+                Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
+            </a>
+        </div>
+    </div>
 
-    <rect class="tail" width="3.04" height="8.56" x="30.52" y="52.72"
-      fill="#7ed3fa" transform="matrix(.992,-.128,-.352,.936,0,0)"/>
+    <div id="scrub-hint">Frame: 0 | Scroll Wheel: Step Frames</div>
 
-    <rect class="tail" width="3.04" height="8.56" x="-44.86" y="-54.9"
-      fill="#7dd3fa" transform="matrix(.685,-.729,-.965,-.262,0,0)"/>
+    <script>
+        const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
+        const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
 
-    <polygon class="head" points="29,16 29,4 42,10"
-      fill="url(#lg17)" transform="rotate(-175.1,33.02,31.8)"/>
-
-    <rect class="tail" width="3.04" height="8.56" x="32.22" y="46.67"
-      fill="#7ed3fa" transform="matrix(1,.021,-.488,.873,0,0)"/>
-
-    <rect class="tail" width="3.04" height="8.56" x="40.18" y="39.52"
-      fill="#7ed3fa" transform="matrix(1,-.128,-.352,.936,0,0)"/>
-  </svg>
-</div>
-
-  <script>
-    const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
-    const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
-    function copyUrl(btn, url) {
-      navigator.clipboard.writeText(url).then(() => {
-        btn.textContent = "Copied!";
-        btn.classList.add("copied");
-        setTimeout(() => {
-          btn.textContent = btn.getAttribute("data-label");
-          btn.classList.remove("copied");
-        }, 2000);
-      });
-    }
-    // PTR (Pull to Refresh) functionality
-    (function() {
-      var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
-      var friction = 0.999;
-      var bounceDecay = 1.0;
-      var ptr = document.getElementById('ptr');
-      var ptrRing = ptr.querySelector('.ring');
-      var audioCtx = null;
-      function ensureAudio() {
-        if (!audioCtx) {
-          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        function copyUrl(btn, url) {
+            navigator.clipboard.writeText(url).then(() => {
+                btn.textContent = "Copied!";
+                btn.classList.add("copied");
+                setTimeout(() => {
+                    btn.textContent = btn.getAttribute("data-label");
+                    btn.classList.remove("copied");
+                }, 2000);
+            });
         }
-        if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
-      }
-      function popSound() {
-        ensureAudio();
-        if (!audioCtx) return;
-        var t = audioCtx.currentTime;
-        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        o.frequency.setValueAtTime(800, t);
-        o.frequency.exponentialRampToValueAtTime(200, t + 0.05);
-        g.gain.setValueAtTime(0.5, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
-        o.start(); o.stop(t + 0.08);
-      }
-      function bottomBounce() {
-        ensureAudio();
-        if (!audioCtx) return;
-        var t = audioCtx.currentTime;
-        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        o.type = 'sine';
-        o.frequency.setValueAtTime(440, t);
-        var lfo = audioCtx.createOscillator(), lg = audioCtx.createGain();
-        lfo.connect(lg); lg.connect(o.frequency);
-        lfo.frequency.value = 6; lg.gain.value = 200;
-        g.gain.setValueAtTime(0.3, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
-        o.start(); o.stop(t + 0.8);
-        lfo.start(); lfo.stop(t + 0.8);
-      }
-      function topBounce() {
-        ensureAudio();
-        if (!audioCtx) return;
-        var t = audioCtx.currentTime;
-        var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-        o.connect(g); g.connect(audioCtx.destination);
-        o.type = 'sine';
-        o.frequency.setValueAtTime(80, t);
-        o.frequency.exponentialRampToValueAtTime(200, t + 0.05);
-        o.frequency.exponentialRampToValueAtTime(40, t + 0.5);
-        var lfo = audioCtx.createOscillator(), lg = audioCtx.createGain();
-        lfo.connect(lg); lg.connect(o.frequency);
-        lfo.frequency.value = 10; lg.gain.value = 40;
-        g.gain.setValueAtTime(0.5, t);
-        g.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-        o.start(); o.stop(t + 0.6);
-        lfo.start(); lfo.stop(t + 0.6);
-      }
-      document.addEventListener('click', function(e) {
-        if (e.target.closest('.btn, .tinyurl')) popSound();
-      });
-      document.addEventListener('touchstart', function(e) {
-        if (e.touches.length !== 1) return;
-        drag.active = true;
-        drag.startY = e.touches[0].clientY;
-        drag.startScroll = window.scrollY;
-        drag.history = [{ y: e.touches[0].clientY, t: Date.now() }];
-        drag.animating = false;
-        drag.ptrActive = false;
-        ptr.className = '';
-      }, { passive: true });
-      document.addEventListener('touchmove', function(e) {
-        if (!drag.active || e.touches.length !== 1) return;
-        var dy = drag.startY - e.touches[0].clientY;
-        if (drag.startScroll <= 0 && dy < 0) {
-          drag.ptrActive = true;
-          var dist = Math.min(-dy, 120);
-          var pct = Math.min(dist / 80, 1);
-          ptr.style.marginTop = (dist - 60) + 'px';
-          ptr.style.opacity = pct;
-          var rot = Math.min(dist * 3, 360);
-          var ptrRing = ptr.querySelector('.ring');
-          ptrRing.style.transformOrigin = '32px 32px';
-          ptrRing.style.transform = 'rotate(' + rot + 'deg)';
-          ptr.className = '';
-          return;
-        }
-        drag.ptrActive = false;
-        ptr.className = '';
-        ptr.style.marginTop = '';
-        ptr.style.opacity = '';
-        ptrRing.style.transform = '';
-        window.scrollTo(0, drag.startScroll + dy);
-        var now = Date.now();
-        drag.history.push({ y: e.touches[0].clientY, t: now });
-        if (drag.history.length > 8) drag.history.shift();
-      }, { passive: true });
-      document.addEventListener('touchend', function() {
-        if (!drag.active) return;
-        drag.active = false;
-        if (drag.ptrActive) {
-          if (parseFloat(ptr.style.opacity) >= 1) {
-            ptr.className = 'spin';
-            var ptrRing = ptr.querySelector('.ring');
-            ptrRing.style.transform = '';
-            popSound();
-            setTimeout(function() { location.reload(); }, 750);
-          } else {
-            ptr.style.marginTop = '';
-            ptr.style.opacity = '';
-            ptr.className = '';
-            var ptrRing = ptr.querySelector('.ring');
-            ptrRing.style.transform = '';
-          }
-          return;
-        }
-        var h = drag.history;
-        if (h.length < 2) return;
-        var last = h[h.length - 1], first = h[0];
-        var dt = last.t - first.t;
-        if (dt <= 0) return;
-        var velocity = (first.y - last.y) / dt;
-        if (Math.abs(velocity) < 0.3) return;
-        startScrollMomentum(velocity);
-      }, { passive: true });
-      function startScrollMomentum(v) {
-        drag.animating = true;
-        var lastTime = Date.now();
-        var vy = v;
-        function step() {
-          if (!drag.animating) return;
-          var now = Date.now();
-          var elapsed = now - lastTime;
-          lastTime = now;
-          vy *= Math.pow(friction, elapsed / 16);
-          if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
-          var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-          var scroll = window.scrollY;
-          var next = scroll + vy * elapsed;
-          if (next < 0) { next = 0; vy = -vy * bounceDecay; }
-          else if (next > document.documentElement.scrollHeight - window.innerHeight) { next = maxScroll; vy = -vy * bounceDecay; }
-          window.scrollTo(0, next);
-          requestAnimationFrame(step);
-        }
-        requestAnimationFrame(step);
-      }
-    })();
-  </script>
+
+        document.getElementById('copy-preview-btn').onclick = function () {
+            copyUrl(this, previewUrl);
+        };
+        document.getElementById('copy-edit-btn').onclick = function () {
+            copyUrl(this, editUrl);
+        };
+    </script>
+
+    <script>
+        (function () {
+            // Three.js table scene and assets
+            const TABLE_LEN = 2.74;
+            const W_NEAR = 1.82;
+            const W_FAR = 1.67;
+            const NET_Z = -0.38;
+            const TABLE_H = 0.76;
+            const TOP_THICK = 0.03;
+            const NET_H = 0.1525;
+            const NET_OVERHANG = 0.16;
+
+            const W_AT_NET = 1.7647;
+            const NET_LEN = W_AT_NET + NET_OVERHANG * 2;
+
+            function getW(z) {
+                const t = (z + TABLE_LEN / 2) / TABLE_LEN;
+                return W_NEAR + (W_FAR - W_NEAR) * Math.max(0, Math.min(1, t));
+            }
+
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            const bgHex = 0x72a67a;
+            scene.background = new THREE.Color(bgHex);
+            scene.fog = new THREE.FogExp2(bgHex, 0.04);
+
+            const camera = new THREE.PerspectiveCamera(64, 1, 0.05, 50);
+
+            const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.06;
+            container.appendChild(renderer.domElement);
+
+            const ambient = new THREE.AmbientLight(0xffffff, 0.95);
+            scene.add(ambient);
+
+            const mainLight = new THREE.DirectionalLight(0xffffff, 1.85);
+            mainLight.position.set(0.3, TABLE_H + 3.8, -0.6);
+            mainLight.castShadow = true;
+            mainLight.shadow.mapSize.width = 2048;
+            mainLight.shadow.mapSize.height = 2048;
+            mainLight.shadow.bias = 0.0001;
+            scene.add(mainLight);
+
+            const fillLight = new THREE.DirectionalLight(0xecfdf5, 0.50);
+            fillLight.position.set(0.6, TABLE_H + 2.5, 2.0);
+            scene.add(fillLight);
+
+            const blueBounce = new THREE.DirectionalLight(0x243750, 0.08);
+            blueBounce.position.set(0, 0.2, 0);
+            scene.add(blueBounce);
+
+            function makeTableTexture() {
+                const c = document.createElement('canvas');
+                c.width = 2048;
+                c.height = 2048;
+                const ctx = c.getContext('2d');
+                
+                const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+                grad.addColorStop(0.00, '#040d24');
+                grad.addColorStop(0.25, '#06132f');
+                grad.addColorStop(0.50, '#091e48');
+                grad.addColorStop(0.75, '#06132d');
+                grad.addColorStop(1.00, '#030a1c');
+
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                const imgData = ctx.getImageData(0, 0, c.width, c.height);
+                const data = imgData.data;
+                for (let i = 0; i < data.length; i += 4) {
+                    const noise = (Math.random() - 0.5) * 3.5;
+                    data[i]     = Math.min(255, Math.max(0, data[i]     + noise));
+                    data[i + 1] = Math.min(255, Math.max(0, data[i + 1] + noise));
+                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2] + noise));
+                }
+                ctx.putImageData(imgData, 0, 0);
+
+                const seamT = (NET_Z + TABLE_LEN / 2) / TABLE_LEN;
+                const seamY = Math.round(c.height * (1 - seamT));
+                ctx.fillStyle = 'rgba(1, 4, 10, 0.75)';
+                ctx.fillRect(0, seamY - 1, c.width, 2);
+
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                tex.anisotropy = 8;
+                return tex;
+            }
+
+            function makeNetTexture() {
+                const c = document.createElement('canvas');
+                c.width = 512;
+                c.height = 256;
+                const ctx = c.getContext('2d');
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                const tapeH = 15;
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, c.width, tapeH);
+                ctx.fillRect(0, c.height - 4, c.width, 4);
+
+                const gridSize = 9;
+                ctx.strokeStyle = '#1a1d24';
+                ctx.lineWidth = 2.4;
+                for (let x = 0; x <= c.width; x += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(x, tapeH);
+                    ctx.lineTo(x, c.height - 4);
+                    ctx.stroke();
+                }
+                for (let y = tapeH + gridSize; y <= c.height - 4; y += gridSize) {
+                    ctx.beginPath();
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(c.width, y);
+                    ctx.stroke();
+                }
+
+                const tex = new THREE.CanvasTexture(c);
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.ClampToEdgeWrapping;
+                tex.repeat.set(14, 1);
+                return tex;
+            }
+
+            const ANGLE_DEG = 40;
+            const TAN_40 = Math.tan(THREE.MathUtils.degToRad(ANGLE_DEG));
+
+            function makeDonicStressTexture() {
+                const c = document.createElement('canvas');
+                c.width = 1024;
+                c.height = 368;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
+
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                const xOuter = 1016;
+                const xInner = 8;
+                const yTop = 8;
+                const yDonic = 115;
+                const yBottom = 360;
+                const cornerR = 56;
+
+                const canvas_dy = yBottom - yDonic;
+                const canvas_dx = 269;
+                const xSlopeEnd = xOuter - canvas_dx;
+
+                ctx.beginPath();
+                ctx.moveTo(xInner, yBottom);
+                ctx.lineTo(xInner, yTop + cornerR);
+                ctx.quadraticCurveTo(xInner, yTop, xInner + cornerR, yTop);
+                ctx.lineTo(xOuter, yTop);
+                ctx.lineTo(xOuter, yDonic);
+                ctx.lineTo(xSlopeEnd, yBottom);
+                ctx.lineTo(xInner, yBottom);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+                grad.addColorStop(0, '#f1f5f9');
+                grad.addColorStop(0.35, '#dbe2ec');
+                grad.addColorStop(0.65, '#bdc7d5');
+                grad.addColorStop(1, '#a1acbc');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.save();
+                ctx.clip();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                for (let y = 3; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+                for (let y = 5; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.restore();
+
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(620, yDonic);
+                ctx.transform(1, 0, -0.22, 1, 0, 0);
+
+                ctx.font = '900 152px "Arial Black", Impact, -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#050507';
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#050507';
+                ctx.strokeText('DONIC', 0, 0);
+                ctx.fillText('DONIC', 0, 0);
+
+                ctx.font = 'bold 28px sans-serif';
+                ctx.fillText('®', 300, -46);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(594, 220);
+                ctx.font = '900 76px "Arial Black", Impact, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#dc2626';
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#dc2626';
+                ctx.strokeText('•S•T•R•E•S•S•', 0, 0);
+                ctx.fillText('•S•T•R•E•S•S•', 0, 0);
+                ctx.restore();
+
+                ctx.save();
+                ctx.fillStyle = '#dc2626';
+                const stripeW = 75;
+                const stripeGap = 75;
+                const stripeH = 82;
+                const startY = 295;
+                const slantX = -(stripeH / TAN_40);
+
+                const startX = 410;
+                ctx.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    const sx = startX + i * (stripeW + stripeGap);
+                    ctx.moveTo(sx, startY);
+                    ctx.lineTo(sx + stripeW, startY);
+                    ctx.lineTo(sx + stripeW + slantX, startY + stripeH);
+                    ctx.lineTo(sx + slantX, startY + stripeH);
+                    ctx.closePath();
+                }
+                ctx.fill();
+                ctx.restore();
+
+                return tex;
+            }
+
+            function makeDonicStressTextureRight() {
+                const c = document.createElement('canvas');
+                c.width = 1024;
+                c.height = 368;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
+
+                ctx.clearRect(0, 0, c.width, c.height);
+
+                const xOuter = 16;
+                const xInner = 1008;
+                const yTop = 16;
+                const yDonic = 115;
+                const yBottom = 360;
+                const cornerR = 56;
+
+                const canvas_dy = yBottom - yDonic;
+                const canvas_dx = 269;
+                const xSlopeEnd = xOuter + canvas_dx;
+
+                ctx.beginPath();
+                ctx.moveTo(xOuter, yDonic);
+                ctx.lineTo(xSlopeEnd, yBottom);
+                ctx.lineTo(xInner, yBottom);
+                ctx.lineTo(xInner, yTop + cornerR);
+                ctx.quadraticCurveTo(xInner, yTop, xInner - cornerR, yTop);
+                ctx.lineTo(xOuter, yTop);
+                ctx.closePath();
+
+                const grad = ctx.createLinearGradient(0, 0, 0, c.height);
+                grad.addColorStop(0, '#f1f5f9');
+                grad.addColorStop(0.35, '#dbe2ec');
+                grad.addColorStop(0.65, '#bdc7d5');
+                grad.addColorStop(1, '#a1acbc');
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                ctx.save();
+                ctx.clip();
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.35)';
+                for (let y = 3; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+                for (let y = 5; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1.2);
+                ctx.restore();
+
+                ctx.strokeStyle = '#475569';
+                ctx.lineWidth = 5;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.translate(390, yDonic);
+                ctx.transform(1, 0, -0.45, 1, 0, 0);
+
+                ctx.font = 'italic 900 152px "Arial Black", Impact, -apple-system, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#050507';
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#050507';
+                ctx.strokeText('DONIC', 0, 0);
+                ctx.fillText('DONIC', 0, 0);
+
+                ctx.font = 'bold 28px sans-serif';
+                ctx.fillText('®', 300, -46);
+                ctx.restore();
+
+                ctx.save();
+                ctx.translate(430, 220);
+                ctx.font = '900 76px "Arial Black", Impact, Arial, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillStyle = '#dc2626';
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = '#dc2626';
+                ctx.strokeText('•S•T•R•E•S•S•', 0, 0);
+                ctx.fillText('•S•T•R•E•S•S•', 0, 0);
+                ctx.restore();
+
+                ctx.save();
+                ctx.fillStyle = '#dc2626';
+                const stripeW = 75;
+                const stripeGap = 75;
+                const stripeH = 82;
+                const startY = 295;
+                const slantX = (stripeH / TAN_40);
+
+                const startX = 350;
+                ctx.beginPath();
+                for (let i = 0; i < 4; i++) {
+                    const sx = startX + i * (stripeW + stripeGap);
+                    ctx.moveTo(sx, startY);
+                    ctx.lineTo(sx + stripeW, startY);
+                    ctx.lineTo(sx + stripeW + slantX, startY + stripeH);
+                    ctx.lineTo(sx + slantX, startY + stripeH);
+                    ctx.closePath();
+                }
+                ctx.fill();
+                ctx.restore();
+
+                return tex;
+            }
+
+            function makeWoodFloorTexture() {
+                const c = document.createElement('canvas');
+                c.width = 2048;
+                c.height = 2048;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                tex.wrapS = THREE.RepeatWrapping;
+                tex.wrapT = THREE.RepeatWrapping;
+                tex.repeat.set(6, 4);
+                tex.anisotropy = 8;
+                if (!ctx) return tex;
+
+                const woodColors = [
+                    '#7a5228', '#6b451f', '#5e3c1a', '#724b23',
+                    '#66411d', '#583616', '#754d25', '#633e1c',
+                    '#533214', '#6c4620', '#503013', '#734c24',
+                    '#5c3a19', '#67421e', '#523114',
+                ];
+
+                const plankWidth = 32;
+                const numColumns = Math.ceil(c.width / plankWidth);
+
+                for (let col = 0; col < numColumns; col++) {
+                    const colX = col * plankWidth;
+                    let currentY = 0;
+                    let segIndex = 0;
+                    while (currentY < c.height) {
+                        const segH = Math.min(c.height - currentY, 200 + ((col * 37 + segIndex * 89) % 280));
+                        const colorIdx = (col * 7 + segIndex * 13 + ((col * 11) % 5)) % woodColors.length;
+                        ctx.fillStyle = woodColors[colorIdx];
+                        ctx.fillRect(colX, currentY, plankWidth, segH);
+
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+                        ctx.fillRect(colX + 6, currentY, 1.2, segH);
+                        ctx.fillRect(colX + 18, currentY, 1.2, segH);
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+                        ctx.fillRect(colX + 12, currentY, 1.2, segH);
+                        ctx.fillRect(colX + 24, currentY, 1.2, segH);
+                        ctx.fillStyle = 'rgba(25, 12, 4, 0.45)';
+                        ctx.fillRect(colX, currentY, plankWidth, 1.5);
+
+                        currentY += segH;
+                        segIndex++;
+                    }
+                    ctx.fillStyle = 'rgba(25, 12, 4, 0.38)';
+                    ctx.fillRect(colX + plankWidth - 1, 0, 1.2, c.height);
+                }
+
+                return tex;
+            }
+
+            function makePostTexture() {
+                const c = document.createElement('canvas');
+                c.width = 512;
+                c.height = 1024;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
+
+                ctx.fillStyle = '#f1f5f9';
+                ctx.fillRect(0, 0, c.width, c.height);
+
+                const frontGrad = ctx.createLinearGradient(128, 0, 384, 0);
+                frontGrad.addColorStop(0.00, '#788494');
+                frontGrad.addColorStop(0.12, '#9ba7b6');
+                frontGrad.addColorStop(0.28, '#d4dce6');
+                frontGrad.addColorStop(0.44, '#ffffff');
+                frontGrad.addColorStop(0.56, '#f8fafc');
+                frontGrad.addColorStop(0.72, '#d4dce6');
+                frontGrad.addColorStop(0.88, '#9ba7b6');
+                frontGrad.addColorStop(1.00, '#788494');
+                ctx.fillStyle = frontGrad;
+                ctx.fillRect(128, 0, 256, c.height);
+
+                const rearGrad1 = ctx.createLinearGradient(384, 0, 512, 0);
+                rearGrad1.addColorStop(0.0, '#788494');
+                rearGrad1.addColorStop(0.4, '#c0cad6');
+                rearGrad1.addColorStop(0.85, '#f8fafc');
+                rearGrad1.addColorStop(1.0, '#ffffff');
+                ctx.fillStyle = rearGrad1;
+                ctx.fillRect(384, 0, 128, c.height);
+
+                const rearGrad2 = ctx.createLinearGradient(0, 0, 128, 0);
+                rearGrad2.addColorStop(0.0, '#ffffff');
+                rearGrad2.addColorStop(0.15, '#f8fafc');
+                rearGrad2.addColorStop(0.6, '#c0cad6');
+                rearGrad2.addColorStop(1.0, '#788494');
+                ctx.fillStyle = rearGrad2;
+                ctx.fillRect(0, 0, 128, c.height);
+
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+                for (let y = 2; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.05)';
+                for (let y = 4; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1);
+
+                const topShadow = ctx.createLinearGradient(0, 0, 0, 32);
+                topShadow.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
+                topShadow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+                ctx.fillStyle = topShadow;
+                ctx.fillRect(0, 0, c.width, 32);
+
+                const botShadow = ctx.createLinearGradient(0, c.height - 48, 0, c.height);
+                botShadow.addColorStop(0, 'rgba(15, 23, 42, 0)');
+                botShadow.addColorStop(1, 'rgba(15, 23, 42, 0.40)');
+                ctx.fillStyle = botShadow;
+                ctx.fillRect(0, c.height - 48, c.width, 48);
+
+                return tex;
+            }
+
+            const tableGeo = new THREE.BoxGeometry(1, TOP_THICK, TABLE_LEN, 1, 1, 1);
+            const pos = tableGeo.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+                pos.setX(i, x * getW(z));
+            }
+            pos.needsUpdate = true;
+            tableGeo.computeVertexNormals();
+
+            const sideMat = new THREE.MeshStandardMaterial({ color: 0x040e22, roughness: 0.45, metalness: 0.05, dithering: true });
+            const edgeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3 });
+            const topMat = new THREE.MeshStandardMaterial({ map: makeTableTexture(), roughness: 0.42, metalness: 0.03, dithering: true });
+            const botMat = new THREE.MeshStandardMaterial({ color: 0x070b14, roughness: 0.8 });
+
+            const tableMaterials = [
+                sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
+            ];
+            const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
+            tableTop.position.set(0, TABLE_H - TOP_THICK / 2, 0);
+            tableTop.castShadow = true;
+            tableTop.receiveShadow = false;
+            scene.add(tableTop);
+
+            const lineMat = new THREE.MeshStandardMaterial({
+                color: 0xf8fafc,
+                roughness: 0.25,
+                polygonOffset: true,
+                polygonOffsetFactor: -2,
+                polygonOffsetUnits: -2,
+                side: THREE.DoubleSide
+            });
+
+            const LINE_W = 0.02;
+            const CENTER_W_NEAR = 0.009;
+            const CENTER_W_FAR = 0.003;
+            const zNear = -TABLE_LEN / 2;
+            const zFar = TABLE_LEN / 2;
+            const lineY = TABLE_H + 0.0004;
+
+            const linePositions = [];
+            function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
+                linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
+                linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
+            }
+
+            addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
+            addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
+            addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
+            addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
+            addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
+
+            const linesGeo = new THREE.BufferGeometry();
+            linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            linesGeo.computeVertexNormals();
+            const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+            scene.add(linesMesh);
+
+            const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
+
+            const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
+            const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
+            playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+            scene.add(playerApron);
+
+            const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
+            const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
+            oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+            scene.add(oppApron);
+
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
+            const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
+            const lz = TABLE_LEN / 2 - 0.28;
+            const lx_near = getW(-lz) / 2 - 0.14;
+            const lx_far = getW(lz) / 2 - 0.14;
+
+            [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+                const leg = new THREE.Mesh(legGeo, legMat);
+                leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
+                leg.castShadow = true;
+                scene.add(leg);
+            });
+
+            const netMat = new THREE.MeshStandardMaterial({
+                map: makeNetTexture(),
+                transparent: true,
+                alphaTest: 0.1,
+                side: THREE.DoubleSide,
+                roughness: 0.9,
+                depthWrite: false
+            });
+            const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
+            netMesh.position.set(0, TABLE_H + NET_H / 2, NET_Z);
+            netMesh.castShadow = true;
+            scene.add(netMesh);
+
+            const cordMesh = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.003, 0.003, NET_LEN, 12),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+            );
+            cordMesh.rotation.z = Math.PI / 2;
+            cordMesh.position.set(0, TABLE_H + NET_H, NET_Z);
+            scene.add(cordMesh);
+
+            const silverMat = new THREE.MeshStandardMaterial({
+                color: 0xf1f5f9,
+                metalness: 0.55,
+                roughness: 0.22,
+            });
+            const blackPolymerMat = new THREE.MeshStandardMaterial({
+                color: 0x18181b,
+                metalness: 0.12,
+                roughness: 0.55,
+            });
+            const steelMat = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                metalness: 0.92,
+                roughness: 0.18,
+            });
+            const clampPadMat = new THREE.MeshStandardMaterial({
+                color: 0x09090b,
+                roughness: 0.85,
+            });
+
+            const donicBadgeMat = new THREE.MeshStandardMaterial({
+                map: makeDonicStressTexture(),
+                roughness: 0.25,
+                metalness: 0.20,
+                transparent: true,
+                side: THREE.FrontSide,
+                polygonOffset: true,
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12,
+            });
+            const donicBadgeMatRight = new THREE.MeshStandardMaterial({
+                map: makeDonicStressTextureRight(),
+                roughness: 0.25,
+                metalness: 0.20,
+                transparent: true,
+                side: THREE.FrontSide,
+                polygonOffset: true,
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12,
+            });
+            const postMat = new THREE.MeshStandardMaterial({
+                map: makePostTexture(),
+                roughness: 0.22,
+                metalness: 0.45,
+            });
+
+            const postH = NET_H + 0.013;
+            const postCenterY = TABLE_H + (NET_H - 0.007) / 2;
+
+            const badgeW = 0.216;
+            const badgeH = 0.069;
+
+            const rightBadgeGeo = new THREE.BufferGeometry();
+            rightBadgeGeo.setAttribute(
+                'position',
+                new THREE.BufferAttribute(
+                    new Float32Array([
+                        -badgeW / 2, -badgeH / 2, 0,
+                        -badgeW / 2,  badgeH / 2, 0,
+                         badgeW / 2,  badgeH / 2, 0,
+                        -badgeW / 2, -badgeH / 2, 0,
+                         badgeW / 2,  badgeH / 2, 0,
+                         badgeW / 2, -badgeH / 2, 0,
+                    ]),
+                    3
+                )
+            );
+            rightBadgeGeo.setAttribute(
+                'uv',
+                new THREE.BufferAttribute(
+                    new Float32Array([
+                        1, 0,
+                        1, 1,
+                        0, 1,
+                        1, 0,
+                        0, 1,
+                        0, 0,
+                    ]),
+                    2
+                )
+            );
+            rightBadgeGeo.computeVertexNormals();
+
+            [-1, 1].forEach((sign) => {
+                const tableEdgeX = sign * (W_AT_NET / 2);
+                const px = sign * (W_AT_NET / 2 + NET_OVERHANG);
+
+                const yTop = TABLE_H + 0.015;
+                const yDonicMid = TABLE_H - 0.006;
+                const dySlope = 0.048;
+                const yBottom = yDonicMid - dySlope;
+                const xInner = tableEdgeX - sign * 0.048;
+                const xOuter = px + sign * 0.008;
+
+                const runX = dySlope / TAN_40;
+                const xSlopeEnd = xOuter - sign * runX;
+                const cornerR = 0.012;
+
+                const rubberPad = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.0025, 0.065), clampPadMat);
+                rubberPad.position.set(tableEdgeX - sign * 0.024, TABLE_H + 0.0012, NET_Z);
+                scene.add(rubberPad);
+
+                const armShape = new THREE.Shape();
+                if (sign === 1) {
+                    armShape.moveTo(xInner, yBottom);
+                    armShape.lineTo(xInner, yTop - cornerR);
+                    armShape.quadraticCurveTo(xInner, yTop, xInner + cornerR, yTop);
+                    armShape.lineTo(xOuter, yTop);
+                    armShape.lineTo(xOuter, yDonicMid);
+                    armShape.lineTo(xSlopeEnd, yBottom);
+                    armShape.closePath();
+                } else {
+                    armShape.moveTo(xInner, yBottom);
+                    armShape.lineTo(xInner, yTop - cornerR);
+                    armShape.quadraticCurveTo(xInner, yTop, xInner - cornerR, yTop);
+                    armShape.lineTo(xOuter, yTop);
+                    armShape.lineTo(xOuter, yDonicMid);
+                    armShape.lineTo(xSlopeEnd, yBottom);
+                    armShape.closePath();
+                }
+
+                const armExtrudeGeo = new THREE.ExtrudeGeometry(armShape, {
+                    steps: 1,
+                    depth: 0.034,
+                    bevelEnabled: true,
+                    bevelThickness: 0.002,
+                    bevelSize: 0.002,
+                    bevelSegments: 2,
+                });
+                armExtrudeGeo.translate(0, 0, NET_Z - 0.017);
+                const armMesh = new THREE.Mesh(armExtrudeGeo, silverMat);
+                armMesh.castShadow = true;
+                scene.add(armMesh);
+
+                const armCenterX = (xInner + xOuter) / 2;
+                const armCenterY = (yTop + yBottom) / 2;
+
+                const badgeMat = sign === 1 ? donicBadgeMatRight : donicBadgeMat;
+                const frontBadge = new THREE.Mesh(rightBadgeGeo, badgeMat);
+                frontBadge.position.set(armCenterX, armCenterY, NET_Z - 0.021);
+                frontBadge.rotation.x = -0.20;
+                frontBadge.renderOrder = 999;
+                scene.add(frontBadge);
+
+                const heightRod = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.024, 16), steelMat);
+                heightRod.position.set(px, TABLE_H - 0.024, NET_Z);
+                scene.add(heightRod);
+
+                const heightKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.018, 24), blackPolymerMat);
+                heightKnob.position.set(px, TABLE_H - 0.040, NET_Z);
+                scene.add(heightKnob);
+
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, postH, 32), postMat);
+                post.position.set(px, postCenterY, NET_Z);
+                post.castShadow = true;
+                scene.add(post);
+
+                const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.004, 32), blackPolymerMat);
+                cap.position.set(px, TABLE_H + NET_H + 0.005, NET_Z);
+                scene.add(cap);
+
+                const baseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.020, 24), silverMat);
+                baseCollar.position.set(px, TABLE_H - 0.010, NET_Z);
+                scene.add(baseCollar);
+            });
+
+            const woodFloorTex = makeWoodFloorTexture();
+            const floor = new THREE.Mesh(
+                new THREE.PlaneGeometry(40, 36),
+                new THREE.MeshStandardMaterial({ map: woodFloorTex, roughness: 0.38, metalness: 0.02 })
+            );
+            floor.rotation.x = -Math.PI / 2;
+            floor.position.set(0, 0, -1);
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            const BACK_WALL_Z = 8.5;
+            const wall = new THREE.Mesh(
+                new THREE.PlaneGeometry(50, 16),
+                new THREE.MeshStandardMaterial({ color: bgHex, roughness: 0.88, metalness: 0.02, side: THREE.DoubleSide })
+            );
+            wall.position.set(0, 8.0, BACK_WALL_Z);
+            wall.rotation.set(0, 0, 0);
+            scene.add(wall);
+
+            const baseboardH = 0.20;
+            const baseboard = new THREE.Mesh(
+                new THREE.BoxGeometry(50, baseboardH, 0.04),
+                new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.30, metalness: 0.10 })
+            );
+            baseboard.position.set(0, baseboardH / 2, BACK_WALL_Z - 0.02);
+            scene.add(baseboard);
+
+            function render() {
+                renderer.render(scene, camera);
+            }
+
+            function autoSize() {
+                const vW = window.innerWidth;
+                const vH = window.innerHeight;
+                const isPortrait = vH > vW;
+
+                if (isPortrait) {
+                    camera.position.set(0, TABLE_H + 0.58, -TABLE_LEN / 2 - 1.12);
+                    camera.lookAt(0, TABLE_H - 0.20, 0.26); // Lowered tilt to show lower table surface during reveal
+
+                    const SQUISH_LENS = 1.03;
+                    const aspect = (vW / vH) * SQUISH_LENS;
+
+                    camera.updateMatrixWorld(true);
+
+                    const postOuterX = W_AT_NET / 2 + NET_OVERHANG + 0.015;
+                    const rightPostWorld = new THREE.Vector3(postOuterX, postCenterY, NET_Z);
+                    const rightPostCam = rightPostWorld.clone().applyMatrix4(camera.matrixWorldInverse);
+
+                    const desiredPostPx = (vW / 2) - 16;
+                    const xRatio = Math.abs(rightPostCam.x / -rightPostCam.z);
+
+                    const tanHalfH = (xRatio * (vW / 2)) / desiredPostPx;
+                    const tanHalfV = tanHalfH / aspect;
+                    camera.fov = THREE.MathUtils.radToDeg(2 * Math.atan(tanHalfV));
+
+                    camera.aspect = vW / vH;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(vW, vH);
+
+                    container.style.width = vW + 'px';
+                    container.style.height = vH + 'px';
+                    container.style.left = '50%';
+                    container.style.transform = 'translateX(-50%)';
+                } else {
+                    camera.position.set(0, TABLE_H + 0.42, -TABLE_LEN / 2 - 0.72);
+                    camera.lookAt(0, TABLE_H - 0.01, 0.32);
+
+                    camera.updateMatrixWorld(true);
+
+                    const postOuterX = W_AT_NET / 2 + NET_OVERHANG + 0.015;
+                    const rightPostWorld = new THREE.Vector3(postOuterX, postCenterY, NET_Z);
+                    const rightPostCam = rightPostWorld.clone().applyMatrix4(camera.matrixWorldInverse);
+
+                    camera.fov = 64;
+                    const halfFovRad = THREE.MathUtils.degToRad(camera.fov / 2);
+                    const postPxFromCenter = Math.abs(rightPostCam.x / (-rightPostCam.z * Math.tan(halfFovRad))) * (vH / 2);
+                    const exactCropWidth = Math.round((postPxFromCenter + 25) * 2);
+                    const finalWidth = Math.min(vW, exactCropWidth);
+
+                    container.style.width = finalWidth + 'px';
+                    container.style.height = vH + 'px';
+                    container.style.left = '50%';
+                    container.style.transform = 'translateX(-50%)';
+
+                    camera.aspect = finalWidth / vH;
+                    camera.updateProjectionMatrix();
+                    renderer.setSize(finalWidth, vH);
+                }
+
+                render();
+            }
+
+            autoSize();
+            window.addEventListener('resize', autoSize);
+            window.addEventListener('orientationchange', () => {
+                setTimeout(autoSize, 120);
+            });
+
+            // =========================================================================
+            // EXACT DOM REPLICA SCROLL CONTROLLER
+            // =========================================================================
+            const card = document.getElementById('portal-card');
+            const ballLayer = document.getElementById('ball-layer');
+            const scrubHint = document.getElementById('scrub-hint');
+            const copyPreviewBtn = document.getElementById('copy-preview-btn');
+
+            let activeFrame = 0;
+
+            function applyFrame(frameNum) {
+                activeFrame = Math.max(0, Math.min(3, frameNum));
+
+                if (activeFrame === 0) {
+                    // Frame 0: Original 100% layout
+                    container.style.display = 'none';
+                    ballLayer.className = '';
+                    card.className = 'card';
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                } else if (activeFrame === 1) {
+                    // Frame 1: Shrunk 5% (0.95), raised 24px, zero background revealed
+                    container.style.display = 'none';
+                    ballLayer.className = 'frame-1';
+                    card.className = 'card frame-1';
+                    if (scrubHint) {
+                        scrubHint.style.display = 'block';
+                        scrubHint.textContent = "Frame: 1 (Shrunk 5%, raised 24px) | Scroll: Up for 0, Down for 2";
+                    }
+                } else if (activeFrame === 2) {
+                    // Frame 2: Shrunk another 5% (0.90), raised 48px, background touches top/bottom exactly
+                    container.style.display = 'block';
+                    autoSize();
+                    ballLayer.className = 'frame-2';
+                    card.className = 'card frame-2';
+                    if (scrubHint) {
+                        scrubHint.style.display = 'block';
+                        scrubHint.textContent = "Frame: 2 (Shrunk 10%, raised 48px, bottom corners exposed) | Scroll Down for 3";
+                    }
+                } else if (activeFrame === 3) {
+                    // Frame 3: Shrunk another 5% (0.85), raised 72px, top/bottom gap opens slightly
+                    container.style.display = 'block';
+                    autoSize();
+                    ballLayer.className = 'frame-3';
+                    card.className = 'card frame-3';
+                    if (scrubHint) {
+                        scrubHint.style.display = 'block';
+                        scrubHint.textContent = "Frame: 3 (Shrunk 15%, raised 72px, top/bottom gaps exposed) | Scroll Up for 2";
+                    }
+                }
+            }
+
+            if (copyPreviewBtn) {
+                copyPreviewBtn.addEventListener('click', () => {
+                    applyFrame(1);
+                });
+            }
+
+            window.addEventListener('wheel', (e) => {
+                if (scrubHint && scrubHint.style.display === 'block') {
+                    e.preventDefault();
+                    if (e.deltaY > 0) {
+                        applyFrame(activeFrame + 1);
+                    } else {
+                        applyFrame(activeFrame - 1);
+                    }
+                }
+            }, { passive: false });
+
+            window.addEventListener('keydown', (e) => {
+                if (scrubHint && scrubHint.style.display === 'block') {
+                    if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
+                        applyFrame(activeFrame + 1);
+                    } else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') {
+                        applyFrame(activeFrame - 1);
+                    }
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
