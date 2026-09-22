@@ -24,10 +24,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #fce5cd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: transparent; /* Handled by ball-layer and 3D canvas */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -35,20 +32,50 @@
             font-family: inherit;
         }
 
+        /* Three.js 3D Background Container */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+            z-index: 1;
+        }
+
+        /* Ball Wrapper: Creates the spherical boundary mask */
+        #ball-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #fce5cd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            transition: clip-path 0.15s linear, background-color 0.15s linear;
+            clip-path: circle(100vmax at 50% 50%); /* Frame 0-10: Fully covers screen */
+        }
+
+        html.neon #ball-layer {
+            background-color: #4e2a05;
+        }
+
         /* Portal card UI */
         .card {
-            background: #fce5cd;
             color-scheme: light;
             max-width: 440px;
             width: 92%;
-            margin: 0 auto;
             padding: 24px 28px 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
             position: relative;
             z-index: 10;
-            transition: transform 0.15s linear, box-shadow 0.15s ease;
+            transition: transform 0.15s linear;
+            transform: scale(1) translateY(0);
         }
 
         h2 { 
@@ -133,39 +160,8 @@
         html.neon .edit { background: linear-gradient(180deg, #ff0000 0%, #cc0000 40%, #990000 100%); --dark: #660000; }
         html.neon .hub { background: linear-gradient(180deg, #0bcade 0%, #09a3b5 40%, #077c9c 100%); --dark: #055f7d; }
         html.neon .copy-btn { background: linear-gradient(180deg, #bf00ff 0%, #9900dd 40%, #7700bb 100%); box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #550099, 0 6px 10px rgba(0,0,0,.25); }
-        html.neon body { background: #4e2a05; }
-        html.neon .card { background: #4e2a05; }
         html.neon h2 { color: #000 !important; }
         html.neon p { color: #ffb3b3; }
-
-        /* Three.js canvas container */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 100vh;
-            overflow: hidden;
-            display: none;
-            z-index: 1;
-        }
-
-        /* Pure Circular Ball Silhouette Mask */
-        #frame2-overlay {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #fce5cd;
-            border-radius: 50%;
-            z-index: 2;
-            pointer-events: none;
-            display: none;
-        }
-
-        html.neon #frame2-overlay {
-            background-color: #4e2a05;
-        }
 
         /* Frame Scrubber HUD */
         #scrub-hint {
@@ -193,34 +189,34 @@
 <body>
     <div id="canvas-container"></div>
 
-    <!-- Solid CSS circle masking the 3D background -->
-    <div id="frame2-overlay"></div>
+    <!-- Solid background layer that masks the ball circularly -->
+    <div id="ball-layer">
+        <div class="card" id="portal-card">
+            <h2>View Mode Portal</h2>
 
-    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames (0 to 12)</div>
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
+                Preview Mode <span class="subtext">(works on most devices)</span>
+            </a>
 
-    <div class="card" id="portal-card">
-        <h2>View Mode Portal</h2>
+            <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
+                Copy Preview Mode URL
+            </button>
 
-        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
-            Preview Mode <span class="subtext">(works on most devices)</span>
-        </a>
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
+                Edit Mode <span class="subtext">(annoying banner at top)</span>
+            </a>
 
-        <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
-            Copy Preview Mode URL
-        </button>
+            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
+                Copy Edit Mode URL
+            </button>
 
-        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
-            Edit Mode <span class="subtext">(annoying banner at top)</span>
-        </a>
-
-        <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
-            Copy Edit Mode URL
-        </button>
-
-        <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
-            Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
-        </a>
+            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+                Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
+            </a>
+        </div>
     </div>
+
+    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames</div>
 
     <script>
         const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
@@ -266,7 +262,6 @@
             }
 
             const container = document.getElementById('canvas-container');
-            const frame2Overlay = document.getElementById('frame2-overlay');
             const scene = new THREE.Scene();
             const bgHex = 0x72a67a;
             scene.background = new THREE.Color(bgHex);
@@ -462,6 +457,7 @@
                 const stripeH = 76;
                 const startY = 244;
                 const slantX = -(stripeH * (canvas_dx / canvas_dy));
+
                 const outerStripeTopRight = xOuter - ((startY - yDonic) / canvas_dy) * canvas_dx;
 
                 ctx.beginPath();
@@ -534,7 +530,6 @@
                 ctx.save();
                 ctx.translate(404, yDonic);
                 ctx.transform(1, 0, -0.45, 1, 0, 0);
-
                 ctx.font = 'italic 900 148px "Arial Black", Impact, -apple-system, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -543,7 +538,6 @@
                 ctx.strokeStyle = '#050507';
                 ctx.strokeText('DONIC', 0, 0);
                 ctx.fillText('DONIC', 0, 0);
-
                 ctx.font = 'bold 28px sans-serif';
                 ctx.fillText('®', 295, -45);
                 ctx.restore();
@@ -998,28 +992,25 @@
                 renderer.render(scene, camera);
             }
 
-            // Centralized function to adjust mask for Frames 11 and 12
+            // Centralized function to adjust the circle mask for Frames 11 and 12
             function updateMaskForFrame(frameNum) {
-                const vW = container.clientWidth || window.innerWidth;
-                const vH = container.clientHeight || window.innerHeight;
-                const maskOverlay = document.getElementById('ball-layer');
+                const vW = window.innerWidth;
+                const vH = window.innerHeight;
+                const ballLayer = document.getElementById('ball-layer');
 
-                if (frameNum < 11) {
-                    return;
-                }
+                if (frameNum < 11) return;
 
                 let gap = 0;
                 if (frameNum === 11) {
-                    gap = 6;  // Frame 11: 6px gap top and bottom exposes corners
-                    maskOverlay.className = 'frame-2';
+                    gap = 6;  // 6px gap top and bottom
                 } else if (frameNum === 12) {
-                    gap = 18; // Frame 12: 18px gap exposes slightly more
-                    maskOverlay.className = 'frame-3';
+                    gap = 18; // 18px gap top and bottom
                 }
 
-                if (maskOverlay) {
+                if (ballLayer) {
+                    // Diameter is viewport height minus the top & bottom gaps
                     let diam = vH - (gap * 2);
-                    maskOverlay.style.clipPath = `circle(${diam/2}px at 50% 50%)`;
+                    ballLayer.style.clipPath = `circle(${diam / 2}px at 50% 50%)`;
                 }
             }
 
@@ -1029,7 +1020,7 @@
                 const isPortrait = vH > vW;
 
                 if (isPortrait) {
-                    // Lowered tilt: points lower at table (0.12) to reveal table surface during bottom corner unmask
+                    // Lowered tilt: looks down at table to reveal table surface directly beneath the ball
                     camera.position.set(0, TABLE_H + 0.58, -TABLE_LEN / 2 - 1.12);
                     camera.lookAt(0, TABLE_H - 0.20, 0.26);
 
@@ -1086,7 +1077,6 @@
                 if (activeFrame >= 11) {
                     updateMaskForFrame(activeFrame);
                 }
-
                 render();
             }
 
@@ -1097,7 +1087,7 @@
             });
 
             // =========================================================================
-            // FRAME CONTROLLER: FRAME 0 (100%), 1 to 10 (Zero background), 11 & 12 (Corners revealed)
+            // FRAME CONTROLLER: FRAME 0 to 12
             // =========================================================================
             const card = document.getElementById('portal-card');
             const ballLayer = document.getElementById('ball-layer');
@@ -1118,8 +1108,7 @@
                     card.style.transform = 'scale(1) translateY(0px)';
                     if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
                 } else if (activeFrame >= 1 && activeFrame <= 10) {
-                    // Frames 1-10: Scale down 5% per frame, raise 24px per frame
-                    // Ball layer remains 100vmax: Zero background revealed
+                    // Frames 1-10: Scale down 5% per frame, raise 24px per frame. ZERO BACKGROUND REVEALED.
                     container.style.display = 'none';
                     ballLayer.style.display = 'flex';
                     ballLayer.className = 'frame-1';
@@ -1131,7 +1120,7 @@
                     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px) | NO Background`;
                 } else if (activeFrame === 11) {
-                    // Frame 11: 3D background revealed through bottom/top corners
+                    // Frame 11: 3D background revealed through top & bottom corners with a tiny 6px gap
                     container.style.display = 'block';
                     autoSize();
                     ballLayer.style.display = 'flex';
@@ -1141,9 +1130,9 @@
                     const yOffset = -(11 * 24); // -264px
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
                     
-                    if (scrubHint) scrubHint.textContent = `Frame: 11 (Corners exposed) | Scroll Down for 12`;
+                    if (scrubHint) scrubHint.textContent = `Frame: 11 (Top & Bottom corners exposed) | Scroll Down for 12`;
                 } else if (activeFrame === 12) {
-                    // Frame 12: More background revealed through corners
+                    // Frame 12: More background revealed (18px gap)
                     container.style.display = 'block';
                     autoSize();
                     ballLayer.style.display = 'flex';
@@ -1157,7 +1146,6 @@
                 }
             }
 
-            // Clicking "Copy Preview Mode URL" enters Frame 1 immediately
             if (copyPreviewBtn) {
                 copyPreviewBtn.addEventListener('click', () => {
                     applyFrame(1);
@@ -1165,7 +1153,6 @@
                 });
             }
 
-            // Scroll wheel steps cleanly between Frames 0 and 12
             window.addEventListener('wheel', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
@@ -1177,7 +1164,6 @@
                 }
             }, { passive: false });
 
-            // Keyboard navigation (Arrow keys step)
             window.addEventListener('keydown', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
