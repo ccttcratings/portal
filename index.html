@@ -24,7 +24,10 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: transparent; /* Handled by ball-layer and 3D canvas */
+            background-color: #fce5cd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -32,80 +35,21 @@
             font-family: inherit;
         }
 
-        /* Three.js 3D Background Container */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 100vh;
-            overflow: hidden;
-            display: none;
-            z-index: 1;
-        }
-
-        /* Ball Wrapper: Creates the spherical boundary mask */
-        #ball-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background-color: #fce5cd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 5;
-            transition: clip-path 0.3s ease, background-color 0.3s ease;
-            clip-path: circle(100vmax at 50% 50%); /* Frame 0: Fully covers screen */
-        }
-
-        html.neon #ball-layer {
-            background-color: #4e2a05;
-        }
-
-        /* FRAME 1: 100vmax (No background revealed) */
-        #ball-layer.frame-1 {
-            clip-path: circle(100vmax at 50% 50%);
-        }
-
-        /* FRAME 2: 50dvh (Touches top and bottom exactly, corners reveal background) */
-        #ball-layer.frame-2 {
-            clip-path: circle(50dvh at 50% 50%);
-        }
-
-        /* FRAME 3: 50dvh - 12px (Reveals a tiny bit more at top and bottom) */
-        #ball-layer.frame-3 {
-            clip-path: circle(calc(50dvh - 12px) at 50% 50%);
-        }
-
         /* Portal card UI */
         .card {
+            background: #fce5cd;
             color-scheme: light;
             max-width: 440px;
             width: 92%;
+            margin: 0 auto;
             padding: 24px 28px 20px;
             border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
             position: relative;
             z-index: 10;
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
-            transform: scale(1) translateY(0); /* Frame 0 */
-        }
-
-        /* FRAME 1: Shrunk 5%, raised 24px */
-        .card.frame-1 {
-            transform: scale(0.95) translateY(-24px);
-        }
-
-        /* FRAME 2: Shrunk another 5% (0.90), raised another 24px */
-        .card.frame-2 {
-            transform: scale(0.90) translateY(-48px);
-        }
-
-        /* FRAME 3: Shrunk another 5% (0.85), raised another 24px */
-        .card.frame-3 {
-            transform: scale(0.85) translateY(-72px);
+            /* Transition added for smooth scrolling between frames */
+            transition: transform 0.15s linear, box-shadow 0.15s ease;
         }
 
         h2 { 
@@ -190,8 +134,34 @@
         html.neon .edit { background: linear-gradient(180deg, #ff0000 0%, #cc0000 40%, #990000 100%); --dark: #660000; }
         html.neon .hub { background: linear-gradient(180deg, #0bcade 0%, #09a3b5 40%, #077c9c 100%); --dark: #055f7d; }
         html.neon .copy-btn { background: linear-gradient(180deg, #bf00ff 0%, #9900dd 40%, #7700bb 100%); box-shadow: 1px 0 0 3px rgba(0,0,0,.15), 0 4px 0 #550099, 0 6px 10px rgba(0,0,0,.25); }
+        html.neon body { background: #4e2a05; }
+        html.neon .card { background: #4e2a05; }
         html.neon h2 { color: #000 !important; }
         html.neon p { color: #ffb3b3; }
+
+        /* Three.js canvas container */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+            z-index: 1;
+        }
+
+        /* SVG Mask for Curved Ball Silhouette */
+        #frame2-overlay {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100vh;
+            z-index: 2;
+            pointer-events: none;
+            display: none;
+        }
 
         /* Frame Scrubber HUD */
         #scrub-hint {
@@ -207,6 +177,7 @@
             font-weight: 600;
             letter-spacing: 0.5px;
             z-index: 100;
+            display: none;
             box-shadow: 0 4px 14px rgba(0,0,0,0.35);
             backdrop-filter: blur(6px);
         }
@@ -217,34 +188,37 @@
 </head>
 <body>
     <div id="canvas-container"></div>
-    
-    <div id="ball-layer">
-        <div class="card" id="portal-card">
-            <h2>View Mode Portal</h2>
 
-            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
-                Preview Mode <span class="subtext">(works on most devices)</span>
-            </a>
+    <!-- SVG Mask for revealing background corners -->
+    <svg id="frame2-overlay" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+        <path id="frame2-mask-path" fill="#fce5cd"></path>
+    </svg>
 
-            <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
-                Copy Preview Mode URL
-            </button>
+    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames (0 to 12)</div>
 
-            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
-                Edit Mode <span class="subtext">(annoying banner at top)</span>
-            </a>
+    <div class="card" id="portal-card">
+        <h2>View Mode Portal</h2>
 
-            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
-                Copy Edit Mode URL
-            </button>
+        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
+            Preview Mode <span class="subtext">(works on most devices)</span>
+        </a>
 
-            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
-                Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
-            </a>
-        </div>
+        <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
+            Copy Preview Mode URL
+        </button>
+
+        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
+            Edit Mode <span class="subtext">(annoying banner at top)</span>
+        </a>
+
+        <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
+            Copy Edit Mode URL
+        </button>
+
+        <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+            Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
+        </a>
     </div>
-
-    <div id="scrub-hint">Frame: 0 | Scroll Wheel: Step Frames</div>
 
     <script>
         const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
@@ -290,6 +264,8 @@
             }
 
             const container = document.getElementById('canvas-container');
+            const frame2Overlay = document.getElementById('frame2-overlay');
+            const frame2MaskPath = document.getElementById('frame2-mask-path');
             const scene = new THREE.Scene();
             const bgHex = 0x72a67a;
             scene.background = new THREE.Color(bgHex);
@@ -455,26 +431,26 @@
                 ctx.translate(620, yDonic);
                 ctx.transform(1, 0, -0.22, 1, 0, 0);
 
-                ctx.font = '900 152px "Arial Black", Impact, -apple-system, sans-serif';
+                ctx.font = '900 148px "Arial Black", Impact, -apple-system, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#050507';
-                ctx.lineWidth = 5;
+                ctx.lineWidth = 7;
                 ctx.strokeStyle = '#050507';
                 ctx.strokeText('DONIC', 0, 0);
                 ctx.fillText('DONIC', 0, 0);
 
                 ctx.font = 'bold 28px sans-serif';
-                ctx.fillText('®', 300, -46);
+                ctx.fillText('®', 295, -45);
                 ctx.restore();
 
                 ctx.save();
-                ctx.translate(594, 220);
-                ctx.font = '900 76px "Arial Black", Impact, Arial, sans-serif';
+                ctx.translate(580, 196);
+                ctx.font = '900 64px "Arial Black", Impact, Arial, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#dc2626';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2.5;
                 ctx.strokeStyle = '#dc2626';
                 ctx.strokeText('•S•T•R•E•S•S•', 0, 0);
                 ctx.fillText('•S•T•R•E•S•S•', 0, 0);
@@ -482,20 +458,22 @@
 
                 ctx.save();
                 ctx.fillStyle = '#dc2626';
-                const stripeW = 75;
-                const stripeGap = 75;
-                const stripeH = 82;
-                const startY = 295;
-                const slantX = -(stripeH / TAN_40);
+                const stripeW = 76;
+                const stripeGap = 76;
+                const stripeH = 76;
+                const startY = 244;
+                const slantX = -(stripeH * (canvas_dx / canvas_dy));
 
-                const startX = 410;
+                const outerStripeTopRight = xOuter - ((startY - yDonic) / canvas_dy) * canvas_dx;
+
                 ctx.beginPath();
                 for (let i = 0; i < 4; i++) {
-                    const sx = startX + i * (stripeW + stripeGap);
-                    ctx.moveTo(sx, startY);
-                    ctx.lineTo(sx + stripeW, startY);
-                    ctx.lineTo(sx + stripeW + slantX, startY + stripeH);
-                    ctx.lineTo(sx + slantX, startY + stripeH);
+                    const topRight = outerStripeTopRight - i * (stripeW + stripeGap);
+                    const topLeft = topRight - stripeW;
+                    ctx.moveTo(topLeft, startY);
+                    ctx.lineTo(topRight, startY);
+                    ctx.lineTo(topRight + slantX, startY + stripeH);
+                    ctx.lineTo(topLeft + slantX, startY + stripeH);
                     ctx.closePath();
                 }
                 ctx.fill();
@@ -515,11 +493,11 @@
 
                 ctx.clearRect(0, 0, c.width, c.height);
 
-                const xOuter = 16;
-                const xInner = 1008;
-                const yTop = 16;
-                const yDonic = 115;
-                const yBottom = 360;
+                const xOuter = 4;
+                const xInner = 1020;
+                const yTop = 4;
+                const yDonic = 101;
+                const yBottom = 324;
                 const cornerR = 56;
 
                 const canvas_dy = yBottom - yDonic;
@@ -552,33 +530,33 @@
                 ctx.restore();
 
                 ctx.strokeStyle = '#475569';
-                ctx.lineWidth = 5;
+                ctx.lineWidth = 4;
                 ctx.stroke();
 
                 ctx.save();
-                ctx.translate(390, yDonic);
+                ctx.translate(404, yDonic);
                 ctx.transform(1, 0, -0.45, 1, 0, 0);
 
-                ctx.font = 'italic 900 152px "Arial Black", Impact, -apple-system, sans-serif';
+                ctx.font = 'italic 900 148px "Arial Black", Impact, -apple-system, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#050507';
-                ctx.lineWidth = 5;
+                ctx.lineWidth = 7;
                 ctx.strokeStyle = '#050507';
                 ctx.strokeText('DONIC', 0, 0);
                 ctx.fillText('DONIC', 0, 0);
 
                 ctx.font = 'bold 28px sans-serif';
-                ctx.fillText('®', 300, -46);
+                ctx.fillText('®', 295, -45);
                 ctx.restore();
 
                 ctx.save();
-                ctx.translate(430, 220);
-                ctx.font = '900 76px "Arial Black", Impact, Arial, sans-serif';
+                ctx.translate(444, 196);
+                ctx.font = '900 64px "Arial Black", Impact, Arial, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillStyle = '#dc2626';
-                ctx.lineWidth = 3;
+                ctx.lineWidth = 2.5;
                 ctx.strokeStyle = '#dc2626';
                 ctx.strokeText('•S•T•R•E•S•S•', 0, 0);
                 ctx.fillText('•S•T•R•E•S•S•', 0, 0);
@@ -586,20 +564,21 @@
 
                 ctx.save();
                 ctx.fillStyle = '#dc2626';
-                const stripeW = 75;
-                const stripeGap = 75;
-                const stripeH = 82;
-                const startY = 295;
-                const slantX = (stripeH / TAN_40);
+                const stripeW = 76;
+                const stripeGap = 76;
+                const stripeH = 76;
+                const startY = 244;
+                const slantX = +(stripeH * (canvas_dx / canvas_dy));
+                const outerStripeTopLeft = xOuter + ((startY - yDonic) / canvas_dy) * canvas_dx;
 
-                const startX = 350;
                 ctx.beginPath();
                 for (let i = 0; i < 4; i++) {
-                    const sx = startX + i * (stripeW + stripeGap);
-                    ctx.moveTo(sx, startY);
-                    ctx.lineTo(sx + stripeW, startY);
-                    ctx.lineTo(sx + stripeW + slantX, startY + stripeH);
-                    ctx.lineTo(sx + slantX, startY + stripeH);
+                    const topLeft = outerStripeTopLeft + i * (stripeW + stripeGap);
+                    const topRight = topLeft + stripeW;
+                    ctx.moveTo(topLeft, startY);
+                    ctx.lineTo(topRight, startY);
+                    ctx.lineTo(topRight + slantX, startY + stripeH);
+                    ctx.lineTo(topLeft + slantX, startY + stripeH);
                     ctx.closePath();
                 }
                 ctx.fill();
@@ -1021,6 +1000,41 @@
                 renderer.render(scene, camera);
             }
 
+            // Exact pixel crop: Cuts away everything outside 25px padding on either side of net posts
+            function updateMaskForFrame(frameNum) {
+                const vW = container.clientWidth || window.innerWidth;
+                const vH = container.clientHeight || window.innerHeight;
+
+                let yCornerCut = 0;
+                if (frameNum === 11) {
+                    yCornerCut = 26;
+                } else if (frameNum === 12) {
+                    yCornerCut = 58;
+                }
+
+                const maskOverlay = document.getElementById('frame2-overlay');
+                const maskPath = document.getElementById('frame2-mask-path');
+
+                if (yCornerCut <= 0) {
+                    if (maskOverlay) maskOverlay.style.display = 'none';
+                    return;
+                }
+
+                const h = yCornerCut;
+                const c = vW;
+                const R = Math.round(h / 2 + (c * c) / (8 * h));
+
+                const pathD = `M 0,0 L ${vW},0 L ${vW},${vH - yCornerCut} A ${R} ${R} 0 0 1 0,${vH - yCornerCut} Z`;
+                if (maskPath) {
+                    maskPath.setAttribute('d', pathD);
+                }
+                if (maskOverlay) {
+                    maskOverlay.style.width = vW + 'px';
+                    maskOverlay.style.height = vH + 'px';
+                    maskOverlay.style.display = 'block';
+                }
+            }
+
             function autoSize() {
                 const vW = window.innerWidth;
                 const vH = window.innerHeight;
@@ -1028,7 +1042,7 @@
 
                 if (isPortrait) {
                     camera.position.set(0, TABLE_H + 0.58, -TABLE_LEN / 2 - 1.12);
-                    camera.lookAt(0, TABLE_H - 0.20, 0.26); // Lowered tilt to show lower table surface during reveal
+                    camera.lookAt(0, TABLE_H + 0.12, 0.26);
 
                     const SQUISH_LENS = 1.03;
                     const aspect = (vW / vH) * SQUISH_LENS;
@@ -1079,7 +1093,6 @@
                     camera.updateProjectionMatrix();
                     renderer.setSize(finalWidth, vH);
                 }
-
                 render();
             }
 
@@ -1090,62 +1103,78 @@
             });
 
             // =========================================================================
-            // EXACT DOM REPLICA SCROLL CONTROLLER
+            // DYNAMIC FRAME CONTROLLER (Frames 0 to 12)
             // =========================================================================
             const card = document.getElementById('portal-card');
-            const ballLayer = document.getElementById('ball-layer');
             const scrubHint = document.getElementById('scrub-hint');
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
+            const maskOverlay = document.getElementById('frame2-overlay');
+            const maskPath = document.getElementById('frame2-mask-path');
 
             let activeFrame = 0;
 
             function applyFrame(frameNum) {
-                activeFrame = Math.max(0, Math.min(3, frameNum));
+                activeFrame = Math.max(0, Math.min(12, frameNum));
+
+                const isNeon = document.documentElement.classList.contains('neon');
+                if (maskPath) {
+                    maskPath.setAttribute('fill', isNeon ? '#4e2a05' : '#fce5cd');
+                }
 
                 if (activeFrame === 0) {
-                    // Frame 0: Original 100% layout
+                    // Frame 0: Original 100% portal page
                     container.style.display = 'none';
-                    ballLayer.className = '';
-                    card.className = 'card';
-                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-                } else if (activeFrame === 1) {
-                    // Frame 1: Shrunk 5% (0.95), raised 24px, zero background revealed
+                    if (maskOverlay) maskOverlay.style.display = 'none';
+                    card.style.transform = 'scale(1) translateY(0px)';
+                    card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down to Begin";
+                } else if (activeFrame >= 1 && activeFrame <= 10) {
+                    // Frames 1-10: Shrink by 5%, raise by 24px each step. NO BACKGROUND REVEALED.
                     container.style.display = 'none';
-                    ballLayer.className = 'frame-1';
-                    card.className = 'card frame-1';
-                    if (scrubHint) {
-                        scrubHint.style.display = 'block';
-                        scrubHint.textContent = "Frame: 1 (Shrunk 5%, raised 24px) | Scroll: Up for 0, Down for 2";
-                    }
-                } else if (activeFrame === 2) {
-                    // Frame 2: Shrunk another 5% (0.90), raised 48px, background touches top/bottom exactly
+                    if (maskOverlay) maskOverlay.style.display = 'none';
+                    
+                    const scale = 1.0 - (activeFrame * 0.05);
+                    const yOffset = -(activeFrame * 24);
+                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+                    card.style.boxShadow = 'none';
+                    
+                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px) | NO Background`;
+                } else if (activeFrame === 11) {
+                    // Frame 11 (Old Frame 2): Background reveals at bottom corners
                     container.style.display = 'block';
                     autoSize();
-                    ballLayer.className = 'frame-2';
-                    card.className = 'card frame-2';
-                    if (scrubHint) {
-                        scrubHint.style.display = 'block';
-                        scrubHint.textContent = "Frame: 2 (Shrunk 10%, raised 48px, bottom corners exposed) | Scroll Down for 3";
-                    }
-                } else if (activeFrame === 3) {
-                    // Frame 3: Shrunk another 5% (0.85), raised 72px, top/bottom gap opens slightly
+                    updateMaskForFrame(11);
+                    
+                    const scale = 1.0 - (11 * 0.05); // 0.45
+                    const yOffset = -(11 * 24); // -264px
+                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+                    card.style.boxShadow = 'none';
+                    
+                    if (scrubHint) scrubHint.textContent = `Frame: 11 (Bottom corners exposed) | Scroll Down for 12`;
+                } else if (activeFrame === 12) {
+                    // Frame 12 (Old Frame 3): Background reveals more
                     container.style.display = 'block';
                     autoSize();
-                    ballLayer.className = 'frame-3';
-                    card.className = 'card frame-3';
-                    if (scrubHint) {
-                        scrubHint.style.display = 'block';
-                        scrubHint.textContent = "Frame: 3 (Shrunk 15%, raised 72px, top/bottom gaps exposed) | Scroll Up for 2";
-                    }
+                    updateMaskForFrame(12);
+                    
+                    const scale = 1.0 - (12 * 0.05); // 0.40
+                    const yOffset = -(12 * 24); // -288px
+                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+                    card.style.boxShadow = 'none';
+                    
+                    if (scrubHint) scrubHint.textContent = `Frame: 12 (More background exposed) | Scroll Up for 11`;
                 }
             }
 
+            // Clicking "Copy Preview Mode URL" enters Frame 1 immediately
             if (copyPreviewBtn) {
                 copyPreviewBtn.addEventListener('click', () => {
                     applyFrame(1);
+                    if (scrubHint) scrubHint.style.display = 'block';
                 });
             }
 
+            // Scroll wheel steps smoothly between all frames
             window.addEventListener('wheel', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
@@ -1157,6 +1186,7 @@
                 }
             }, { passive: false });
 
+            // Keyboard navigation
             window.addEventListener('keydown', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
