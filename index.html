@@ -24,10 +24,7 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #fce5cd;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            background-color: transparent; /* Handled by ball-layer and 3D canvas */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
 
@@ -35,20 +32,50 @@
             font-family: inherit;
         }
 
+        /* Three.js 3D Background Container */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 100vh;
+            overflow: hidden;
+            display: none;
+            z-index: 1;
+        }
+
+        /* Ball Wrapper: Creates the spherical boundary mask */
+        #ball-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: #fce5cd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+            transition: clip-path 0.15s linear, background-color 0.15s linear;
+            clip-path: circle(100vmax at 50% 50%); /* Base state: covers screen fully */
+        }
+
+        html.neon #ball-layer {
+            background-color: #4e2a05;
+        }
+
         /* Portal card UI */
         .card {
-            background: #fce5cd;
             color-scheme: light;
             max-width: 440px;
             width: 92%;
-            margin: 0 auto;
             padding: 24px 28px 20px;
             border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
             text-align: center;
             position: relative;
             z-index: 10;
-            transition: transform 0.15s linear, box-shadow 0.15s ease;
+            transition: transform 0.15s linear;
+            transform: scale(1) translateY(0); /* Frame 0 */
         }
 
         h2 { 
@@ -138,38 +165,6 @@
         html.neon h2 { color: #000 !important; }
         html.neon p { color: #ffb3b3; }
 
-        /* Three.js canvas container */
-        #canvas-container {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            height: 100vh;
-            overflow: hidden;
-            display: none;
-            z-index: 1;
-        }
-
-        /* NEW: Centered blank ball for Frame 11 */
-        #blank-ball {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 115vh;
-            height: 115vh;
-            background-color: #fce5cd;
-            border-radius: 50%;
-            z-index: 15;
-            display: none; /* Hidden until Frame 11 */
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0);
-        }
-
-        html.neon #blank-ball {
-            background-color: #4e2a05;
-            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.4);
-        }
-
         /* Frame Scrubber HUD */
         #scrub-hint {
             position: fixed;
@@ -195,34 +190,33 @@
 <body>
     <div id="canvas-container"></div>
     
-    <!-- Centered blank ball for Frame 11 -->
-    <div id="blank-ball"></div>
+    <div id="ball-layer">
+        <div class="card" id="portal-card">
+            <h2>View Mode Portal</h2>
 
-    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames (0 to 11)</div>
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
+                Preview Mode <span class="subtext">(works on most devices)</span>
+            </a>
 
-    <div class="card" id="portal-card">
-        <h2>View Mode Portal</h2>
+            <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
+                Copy Preview Mode URL
+            </button>
 
-        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
-            Preview Mode <span class="subtext">(works on most devices)</span>
-        </a>
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
+                Edit Mode <span class="subtext">(annoying banner at top)</span>
+            </a>
 
-        <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
-            Copy Preview Mode URL
-        </button>
+            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
+                Copy Edit Mode URL
+            </button>
 
-        <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
-            Edit Mode <span class="subtext">(annoying banner at top)</span>
-        </a>
-
-        <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
-            Copy Edit Mode URL
-        </button>
-
-        <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
-            Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
-        </a>
+            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+                Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
+            </a>
+        </div>
     </div>
+
+    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames</div>
 
     <script>
         const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
@@ -249,7 +243,7 @@
 
     <script>
         (function () {
-            // Three.js table scene and assets
+            // Three.js table scene and assets preserved
             const TABLE_LEN = 2.74;
             const W_NEAR = 1.82;
             const W_FAR = 1.67;
@@ -294,7 +288,7 @@
             mainLight.shadow.bias = 0.0001;
             scene.add(mainLight);
 
-            const fillLight = new THREE.DirectionalLight(0xecfdf5, 0.65);
+            const fillLight = new THREE.DirectionalLight(0xecfdf5, 0.50);
             fillLight.position.set(0.6, TABLE_H + 2.5, 2.0);
             scene.add(fillLight);
 
@@ -432,6 +426,7 @@
                 ctx.save();
                 ctx.translate(620, yDonic);
                 ctx.transform(1, 0, -0.22, 1, 0, 0);
+
                 ctx.font = '900 148px "Arial Black", Impact, -apple-system, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -440,6 +435,7 @@
                 ctx.strokeStyle = '#050507';
                 ctx.strokeText('DONIC', 0, 0);
                 ctx.fillText('DONIC', 0, 0);
+
                 ctx.font = 'bold 28px sans-serif';
                 ctx.fillText('®', 295, -45);
                 ctx.restore();
@@ -463,6 +459,7 @@
                 const stripeH = 76;
                 const startY = 244;
                 const slantX = -(stripeH * (canvas_dx / canvas_dy));
+
                 const outerStripeTopRight = xOuter - ((startY - yDonic) / canvas_dy) * canvas_dx;
 
                 ctx.beginPath();
@@ -535,6 +532,7 @@
                 ctx.save();
                 ctx.translate(404, yDonic);
                 ctx.transform(1, 0, -0.45, 1, 0, 0);
+
                 ctx.font = 'italic 900 148px "Arial Black", Impact, -apple-system, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -543,6 +541,7 @@
                 ctx.strokeStyle = '#050507';
                 ctx.strokeText('DONIC', 0, 0);
                 ctx.fillText('DONIC', 0, 0);
+
                 ctx.font = 'bold 28px sans-serif';
                 ctx.fillText('®', 295, -45);
                 ctx.restore();
@@ -1028,6 +1027,8 @@
 
                     container.style.width = vW + 'px';
                     container.style.height = vH + 'px';
+                    container.style.left = '50%';
+                    container.style.transform = 'translateX(-50%)';
                 } else {
                     camera.position.set(0, TABLE_H + 0.42, -TABLE_LEN / 2 - 0.72);
                     camera.lookAt(0, TABLE_H - 0.01, 0.32);
@@ -1046,6 +1047,8 @@
 
                     container.style.width = finalWidth + 'px';
                     container.style.height = vH + 'px';
+                    container.style.left = '50%';
+                    container.style.transform = 'translateX(-50%)';
 
                     camera.aspect = finalWidth / vH;
                     camera.updateProjectionMatrix();
@@ -1062,7 +1065,7 @@
             });
 
             // =========================================================================
-            // FRAME CONTROLLER: 0 (100%), 1 to 10 (Zero background), 11 (Blank Ball)
+            // FRAME CONTROLLER: 0 (100%), 1 to 10 (Zero background), 11 to 18 (Background revealed)
             // =========================================================================
             let activeFrame = 0;
             window.activeFrame = 0; // Expose globally for PTR logic
@@ -1070,49 +1073,45 @@
             const scrubHint = document.getElementById('scrub-hint');
 
             function applyFrame(frameNum) {
-                activeFrame = Math.max(0, Math.min(11, frameNum));
+                activeFrame = Math.max(0, Math.min(18, frameNum));
                 window.activeFrame = activeFrame;
 
+                const ballLayer = document.getElementById('ball-layer');
                 const card = document.getElementById('portal-card');
                 const container = document.getElementById('canvas-container');
-                const blankBall = document.getElementById('blank-ball');
 
-                if (!card || !container) return;
+                if (!card || !container || !ballLayer) return;
 
                 if (activeFrame === 0) {
-                    // Frame 0: Original 100% layout
+                    // Frame 0: Original 100% portal page
                     container.style.display = 'none';
-                    if (blankBall) blankBall.style.display = 'none';
-                    
-                    card.style.display = 'block';
+                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
                     card.style.transform = 'scale(1) translateY(0px)';
-                    card.style.boxShadow = '0 4px 15px rgba(0,0,0,0.08)';
-                    
                     if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
                 } else if (activeFrame >= 1 && activeFrame <= 10) {
-                    // Frames 1-10: Shrink by 5%, raise 24px each step. NO BACKGROUND REVEALED.
+                    // Frames 1-10: Scale down 5% per frame, raise 24px per frame. ZERO BACKGROUND REVEALED.
                     container.style.display = 'none';
-                    if (blankBall) blankBall.style.display = 'none';
+                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
                     
-                    card.style.display = 'block';
                     const scale = 1.0 - (activeFrame * 0.05);
                     const yOffset = -(activeFrame * 24);
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-                    card.style.boxShadow = 'none';
                     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px) | NO Background`;
-                } else if (activeFrame === 11) {
-                    // FRAME 11: Display full 3D background with a centered blank ball (no buttons)
+                } else if (activeFrame >= 11 && activeFrame <= 18) {
+                    // FRAME 11 to 18: Background revealed, perfectly circular mask shrinking by 10vh each frame
                     container.style.display = 'block';
                     autoSize();
                     
-                    card.style.display = 'none';
+                    const sizeVh = 115 - ((activeFrame - 11) * 10);
+                    ballLayer.style.clipPath = `circle(${sizeVh / 2}vh at 50% 50%)`;
                     
-                    if (blankBall) {
-                        blankBall.style.display = 'block';
-                    }
+                    // Keep card geometry tracking alongside the mask
+                    const scale = 1.0 - (activeFrame * 0.05);
+                    const yOffset = -(activeFrame * 24);
+                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
                     
-                    if (scrubHint) scrubHint.textContent = `Frame: 11 (Blank centered ball, full background) | Scroll Up to go back`;
+                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball Mask: ${sizeVh}vh) | Scroll Up/Down`;
                 }
             }
 
