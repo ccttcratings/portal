@@ -857,7 +857,7 @@
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture, 
-                transparent: true,
+                transparent: false,
                 alphaTest: 0.1,         // Drops fully transparent pixels instantly
                 depthWrite: true,       // Force the GPU depth buffer to hide background objects behind the ball
                 roughness: 0.25,
@@ -1221,62 +1221,58 @@
                 }
 
                 // ============================================================
-                // 🚀 UPDATED: FLUID 20-FRAME RETREAT, SCALING & TRANSITION MATRIX
+                // 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
                 // ============================================================
-                // Force timeline constraint range ceiling to 20 frames
-                const clampedFrame = Math.min(activeFrame, 20);
-                const rotationProgress = clampedFrame / 20;
+                // Ensure frame references scale across a full 20-frame count array
+                const targetMaxFrames = 20; 
+                const currentProgress = activeFrame / targetMaxFrames;
 
-                if (clampedFrame >= 1 && clampedFrame <= 20) {
-                    // Frame 1: Slightly smaller (1.6) and positioned slightly higher than baseline camera axis
-                    // Frame 20: Smoothly tapers down to a small ball (0.4) centered in view
-                    const progressFactor = (clampedFrame - 1) / 19; // Progress line across frames 1 to 20
+                if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
+                    // Normalize a factor baseline spanning from frame 1 up to frame 20
+                    const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
                     
-                    // Smoothly transition scale from 1.6 down to 0.4
+                    // Smoothly scale the ball size down from a large 1.6 down to a centered 0.4
                     const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
                     pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-                    // Track camera orientation vectors
+                    // Track camera focal vectors
                     const targetDirection = new THREE.Vector3();
                     camera.getWorldDirection(targetDirection);
 
-                    // Frame 1 sits closer to the screen. As progress hits 1.0 (Frame 20), it retreats deep into space
+                    // Frame 1 sits flush near the lens. Frame 20 pulls deep back over the table space
                     const distanceFactor = THREE.MathUtils.lerp(1.15, 3.2, progressFactor);
-                    
-                    // Set base location along camera path
                     pingPongBallMesh.position.copy(camera.position)
                         .addScaledVector(targetDirection, distanceFactor);
 
-                    // Dynamic Texture Mapping to preserve pristine look on early frames
+                    // Dynamic Texture morphing parameters to maintain crisp flat layout vectors on Frame 1
                     let depthFactor = 1.0;
-                    if (clampedFrame === 1) {
-                        depthFactor = 0.001; // Squash depth completely flat on Frame 1 for pristine text
+                    if (activeFrame === 1) {
+                        depthFactor = 0.001; // Squash depth completely flat on Frame 1 for zero texture warping
                         ballButtonTexture.repeat.set(1.0, 1.0);
                         ballButtonTexture.offset.x = 0.0;
-                    } else if (clampedFrame === 2) {
-                        depthFactor = 0.35;
+                    } else if (activeFrame === 2) {
+                        depthFactor = 0.35;  // Frame 2: Start expanding out volumetric depth curves
                         ballButtonTexture.repeat.set(2.0, 1.0);
                         ballButtonTexture.offset.x = 0.125;
                     } else {
-                        // Blend fully into round 3D sphere properties by Frame 3+
+                        // Frame 3 to 20: Fully continuous spherical lock properties
                         depthFactor = 1.0;
                         ballButtonTexture.repeat.set(4.0, 1.0);
                         ballButtonTexture.offset.x = 0.375;
                     }
-                    // Apply depth factor to mesh scale
                     pingPongBallMesh.scale.z *= depthFactor;
-
                 } else {
-                    // Frames 21+: Post-serve sequence (Ball is now decoupled from the camera lens)
+                    // Fallback for frames 21+
                     pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
                 }
 
-                // Global Texture Maps & Loop Tickers
-                logoTexture.offset.y = rotationProgress;
-                drawWarpedButtonGraphics(rotationProgress);
+                // Global Top-Spin Texture Offsets
+                logoTexture.offset.y = currentProgress;
+                drawWarpedButtonGraphics(currentProgress);
                 ballButtonTexture.needsUpdate = true;
 
                 render();
+
             }
 
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
