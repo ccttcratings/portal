@@ -802,9 +802,6 @@
                 depthWrite: false
             });
 
-            // ==========================================
-            // PASTE THIS IN YOUR SCENE INITIALIZATION (NEAR THE NET SETUP)
-            // ==========================================
             const ballCanvas = document.createElement('canvas');
             ballCanvas.width = 512;
             ballCanvas.height = 1024;
@@ -814,45 +811,42 @@
                 ballCtx.clearRect(0, 0, 512, 1024);
                 ballCtx.fillStyle = '#fce5cd'; // Card background color
                 ballCtx.fillRect(0, 0, 512, 1024);
+                
+            const buttons = [
+            { text: 'Preview Mode', bg: '#6abf6e', y: 200 },
+            { text: 'Copy Preview URL', bg: '#a048a0', y: 400 },
+            { text: 'Edit Mode', bg: '#e87070', y: 600 },
+            { text: 'Portal Hub', bg: '#3ba8d6', y: 800 }
+        ];
 
-                const buttons = [
-                    { text: 'Preview Mode', bg: '#6abf6e', y: 200 },
-                    { text: 'Copy Preview URL', bg: '#a048a0', y: 400 },
-                    { text: 'Edit Mode', bg: '#e87070', y: 600 },
-                    { text: 'Portal Hub', bg: '#3ba8d6', y: 800 }
-                   ];
-                buttons.forEach(btn => {
-                    ballCtx.save();
-                    let currentY = (btn.y + offsetY * 1024) % 1024;
-                    if (currentY < 0) currentY += 1024;
+        buttons.forEach(btn => {
+            ballCtx.save();
+            let currentY = (btn.y + offsetY * 1024) % 1024;
+            if (currentY < 0) currentY += 1024;
 
-                    // Move to center of drawing layer
-                    ballCtx.translate(256, currentY);
-    
-                    // --- FIX STRETCHING MATH ---
-                    // Calculate vertical distance from the true center line (512)
-                    const distFromCenter = Math.abs(currentY - 512) / 512;
-    
-                    // Base compression factor: Compress the width heavily in the center (0.45) 
-                    // and naturally allow it to expand visually as it scales toward the poles.
-                    const scaleX = 0.42 + (distFromCenter * distFromCenter * 0.35);
-                    ballCtx.scale(scaleX, 1.0);
-                    // ----------------------------
+            // Move to center of drawing layer
+            ballCtx.translate(256, currentY);
 
-                    // Draw the button body pill shape
-                    ballCtx.fillStyle = btn.bg;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-220, -35, 440, 70, 14); // Slightly wider pill bounds inside compressed space
-                    ballCtx.fill();
+            // --- FIX STRETCHING MATH ---
+            const distFromCenter = Math.abs(currentY - 512) / 512;
+            const scaleX = 0.42 + (distFromCenter * distFromCenter * 0.35);
+            ballCtx.scale(scaleX, 1.0);
 
-                    // Render text label string sharp
-                    ballCtx.fillStyle = '#000000';
-                    ballCtx.font = 'bold 26px sans-serif';
-                    ballCtx.textAlign = 'center';
-                    ballCtx.textBaseline = 'middle';
-                    ballCtx.fillText(btn.text, 0, 0);
-                    ballCtx.restore();
-                });
+            // Draw the button body pill shape
+            ballCtx.fillStyle = btn.bg;
+            ballCtx.beginPath();
+            ballCtx.roundRect(-220, -35, 440, 70, 14);
+            ballCtx.fill();
+
+            // Render text label string sharp
+            ballCtx.fillStyle = '#000000';
+            ballCtx.font = 'bold 26px sans-serif';
+            ballCtx.textAlign = 'center';
+            ballCtx.textBaseline = 'middle';
+            ballCtx.fillText(btn.text, 0, 0);
+            ballCtx.restore();
+        });
+    }
 
             drawWarpedButtonGraphics(0);
 
