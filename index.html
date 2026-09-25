@@ -868,8 +868,8 @@
             const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
             const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
             pingPongBallMesh.castShadow = true;
-
-            // Elevate it right above the active table grid surface
+            pingPongBallMesh.renderOrder = 999;
+            ballMaterial.depthTest = false;
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
             // Physically inject it into your active 3D universe
