@@ -821,31 +821,39 @@
                     { text: 'Edit Mode', bg: '#e87070', y: 600 },
                     { text: 'Portal Hub', bg: '#3ba8d6', y: 800 }
                    ];
-
                 buttons.forEach(btn => {
                     ballCtx.save();
                     let currentY = (btn.y + offsetY * 1024) % 1024;
-                    if (currentY < -150) currentY += 1024;
-                    if (currentY > 1150) currentY -= 1024;
+                    if (currentY < 0) currentY += 1024;
 
+                    // Move to center of drawing layer
                     ballCtx.translate(256, currentY);
+    
+                    // --- FIX STRETCHING MATH ---
+                    // Calculate vertical distance from the true center line (512)
                     const distFromCenter = Math.abs(currentY - 512) / 512;
-                    const scaleX = Math.max(0.3, 1 - distFromCenter * distFromCenter * 0.7); // 3D Spherical Warping Math
-                    ballCtx.scale(scaleX, 1);
+    
+                    // Base compression factor: Compress the width heavily in the center (0.45) 
+                    // and naturally allow it to expand visually as it scales toward the poles.
+                    const scaleX = 0.42 + (distFromCenter * distFromCenter * 0.35);
+                    ballCtx.scale(scaleX, 1.0);
+                    // ----------------------------
 
+                    // Draw the button body pill shape
                     ballCtx.fillStyle = btn.bg;
                     ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -40, 400, 80, 16);
+                    ballCtx.roundRect(-220, -35, 440, 70, 14); // Slightly wider pill bounds inside compressed space
                     ballCtx.fill();
 
+                    // Render text label string sharp
                     ballCtx.fillStyle = '#000000';
-                    ballCtx.font = 'bold 28px sans-serif';
+                    ballCtx.font = 'bold 26px sans-serif';
                     ballCtx.textAlign = 'center';
                     ballCtx.textBaseline = 'middle';
                     ballCtx.fillText(btn.text, 0, 0);
                     ballCtx.restore();
                 });
-            }
+
             drawWarpedButtonGraphics(0);
 
             // Create the unique ball texture mapping
@@ -1217,6 +1225,21 @@
                     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
                 }
+
+                if (activeFrame === 1) {
+                    // Frame 1: Largest size, occupying most of the viewport
+                    pingPongBallMesh.scale.set(1.8, 1.8, 1.8);
+                    pingPongBallMesh.position.y = TABLE_H + (0.50 * 1.8);
+                } else if (activeFrame === 2) {
+                    // Frame 2: Mid-size step down
+                    pingPongBallMesh.scale.set(1.4, 1.4, 1.4);
+                    pingPongBallMesh.position.y = TABLE_H + (0.50 * 1.4);
+                } else {
+                    // Frames 3-18: Standard baseline scale sitting on the table
+                    pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+                    pingPongBallMesh.position.y = TABLE_H + 0.50;
+                }
+                
                 logoTexture.offset.y = (activeFrame / 18);
                 const rotationProgress = activeFrame / 18;
                 drawWarpedButtonGraphics(rotationProgress);
