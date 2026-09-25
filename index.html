@@ -1188,6 +1188,9 @@
                     ballLayer.style.display = 'block'; 
                     ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
                     card.style.transform = 'scale(1) translateY(0px)';
+                    container.style.width = '';
+                    container.style.left = '';
+                    container.style.transform = '';
                 if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
                 } else if (activeFrame >= 1 && activeFrame <= 2) {
                     // Frames 1-2: Reveal the Three.js container so our new 3D ball can be seen!
