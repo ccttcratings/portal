@@ -1211,6 +1211,7 @@
     
                     const scale = 1.0 - (activeFrame * 0.04); // Adjusted ratio to drop 4% instead of 5%
                     const yOffset = -(activeFrame * 24);
+                    card.style.transformOrigin = 'top center';
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
