@@ -78,6 +78,10 @@
             transform: scale(1) translateY(0); /* Frame 0 */
         }
 
+        .card.decorative {
+            pointer-events: none;
+        }
+
         h2 { 
             color: #000000 !important; 
             margin-bottom: 48px; 
@@ -230,6 +234,17 @@
                     btn.textContent = btn.getAttribute("data-label");
                     btn.classList.remove("copied");
                 }, 2000);
+
+                const card = document.getElementById('portal-card');
+                if (card) {
+                    card.classList.add('decorative');
+                    card.setAttribute('inert', '');
+                    card.querySelectorAll('a, button').forEach((el) => {
+                        el.setAttribute('tabindex', '-1');
+                        el.setAttribute('aria-disabled', 'true');
+                    });
+                    btn.blur();
+                }
             });
         }
 
