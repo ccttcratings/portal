@@ -1194,32 +1194,21 @@
                     container.style.width = '';
                     container.style.left = '';
                     container.style.transform = '';
-                if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-                } else if (activeFrame >= 1 && activeFrame <= 2) {
-                    // Frames 1-2: Reveal the Three.js container so our new 3D ball can be seen!
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                } else if (activeFrame >= 1 && activeFrame <= 20) {
+                    // --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
                     container.style.display = 'block'; 
-                    ballLayer.style.display = 'none'; // Keep the flat HTML element out of the way
+                    ballLayer.style.display = 'none'; 
     
-                    autoSize(); // Fires the camera calculations to position the ball correctly
+                    autoSize(); // Synchronize view matrices instantly
     
-                const scale = 1.0 - (activeFrame * 0.05);
-                const yOffset = -(activeFrame * 24);
-                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-    
-                if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px)`;
-                    
-                } else if (activeFrame >= 3 && activeFrame <= 20) {
-                    container.style.display = 'block';
-                    ballLayer.style.display = 'none';
-                    autoSize();
-                 
-                    const scale = 1.0 - (activeFrame * 0.05);
+                    const scale = 1.0 - (activeFrame * 0.04); // Adjusted ratio to drop 4% instead of 5%
                     const yOffset = -(activeFrame * 24);
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-                    
-                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
+    
+                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
                 }
-
+                
                 // ============================================================
                 // 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
                 // ============================================================
