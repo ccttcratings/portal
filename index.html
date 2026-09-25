@@ -856,9 +856,8 @@
             ballButtonTexture.wrapT = THREE.RepeatWrapping; 
 
             const ballMaterial = new THREE.MeshStandardMaterial({
-                map: ballButtonTexture, 
-                transparent: false,
-                alphaTest: 0.1,
+                map: ballButtonTexture,
+                transparent: true,
                 depthWrite: true,
                 depthTest: true,
                 roughness: 0.25,
