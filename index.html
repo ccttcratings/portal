@@ -1201,23 +1201,7 @@
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
     
                 if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px)`;
-                }
-
-
-
-
                     
-                } else if (activeFrame >= 1 && activeFrame <= 2) {
-                    // Frames 1-2: Scale down 5% per frame, raise 24px per frame. ZERO BACKGROUND REVEALED.
-                    container.style.display = 'block';
-                    ballLayer.style.display = 'none';  // Hide the flat HTML layer so it stops blocking the 3D scene!
-                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-                    
-                    const scale = 1.0 - (activeFrame * 0.05);
-                    const yOffset = -(activeFrame * 24);
-                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-                    
-                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px) | NO Background`;
                 } else if (activeFrame >= 3 && activeFrame <= 18) {
                     // Frames 3-18: Background revealed. Frame 3 ball = 115vh (card scale 0.85);
                     // ball diameter stays proportional to card scale: 115 / 0.85 = 135.29
