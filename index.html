@@ -1224,24 +1224,42 @@
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
                 }
 
-                if (activeFrame >= 1 && activeFrame <= 20) {
-                    const scaleFactor = 1.8 - ((activeFrame - 1) * 0.04);
-                    pingPongBallMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+                    if (activeFrame >= 1 && activeFrame <= 20) {
+                        // 1. Calculate a smooth scale reduction step down as it retreats
+                        const scaleFactor = 1.8 - ((activeFrame - 1) * 0.04);
+    
+                        // 2. --- NEW: DYNAMIC 3D DEPTH SQUASH (MORPH TO FLAT CARD ON FRAME 1) ---
+                        let depthFactor = 1.0; // Full spherical 3D depth by default
+                        if (activeFrame === 1) {
+                            depthFactor = 0.001; // Squash the Z-axis completely flat on Frame 1!
+                        } else if (activeFrame === 2) {
+                            depthFactor = 0.4;   // Frame 2: Start expanding out into 3D volume
+                        } else if (activeFrame === 3) {
+                            depthFactor = 0.8;   // Frame 3: Nearing full spherical geometry
+                        }
+    
+                        // Apply the dimensions: X and Y maintain scale, Z morphs the depth flatness
+                        pingPongBallMesh.scale.set(scaleFactor, scaleFactor, scaleFactor * depthFactor);
 
-                    const targetDirection = new THREE.Vector3();
-                    camera.getWorldDirection(targetDirection);
+                        // 3. Vector Math: Track camera center line alignment
+                        const targetDirection = new THREE.Vector3();
+                        camera.getWorldDirection(targetDirection);
 
-                    pingPongBallMesh.position.copy(camera.position)
-                        .addScaledVector(targetDirection, 1.2); 
-                } else {
-                    pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
-                }
+                        // Move the ball along the camera lens line
+                        // Frame 1 sits close (1.2), subsequent frames push deep into the 3D table space
+                        const distanceFactor = 1.2 + ((activeFrame - 1) * 0.08); 
+                        pingPongBallMesh.position.copy(camera.position)
+                            .addScaledVector(targetDirection, distanceFactor);
+        
+                    } else {
+                        pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+                    }
 
-                // Global Texture Maps & Loop Triggers
-                logoTexture.offset.y = (activeFrame / 20);
-                const rotationProgress = activeFrame / 20;
-                drawWarpedButtonGraphics(rotationProgress);
-                ballButtonTexture.needsUpdate = true;
+                    // Global Texture Maps & Loop Triggers
+                    const rotationProgress = activeFrame / 20;
+                    ballButtonTexture.offset.y = rotationProgress;
+                    drawWarpedButtonGraphics(rotationProgress);
+                    ballButtonTexture.needsUpdate = true;
 
                 render();
             }
