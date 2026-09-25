@@ -856,7 +856,10 @@
             ballButtonTexture.wrapT = THREE.RepeatWrapping; 
 
             const ballMaterial = new THREE.MeshStandardMaterial({
-                map: ballButtonTexture, // Connects your canvas artwork onto the mesh skin
+                map: ballButtonTexture, 
+                transparent: true,
+                alphaTest: 0.1,         // Drops fully transparent pixels instantly
+                depthWrite: true,       // Force the GPU depth buffer to hide background objects behind the ball
                 roughness: 0.25,
                 metalness: 0.1
             });
@@ -1218,42 +1221,61 @@
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
                 }
 
-                    if (activeFrame >= 1 && activeFrame <= 20) {
-                        // 1. Calculate a smooth scale reduction step down as it retreats
-                        const scaleFactor = 1.8 - ((activeFrame - 1) * 0.04);
-    
-                        // 2. --- NEW: DYNAMIC 3D DEPTH SQUASH (MORPH TO FLAT CARD ON FRAME 1) ---
-                        let depthFactor = 1.0; // Full spherical 3D depth by default
-                        if (activeFrame === 1) {
-                            depthFactor = 0.001; // Squash the Z-axis completely flat on Frame 1!
-                        } else if (activeFrame === 2) {
-                            depthFactor = 0.4;   // Frame 2: Start expanding out into 3D volume
-                        } else if (activeFrame === 3) {
-                            depthFactor = 0.8;   // Frame 3: Nearing full spherical geometry
-                        }
-    
-                        // Apply the dimensions: X and Y maintain scale, Z morphs the depth flatness
-                        pingPongBallMesh.scale.set(scaleFactor, scaleFactor, scaleFactor * depthFactor);
+                // ============================================================
+                // 🚀 UPDATED: FLUID 20-FRAME RETREAT, SCALING & TRANSITION MATRIX
+                // ============================================================
+                // Force timeline constraint range ceiling to 20 frames
+                const clampedFrame = Math.min(activeFrame, 20);
+                const rotationProgress = clampedFrame / 20;
 
-                        // 3. Vector Math: Track camera center line alignment
-                        const targetDirection = new THREE.Vector3();
-                        camera.getWorldDirection(targetDirection);
+                if (clampedFrame >= 1 && clampedFrame <= 20) {
+                    // Frame 1: Slightly smaller (1.6) and positioned slightly higher than baseline camera axis
+                    // Frame 20: Smoothly tapers down to a small ball (0.4) centered in view
+                    const progressFactor = (clampedFrame - 1) / 19; // Progress line across frames 1 to 20
+                    
+                    // Smoothly transition scale from 1.6 down to 0.4
+                    const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
+                    pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-                        // Move the ball along the camera lens line
-                        // Frame 1 sits close (1.2), subsequent frames push deep into the 3D table space
-                        const distanceFactor = 1.2 + ((activeFrame - 1) * 0.08); 
-                        pingPongBallMesh.position.copy(camera.position)
-                            .addScaledVector(targetDirection, distanceFactor);
-        
+                    // Track camera orientation vectors
+                    const targetDirection = new THREE.Vector3();
+                    camera.getWorldDirection(targetDirection);
+
+                    // Frame 1 sits closer to the screen. As progress hits 1.0 (Frame 20), it retreats deep into space
+                    const distanceFactor = THREE.MathUtils.lerp(1.15, 3.2, progressFactor);
+                    
+                    // Set base location along camera path
+                    pingPongBallMesh.position.copy(camera.position)
+                        .addScaledVector(targetDirection, distanceFactor);
+
+                    // Dynamic Texture Mapping to preserve pristine look on early frames
+                    let depthFactor = 1.0;
+                    if (clampedFrame === 1) {
+                        depthFactor = 0.001; // Squash depth completely flat on Frame 1 for pristine text
+                        ballButtonTexture.repeat.set(1.0, 1.0);
+                        ballButtonTexture.offset.x = 0.0;
+                    } else if (clampedFrame === 2) {
+                        depthFactor = 0.35;
+                        ballButtonTexture.repeat.set(2.0, 1.0);
+                        ballButtonTexture.offset.x = 0.125;
                     } else {
-                        pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+                        // Blend fully into round 3D sphere properties by Frame 3+
+                        depthFactor = 1.0;
+                        ballButtonTexture.repeat.set(4.0, 1.0);
+                        ballButtonTexture.offset.x = 0.375;
                     }
+                    // Apply depth factor to mesh scale
+                    pingPongBallMesh.scale.z *= depthFactor;
 
-                    // Global Texture Maps & Loop Triggers
-                    const rotationProgress = activeFrame / 20;
-                    ballButtonTexture.offset.y = rotationProgress;
-                    drawWarpedButtonGraphics(rotationProgress);
-                    ballButtonTexture.needsUpdate = true;
+                } else {
+                    // Frames 21+: Post-serve sequence (Ball is now decoupled from the camera lens)
+                    pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+                }
+
+                // Global Texture Maps & Loop Tickers
+                logoTexture.offset.y = rotationProgress;
+                drawWarpedButtonGraphics(rotationProgress);
+                ballButtonTexture.needsUpdate = true;
 
                 render();
             }
