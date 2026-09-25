@@ -859,12 +859,12 @@
             });
 
             // Standard ping-pong size metrics (~0.02m radius geometry scale)
-            const pingPongBallGeo = new THREE.SphereGeometry(0.02, 64, 64);
+            const pingPongBallGeo = new THREE.SphereGeometry(0.18, 64, 64);
             const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
             pingPongBallMesh.castShadow = true;
 
             // Elevate it right above the active table grid surface
-            pingPongBallMesh.position.set(0, TABLE_H + 0.02, 0); 
+            pingPongBallMesh.position.set(0, TABLE_H + 0.18, 0); 
 
             // Physically inject it into your active 3D universe
             scene.add(pingPongBallMesh);
