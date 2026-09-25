@@ -852,14 +852,14 @@
 
             // Create the unique ball texture mapping
             const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
-            ballButtonTexture.wrapS = THREE.RepeatWrapping; // Horizontal constraint
-            ballButtonTexture.wrapT = THREE.RepeatWrapping; // Vertical continuous loop
+            ballButtonTexture.wrapS = THREE.RepeatWrapping; 
+            ballButtonTexture.wrapT = THREE.RepeatWrapping; 
 
-            // Squeeze the horizontal map to 25% of its width, keep vertical at 100%
-            ballButtonTexture.repeat.set(4.0, 1.0); 
-
-            // Shift the horizontal center point over by 0.375 to align it directly in front
-            ballButtonTexture.offset.x = 0.375; 
+            const ballMaterial = new THREE.MeshStandardMaterial({
+                map: ballButtonTexture, 
+                roughness: 0.25,
+                metalness: 0.1
+            });
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture, // Connects your canvas artwork onto the mesh skin
