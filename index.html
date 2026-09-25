@@ -1168,7 +1168,7 @@
             });
 
             // =========================================================================
-            // FRAME CONTROLLER: 0 (100%), 1 to 2 (Zero background), 3 to 18 (Background revealed)
+            // FRAME CONTROLLER: 0 (100%), 1 to 2 (Zero background), 3 to 20 (Background revealed)
             // =========================================================================
             let activeFrame = 0;
             window.activeFrame = 0; // Expose globally for PTR logic
@@ -1176,7 +1176,7 @@
             const scrubHint = document.getElementById('scrub-hint');
 
             function applyFrame(frameNum) {
-                activeFrame = Math.max(0, Math.min(18, frameNum));
+                activeFrame = Math.max(0, Math.min(20, frameNum));
                 window.activeFrame = activeFrame;
 
                 const ballLayer = document.getElementById('ball-layer');
