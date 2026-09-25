@@ -799,7 +799,7 @@
                 alphaTest: 0.1,
                 side: THREE.DoubleSide,
                 roughness: 0.9,
-                depthWrite: false
+                depthWrite: true
             });
 
             const ballCanvas = document.createElement('canvas');
@@ -860,7 +860,7 @@
                 transparent: false,
                 alphaTest: 0.1,
                 depthWrite: true,
-                depthTest: false,
+                depthTest: true,
                 roughness: 0.25,
                 metalness: 0.1
             });
@@ -893,6 +893,7 @@
             const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
             netMesh.position.set(0, TABLE_H + NET_H / 2, NET_Z);
             netMesh.castShadow = true;
+            netMesh.renderOrder = 1;
             scene.add(netMesh);
 
             const cordMesh = new THREE.Mesh(
