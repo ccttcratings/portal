@@ -858,8 +858,9 @@
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture, 
                 transparent: false,
-                alphaTest: 0.1,         // Drops fully transparent pixels instantly
-                depthWrite: true,       // Force the GPU depth buffer to hide background objects behind the ball
+                alphaTest: 0.1,
+                depthWrite: true,
+                depthTest: false,
                 roughness: 0.25,
                 metalness: 0.1
             });
