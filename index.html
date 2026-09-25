@@ -801,6 +801,34 @@
                 roughness: 0.9,
                 depthWrite: false
             });
+
+            const logoCanvas = document.createElement('canvas');
+            logoCanvas.width = 512;
+            logoCanvas.height = 512;
+            const logoCtx = logoCanvas.getContext('2d');
+            logoCtx.fillStyle = '#ffcc00';
+            logoCtx.fillRect(0, 0, 512, 512);
+            logoCtx.fillStyle = '#000000';
+            logoCtx.font = 'bold 48px sans-serif';
+            logoCtx.textAlign = 'center';
+            logoCtx.fillText('PORTAL LOGO', 256, 256);
+            
+            const canvas2D = document.createElement('canvas');
+            canvas2D.width = 512;
+            canvas2D.height = 512;
+            const ctx2D = canvas2D.getContext('2d');
+
+            // Draw a placeholder graphic so you can see it working immediately
+            ctx2D.fillStyle = '#222';        // Background color of the card/logo area
+            ctx2D.fillRect(0, 0, 512, 512);
+            ctx2D.fillStyle = '#ff0055';     // Vibrant color for the logo graphics
+            ctx2D.font = 'bold 40px sans-serif';
+            ctx2D.textAlign = 'center';
+            ctx2D.fillText('BUTTON LOGO', 256, 256); 
+            // ----------------------------------------------------------------------
+
+            const logoTexture = new THREE.CanvasTexture(logoCanvas);
+            logoTexture.wrapT = THREE.RepeatWrapping;
             const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
             netMesh.position.set(0, TABLE_H + NET_H / 2, NET_Z);
             netMesh.castShadow = true;
@@ -1128,6 +1156,8 @@
                     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
                 }
+                logoTexture.offset.y = (activeFrame / 18);
+                render();
             }
 
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
