@@ -878,9 +878,6 @@
             // Physically inject it into your active 3D universe
             scene.add(pingPongBallMesh);
             // -------------------------------------------------------------
-
-
-
             
             const logoCanvas = document.createElement('canvas');
             logoCanvas.width = 512;
@@ -1227,24 +1224,25 @@
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
                 }
 
-                if (activeFrame === 1) {
-                    // Frame 1: Largest size, occupying most of the viewport
-                    pingPongBallMesh.scale.set(1.8, 1.8, 1.8);
-                    pingPongBallMesh.position.y = TABLE_H + (0.50 * 1.8);
-                } else if (activeFrame === 2) {
-                    // Frame 2: Mid-size step down
-                    pingPongBallMesh.scale.set(1.4, 1.4, 1.4);
-                    pingPongBallMesh.position.y = TABLE_H + (0.50 * 1.4);
+                if (activeFrame >= 1 && activeFrame <= 20) {
+                    const scaleFactor = 1.8 - ((activeFrame - 1) * 0.04);
+                    pingPongBallMesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+                    const targetDirection = new THREE.Vector3();
+                    camera.getWorldDirection(targetDirection);
+
+                    pingPongBallMesh.position.copy(camera.position)
+                        .addScaledVector(targetDirection, 1.2); 
                 } else {
-                    // Frames 3-18: Standard baseline scale sitting on the table
                     pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
-                    pingPongBallMesh.position.y = TABLE_H + 0.50;
                 }
-                
-                logoTexture.offset.y = (activeFrame / 18);
-                const rotationProgress = activeFrame / 18;
+
+                // Global Texture Maps & Loop Triggers
+                logoTexture.offset.y = (activeFrame / 20);
+                const rotationProgress = activeFrame / 20;
                 drawWarpedButtonGraphics(rotationProgress);
                 ballButtonTexture.needsUpdate = true;
+
                 render();
             }
 
