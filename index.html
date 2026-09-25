@@ -802,6 +802,77 @@
                 depthWrite: false
             });
 
+            // ==========================================
+            // PASTE THIS IN YOUR SCENE INITIALIZATION (NEAR THE NET SETUP)
+            // ==========================================
+            const ballCanvas = document.createElement('canvas');
+            ballCanvas.width = 512;
+            ballCanvas.height = 1024;
+            const ballCtx = ballCanvas.getContext('2d');
+
+            function drawWarpedButtonGraphics(offsetY = 0) {
+                ballCtx.clearRect(0, 0, 512, 1024);
+                ballCtx.fillStyle = '#fce5cd'; // Card background color
+                ballCtx.fillRect(0, 0, 512, 1024);
+
+                const buttons = [
+                    { text: 'Preview Mode', bg: '#6abf6e', y: 200 },
+                    { text: 'Copy Preview URL', bg: '#a048a0', y: 400 },
+                    { text: 'Edit Mode', bg: '#e87070', y: 600 },
+                    { text: 'Portal Hub', bg: '#3ba8d6', y: 800 }
+                   ];
+
+                buttons.forEach(btn => {
+                    ballCtx.save();
+                    let currentY = (btn.y + offsetY * 1024) % 1024;
+                    if (currentY < -150) currentY += 1024;
+                    if (currentY > 1150) currentY -= 1024;
+
+                    ballCtx.translate(256, currentY);
+                    const distFromCenter = Math.abs(currentY - 512) / 512;
+                    const scaleX = Math.max(0.3, 1 - distFromCenter * distFromCenter * 0.7); // 3D Spherical Warping Math
+                    ballCtx.scale(scaleX, 1);
+
+                    ballCtx.fillStyle = btn.bg;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-200, -40, 400, 80, 16);
+                    ballCtx.fill();
+
+                    ballCtx.fillStyle = '#000000';
+                    ballCtx.font = 'bold 28px sans-serif';
+                    ballCtx.textAlign = 'center';
+                    ballCtx.textBaseline = 'middle';
+                    ballCtx.fillText(btn.text, 0, 0);
+                    ballCtx.restore();
+                });
+            }
+            drawWarpedButtonGraphics(0);
+
+            // Create the unique ball texture mapping
+            const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
+            ballButtonTexture.wrapT = THREE.RepeatWrapping;
+
+            const ballMaterial = new THREE.MeshStandardMaterial({
+                map: ballButtonTexture, // Connects your canvas artwork onto the mesh skin
+                roughness: 0.25,
+                metalness: 0.1
+            });
+
+            // Standard ping-pong size metrics (~0.02m radius geometry scale)
+            const pingPongBallGeo = new THREE.SphereGeometry(0.02, 64, 64);
+            const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
+            pingPongBallMesh.castShadow = true;
+
+            // Elevate it right above the active table grid surface
+            pingPongBallMesh.position.set(0, TABLE_H + 0.02, 0); 
+
+            // Physically inject it into your active 3D universe
+            scene.add(pingPongBallMesh);
+            // -------------------------------------------------------------
+
+
+
+            
             const logoCanvas = document.createElement('canvas');
             logoCanvas.width = 512;
             logoCanvas.height = 512;
@@ -813,20 +884,6 @@
             logoCtx.textAlign = 'center';
             logoCtx.fillText('PORTAL LOGO', 256, 256);
             
-            const canvas2D = document.createElement('canvas');
-            canvas2D.width = 512;
-            canvas2D.height = 512;
-            const ctx2D = canvas2D.getContext('2d');
-
-            // Draw a placeholder graphic so you can see it working immediately
-            ctx2D.fillStyle = '#222';        // Background color of the card/logo area
-            ctx2D.fillRect(0, 0, 512, 512);
-            ctx2D.fillStyle = '#ff0055';     // Vibrant color for the logo graphics
-            ctx2D.font = 'bold 40px sans-serif';
-            ctx2D.textAlign = 'center';
-            ctx2D.fillText('BUTTON LOGO', 256, 256); 
-            // ----------------------------------------------------------------------
-
             const logoTexture = new THREE.CanvasTexture(logoCanvas);
             logoTexture.wrapT = THREE.RepeatWrapping;
             const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
@@ -1151,12 +1208,12 @@
                     const yOffset = -(activeFrame * 24);
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
                     
-                    const ballDiameterVh = scale * (115 / 0.85);
-                    ballLayer.style.clipPath = `circle(${(ballDiameterVh / 2).toFixed(2)}vh at 50% 50%)`;
-                    
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Background Revealed, Ball: ${ballDiameterVh.toFixed(1)}vh) | Scroll Up/Down`;
                 }
                 logoTexture.offset.y = (activeFrame / 18);
+                const rotationProgress = activeFrame / 18;
+                drawWarpedButtonGraphics(rotationProgress);
+                ballButtonTexture.needsUpdate = true;
                 render();
             }
 
