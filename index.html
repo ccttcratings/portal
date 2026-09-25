@@ -1208,12 +1208,11 @@
     
                 if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} (Scale: ${Math.round(scale*100)}%, Raised: ${-yOffset}px)`;
                     
-                } else if (activeFrame >= 3 && activeFrame <= 18) {
-                    // Frames 3-18: Background revealed. Frame 3 ball = 115vh (card scale 0.85);
-                    // ball diameter stays proportional to card scale: 115 / 0.85 = 135.29
+                } else if (activeFrame >= 3 && activeFrame <= 20) {
                     container.style.display = 'block';
+                    ballLayer.style.display = 'none';
                     autoSize();
-                    
+                 
                     const scale = 1.0 - (activeFrame * 0.05);
                     const yOffset = -(activeFrame * 24);
                     card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
