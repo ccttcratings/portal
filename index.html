@@ -79,29 +79,26 @@
         }
 
         /* ============================================================
-           🛠️ CSS FIX: CENTER INGUN SPINNER INSIDE THE CARD LAYOUT
+           🔄 PULL-TO-REFRESH (PTR) INGUN SPINNER STYLING
            ============================================================ */
-        /* Update the parent wrapper to anchor and center the graphic box */
         #ptr {
-            display: none;              /* Hidden by default */
+            display: none;              /* Hidden by default until pulled */
             width: 100%;                
-            height: 60px;               /* Reduced height so it occupies less structural footprint */
-            position: absolute;         /* ◄--- Keeps it locked to the top, won't push card padding */
-            top: -50px;                 /* ◄--- Positioned just above the card or header */
-            left: 0;
+            height: 80px;               /* Bounding space */
+            position: relative;         /* Keeps it in the document flow smoothly */
+            margin: -20px auto 10px;    /* Sits right at the top header boundary */
             justify-content: center;
             align-items: center;
             pointer-events: none;       
             z-index: 20;
         }
 
+        /* Spinner container wrapper */
         #ptr-svg {
-            position: absolute;
+            position: relative;
             width: 48px;
             height: 48px;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(2.4); 
+            transform: scale(2.4);      /* Base scaling */
             transform-origin: center;
             transform-box: fill-box; 
         }
@@ -113,19 +110,19 @@
             transform-box: fill-box;
         }
 
-        /* Fletchings hidden during final full spin */
+        /* Fletchings hidden during spin */
         #ptr.spin #g79 {
             opacity: 0;
         }
 
-        /* spin whole image after release */
+        /* spin whole image during release state */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
 
         @keyframes ptrSpin {
-            from { transform: translate(-50%, -50%) scale(2.4) rotate(0deg); }
-            to   { transform: translate(-50%, -50%) scale(2.4) rotate(360deg); }
+            from { transform: scale(2.4) rotate(0deg); }
+            to   { transform: scale(2.4) rotate(360deg); }
         }
             
         #g1 { 
