@@ -76,10 +76,16 @@
             padding: 24px 28px 20px;
             border-radius: 12px;
             text-align: center;
-            position: relative;
+            
+            /* --- UPDATE POSITIONING TO AN ABSOLUTE CEILING LOCK --- */
+            position: absolute;      /* Rips it out of loose layout boxes */
+            top: 40px;               /* ◄--- SETS PERFECT TOP SPACING ON BOTH PC AND PHONE */
+            left: 50%;               /* Centers horizontally */
+            transform: translateX(-50%) scale(1) translateY(0); /* Centers the horizontal pivot */
+            transform-origin: top center; /* Ensures frame scaling shrinks UPWARD */
+            
             z-index: 10;
             transition: transform 0.15s linear;
-            transform: scale(1) translateY(0); /* Frame 0 */
         }
 
         .card.decorative {
@@ -1212,7 +1218,7 @@
                     const scale = 1.0 - (activeFrame * 0.04); // Adjusted ratio to drop 4% instead of 5%
                     const yOffset = -(activeFrame * 24);
                     card.style.transformOrigin = 'top center';
-                    card.style.transform = `scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOff
     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
                 }
