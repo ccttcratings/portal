@@ -1596,6 +1596,8 @@ const ingunSound = new Audio('./IngunChant.m4a');
             }
         }
 
+const fletchingsObj = document.getElementById('g79');
+
         function onPullProgressing(clientY) {
             if (dragStartPointY === 0 || !ptrContainerObj) return;
     
@@ -1604,10 +1606,16 @@ const ingunSound = new Audio('./IngunChant.m4a');
             if (calculatedDelta > 0) {
                 distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
         
-                // Use flex to match your intended CSS layout structure
+                // Make sure it's visible without shifting layout padding
                 ptrContainerObj.style.display = 'flex';
-                ptrContainerObj.style.transform = `translateY(${distanceSwipedY * 0.3}px)`;
                 ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
+
+                // 🔥 Tie the swipe distance directly to the arrow/fletching rotation angle!
+                // As you drag down, #g79 rotates proportionally. Maxes out around 360deg at threshold.
+                if (fletchingsObj) {
+                    const rotationAngle = (distanceSwipedY / sweepReloadThreshold) * 360;
+                    fletchingsObj.style.transform = `rotate(${rotationAngle}deg)`;
+                }
             }
         }
 
@@ -1615,9 +1623,14 @@ const ingunSound = new Audio('./IngunChant.m4a');
             if (!ptrContainerObj) return;
 
             if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: Start spinning
+                // Threshold crossed: Start full container spin
                 ptrContainerObj.classList.add('spin');
                 ptrContainerObj.style.opacity = '1.0';
+
+                // Reset fletching transform so the CSS keyframe animation takes over cleanly
+                if (fletchingsObj) {
+                    fletchingsObj.style.transform = '';
+                }
 
                 // --- SAFE LAZY AUDIO INTERFACE ---
                 try {
@@ -1632,36 +1645,13 @@ const ingunSound = new Audio('./IngunChant.m4a');
             } else {
                 ptrContainerObj.style.display = 'none';
                 ptrContainerObj.classList.remove('spin');
-                ptrContainerObj.style.transform = '';
+                if (fletchingsObj) {
+                    fletchingsObj.style.transform = '';
+                }
             }
             dragStartPointY = 0;
             distanceSwipedY = 0;
         }
-
-        // FIXED EVENT BINDINGS: Properly extract index [0] for touch events 📱 & handle mouse cleanly 💻
-        window.addEventListener('touchstart', (e) => {
-            if (e.touches && e.touches.length > 0) {
-                onPullInitiated(e.touches[0].clientY);
-            }
-        }, { passive: true });
-
-        window.addEventListener('touchmove', (e) => {
-            if (e.touches && e.touches.length > 0) {
-                onPullProgressing(e.touches[0].clientY);
-            }
-        }, { passive: true });
-
-        window.addEventListener('touchend', onPullTerminated);
-
-        window.addEventListener('mousedown', (e) => {
-            onPullInitiated(e.clientY);
-        });
-
-        window.addEventListener('mousemove', (e) => { 
-            if (e.buttons === 1) {
-                onPullProgressing(e.clientY); 
-            }
-        });
         
         window.addEventListener('mouseup', onPullTerminated);
     </script>
