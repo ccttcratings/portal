@@ -83,13 +83,12 @@
            ============================================================ */
         /* Update the parent wrapper to anchor and center the graphic box */
         #ptr {
-            display: flex;              /* Hidden by default until pulled */
+            display: none;              /* Hidden by default until pulled */
             width: 100%;                /* Span full card width to handle horizontal alignment */
             height: 110px;              /* Provide comfortable bounding space for scaled SVG */
             position: relative;         /* ◄--- CRUCIAL: Creates the boundary anchor line for the SVG! */
             margin: 0 auto 10px;
             pointer-events: none;       /* ◄--- FORCES CLICKS TO PASS STRAIGHT THROUGH TO THE TRACKER */
-        }
         }
 
         /* Spinner stays 48×48 but scaled up and centered mathematically */
