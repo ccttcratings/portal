@@ -1193,7 +1193,7 @@
                 window.activeFrame = activeFrame;
 
                 const ballLayer = document.getElementById('ball-layer');
-                const card = document.getElementById('portal-card');
+                const card = document.querySelector('.card');
                 const container = document.getElementById('canvas-container');
 
                 if (!card || !container || !ballLayer) return;
@@ -1215,10 +1215,9 @@
     
                     autoSize(); // Synchronize view matrices instantly
     
-                    const scale = 1.0 - (activeFrame * 0.04); // Adjusted ratio to drop 4% instead of 5%
+                    const scale = 1.0 - (activeFrame * 0.04);
                     const yOffset = -(activeFrame * 24);
-                    card.style.transformOrigin = 'top center';
-                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOff
+                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffs
     
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
                 }
