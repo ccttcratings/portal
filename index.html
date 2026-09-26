@@ -1593,7 +1593,7 @@ const ingunSound = new Audio('./IngunChant.m4a');
             }
         }
 
-const fletchingsObj = document.getElementById('g79');
+        const fletchingsObj = document.getElementById('g79');
 
         function onPullProgressing(clientY) {
             if (dragStartPointY === 0 || !ptrContainerObj) return;
@@ -1603,12 +1603,11 @@ const fletchingsObj = document.getElementById('g79');
             if (calculatedDelta > 0) {
                 distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
         
-                // Make sure it's visible without shifting layout padding
+                // Show container
                 ptrContainerObj.style.display = 'flex';
                 ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
 
-                // 🔥 Tie the swipe distance directly to the arrow/fletching rotation angle!
-                // As you drag down, #g79 rotates proportionally. Maxes out around 360deg at threshold.
+                // Dynamically rotate just the fletchings based on drag distance
                 if (fletchingsObj) {
                     const rotationAngle = (distanceSwipedY / sweepReloadThreshold) * 360;
                     fletchingsObj.style.transform = `rotate(${rotationAngle}deg)`;
@@ -1620,11 +1619,11 @@ const fletchingsObj = document.getElementById('g79');
             if (!ptrContainerObj) return;
 
             if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: Start full container spin
+                // Threshold crossed: Start full spinning animation
                 ptrContainerObj.classList.add('spin');
                 ptrContainerObj.style.opacity = '1.0';
 
-                // Reset fletching transform so the CSS keyframe animation takes over cleanly
+                // Clear inline rotation so keyframe animation takes over cleanly
                 if (fletchingsObj) {
                     fletchingsObj.style.transform = '';
                 }
