@@ -1574,6 +1574,71 @@
             });
 
         })();
+
+        // ============================================================================
+        // 🔄 CONSOLIDATED SWIPE/DRAG INTERACTION CONTROLLER INTERFACE
+        // ============================================================================
+        let dragStartPointY = 0;
+        let distanceSwipedY = 0;
+        const sweepReloadThreshold = 85; // Target drag length in pixels
+        const ptrContainerObj = document.getElementById('ptr');
+
+        function onPullInitiated(clientY) {
+            // Only capture gesture tracking routines when active on Frame 0
+            if (typeof activeFrame !== 'undefined' && activeFrame === 0) {
+                dragStartPointY = clientY;
+            }
+        }
+
+        function onPullProgressing(clientY) {
+            if (dragStartPointY === 0 || !ptrContainerObj) return;
+    
+            const calculatedDelta = clientY - dragStartPointY;
+    
+            // Process downward pull tracking increments exclusively
+            if (calculatedDelta > 0) {
+                distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
+        
+                // Unhide element workspace container
+                ptrContainerObj.style.display = 'block';
+        
+                // Dynamically shift the container block downwards based on pull progress
+                ptrContainerObj.style.transform = `translateY(${distanceSwipedY * 0.3}px)`;
+                ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
+            }
+        }
+
+        function onPullTerminated() {
+            if (!ptrContainerObj) return;
+
+            if (distanceSwipedY >= sweepReloadThreshold) {
+                // Threshold verified: Activate hardware-accelerated spin animation
+                ptrContainerObj.classList.add('spin');
+                ptrContainerObj.style.opacity = '1.0';
+
+                // Brief cinematic pause to showcase rotation before updating window thread context
+                setTimeout(() => {
+                    location.reload(true);
+                }, 450);
+            } else {
+                // If swipe gesture was discarded or incomplete, hide container clean
+                ptrContainerObj.style.display = 'none';
+                ptrContainerObj.classList.remove('spin');
+            }
+            dragStartPointY = 0;
+            distanceSwipedY = 0;
+        }
+
+        // Map Touch Action Triggers for Android Chrome, Firefox & Opera
+        window.addEventListener('touchstart', (e) => onPullInitiated(e.touches.clientY), { passive: true });
+        window.addEventListener('touchmove', (e) => onPullProgressing(e.touches.clientY), { passive: true });
+        window.addEventListener('touchend', onPullTerminated);
+
+        // Map Mouse Fallbacks for Simple PC Local Web Debugging Previews
+        window.addEventListener('mousedown', (e) => onPullInitiated(e.clientY));
+        window.addEventListener('mousemove', (e) => { if (e.buttons === 1) onPullProgressing(e.clientY); });
+        window.addEventListener('mouseup', onPullTerminated);
+
     </script>
 </body>
 </html>
