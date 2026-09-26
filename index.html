@@ -82,7 +82,7 @@
            🔄 PULL-TO-REFRESH (PTR) INGUN SPINNER STYLING
            ============================================================ */
         #ptr {
-            position: absolute; /* Default: NOT fixed during scroll */
+            position: absolute; 
             top: 0;
             left: 50%;
             width: 64px;
@@ -91,7 +91,7 @@
             margin-top: -68px;
             z-index: 9999;
             pointer-events: none;
-            opacity: 0;         /* Hidden by default until pulled */
+            opacity: 0;         
             transition: opacity 0.15s;
             display: flex;
             justify-content: center;
@@ -103,7 +103,7 @@
             position: fixed !important;
         }
 
-        /* Spinner stays 48×48 but scaled up */
+        /* Spinner container */
         #ptr-svg {
             position: absolute;
             width: 48px;
@@ -115,19 +115,14 @@
             transform-box: fill-box; 
         }
 
-        /* Fletchings visible normally and used for swipe rotation */
-        #g79 {
-            opacity: 1;
-            transform-origin: center;
-            transform-box: fill-box;
-        }
+        /* 
+           If your arrow, arrow point, and fletchings are grouped inside a specific 
+           element or ID (e.g., let's assume they are inside a group or we rotate 
+           the whole #ptr-svg container uniformly so everything locked together spins), 
+           rotating #ptr-svg directly rotates the entire arrow unit together.
+        */
 
-        /* Fletchings hidden during final infinite spin */
-        #ptr.spin #g79 {
-            opacity: 0;
-        }
-
-        /* spin whole image after release — preserves scale */
+        /* Keep background elements static if they are separate, or let #ptr-svg drive the unified arrow spin */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
@@ -1596,10 +1591,9 @@
         let distanceSwipedY = 0;
         const sweepReloadThreshold = 85; 
         const ptrContainerObj = document.getElementById('ptr');
-        const fletchingsObj = document.getElementById('g79');
+        const ptrSvgObj = document.getElementById('ptr-svg'); // The unified container holding the arrow components
 
         function onPullInitiated(clientY) {
-            // Only trigger if we are at the very top of the page/view context
             if (window.scrollY <= 5) {
                 dragStartPointY = clientY;
             }
@@ -1613,17 +1607,17 @@
             if (calculatedDelta > 0) {
                 distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 40);
         
-                // Lock position via Portal 2's .ptr-fixed class and make visible
+                // Lock position and fade in
                 ptrContainerObj.classList.add('ptr-fixed');
                 ptrContainerObj.style.opacity = '1';
 
-                // Shift down container smoothly with translation matching drag
+                // Shift down container matching the drag
                 ptrContainerObj.style.transform = `translateY(${Math.min(distanceSwipedY, sweepReloadThreshold + 10)}px)`;
 
-                // 🔄 Rotate ONLY the fletchings (#g79) during the swipe pull
-                if (fletchingsObj && !ptrContainerObj.classList.contains('spin')) {
+                // 🔄 Rotate the ENTIRE arrow assembly (arrow, point, and fletchings attached) together during swipe
+                if (ptrSvgObj && !ptrContainerObj.classList.contains('spin')) {
                     const rotationAngle = (distanceSwipedY / sweepReloadThreshold) * 360;
-                    fletchingsObj.style.transform = `rotate(${rotationAngle}deg)`;
+                    ptrSvgObj.style.transform = `scale(2.4) rotate(${rotationAngle}deg)`;
                 }
             }
         }
@@ -1632,12 +1626,12 @@
             if (!ptrContainerObj) return;
 
             if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: trigger full spin state (hides fletchings via CSS, starts keyframe spin)
+                // Threshold crossed: trigger full continuous spin state via CSS animation
                 ptrContainerObj.classList.add('spin');
                 ptrContainerObj.style.opacity = '1';
                 
-                if (fletchingsObj) {
-                    fletchingsObj.style.transform = ''; // Clear inline rotation so CSS takes over cleanly
+                if (ptrSvgObj) {
+                    ptrSvgObj.style.transform = ''; // Clear inline override so CSS @keyframes takes over smoothly
                 }
 
                 // --- SAFE LAZY AUDIO INTERFACE ---
@@ -1651,12 +1645,12 @@
                     location.reload(true);
                 }, 550);
             } else {
-                // Reset everything if user cancels swipe under threshold
+                // Reset if cancelled under threshold
                 ptrContainerObj.classList.remove('ptr-fixed', 'spin');
                 ptrContainerObj.style.opacity = '0';
                 ptrContainerObj.style.transform = '';
-                if (fletchingsObj) {
-                    fletchingsObj.style.transform = '';
+                if (ptrSvgObj) {
+                    ptrSvgObj.style.transform = 'scale(2.4) rotate(0deg)';
                 }
             }
             dragStartPointY = 0;
