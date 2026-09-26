@@ -1610,32 +1610,29 @@
             } // ◄--- This closes your 'if' statement
         } // ◄--- This closes your 'onPullProgressing' function clean! (No extra bracket here anymore)
 
-        function onPullTerminated() {
-            if (!ptrContainerObj) return;
+// ============================================================================
+// 🛠️ ISOLATION TEST: REMOVED ALL AUDIO TO CHECK ANIMATION COMPILE
+// ============================================================================
+function onPullTerminated() {
+    if (!ptrContainerObj) return;
 
-            if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: Start spinning
-                ptrContainerObj.classList.add('spin');
-                ptrContainerObj.style.opacity = '1.0';
+    if (distanceSwipedY >= sweepReloadThreshold) {
+        // Activate standard hardware spinner properties
+        ptrContainerObj.classList.add('spin');
+        ptrContainerObj.style.opacity = '1.0';
 
-                // --- SAFE LAZY AUDIO INTERFACE ---
-                try {
-                    const ingunSound = new Audio('ingun.m4a');
-                    ingunSound.play().catch(err => console.log("Audio deferred: ", err));
-                } catch(audioError) {
-                    console.log("Audio skipped: ", audioError);
-                }
+        // --- ALL AUDIO INITIALIZATION REMOVED FROM HERE ---
 
-                setTimeout(() => {
-                    location.reload(true);
-                }, 550);
-            } else {
-                ptrContainerObj.style.display = 'none';
-                ptrContainerObj.classList.remove('spin');
-            }
-            dragStartPointY = 0;
-            distanceSwipedY = 0;
-        }
+        setTimeout(() => {
+            location.reload(true);
+        }, 550);
+    } else {
+        ptrContainerObj.style.display = 'none';
+        ptrContainerObj.classList.remove('spin');
+    }
+    dragStartPointY = 0;
+    distanceSwipedY = 0;
+}
 
         // Event bindings remain exactly the same
         window.addEventListener('touchstart', (e) => onPullInitiated(e.touches.clientY), { passive: true });
