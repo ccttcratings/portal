@@ -1598,13 +1598,17 @@
 
         function onPullProgressing(clientY) {
             if (dragStartPointY === 0 || !ptrContainerObj) return;
+    
             const calculatedDelta = clientY - dragStartPointY;
+    
             if (calculatedDelta > 0) {
                 distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
+        
                 ptrContainerObj.style.display = 'block';
                 ptrContainerObj.style.transform = `translateY(${distanceSwipedY * 0.3}px)`;
                 ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
-        }
+            } // ◄--- This closes your 'if' statement
+        } // ◄--- This closes your 'onPullProgressing' function clean! (No extra bracket here anymore)
 
         function onPullTerminated() {
             if (!ptrContainerObj) return;
@@ -1614,15 +1618,17 @@
                 ptrContainerObj.classList.add('spin');
                 ptrContainerObj.style.opacity = '1.0';
 
-                // --- 🚀 2. PLAY THE SOUND THE EXACT EXECUTING MILLISECOND ---
-                ingunSound.play().catch(err => {
-                    console.log("Audio playback waiting for an active user gesture: ", err);
-                });
+                // --- SAFE LAZY AUDIO INTERFACE ---
+                try {
+                    const ingunSound = new Audio('ingun.m4a');
+                    ingunSound.play().catch(err => console.log("Audio deferred: ", err));
+                } catch(audioError) {
+                    console.log("Audio skipped: ", audioError);
+                }
 
-                // Cinematic pause to let the spinner rotate and sound play before reloading
                 setTimeout(() => {
                     location.reload(true);
-                }, 550); // Slightly increased to 550ms so your chant audio doesn't cut off instantly
+                }, 550);
             } else {
                 ptrContainerObj.style.display = 'none';
                 ptrContainerObj.classList.remove('spin');
