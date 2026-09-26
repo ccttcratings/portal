@@ -1217,8 +1217,7 @@
     
                     const scale = 1.0 - (activeFrame * 0.04);
                     const yOffset = -(activeFrame * 24);
-                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffs
-    
+                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
                     if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
                 }
                 
