@@ -1613,15 +1613,29 @@ function onPullTerminated() {
     if (!ptrContainerObj) return;
 
     if (distanceSwipedY >= sweepReloadThreshold) {
-        // Activate standard hardware spinner properties
         ptrContainerObj.classList.add('spin');
         ptrContainerObj.style.opacity = '1.0';
 
-        // --- ALL AUDIO INITIALIZATION REMOVED FROM HERE ---
+        try {
+            const ingunSound = new Audio('./ingun.m4a');
+            
+            // --- 🛠️ THE CROSS-PLATFORM INTERACTION SYNC LOCK ---
+            // Tell the browser to wait until the sound is 100% finished playing before reloading!
+            ingunSound.onended = function() {
+                location.reload(true);
+            };
 
-        setTimeout(() => {
+            // Play the chant file natively
+            ingunSound.play().catch(err => {
+                console.log("Audio deferred: ", err);
+                // Fallback: If audio fails or is blocked by browser rules, reload anyway so the page doesn't freeze
+                location.reload(true);
+            });
+            
+        } catch(audioError) {
+            console.log("Audio pipeline failed: ", audioError);
             location.reload(true);
-        }, 550);
+        }
     } else {
         ptrContainerObj.style.display = 'none';
         ptrContainerObj.classList.remove('spin');
@@ -1629,6 +1643,7 @@ function onPullTerminated() {
     dragStartPointY = 0;
     distanceSwipedY = 0;
 }
+
 
         // Event bindings remain exactly the same
         window.addEventListener('touchstart', (e) => onPullInitiated(e.touches.clientY), { passive: true });
