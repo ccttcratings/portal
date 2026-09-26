@@ -82,42 +82,52 @@
            🔄 PULL-TO-REFRESH (PTR) INGUN SPINNER STYLING
            ============================================================ */
         #ptr {
-            display: flex;              
-            visibility: hidden;         
-            opacity: 0;
-            width: 100vw;               
-            height: 60px;
-            position: absolute;
-            top: -60px;                 
-            left: 0;
+            position: absolute; /* Default: NOT fixed during scroll */
+            top: 0;
+            left: 50%;
+            width: 64px;
+            height: 64px;
+            margin-left: -32px;
+            margin-top: -68px;
+            z-index: 9999;
+            pointer-events: none;
+            opacity: 0;         /* Hidden by default until pulled */
+            transition: opacity 0.15s;
+            display: flex;
             justify-content: center;
             align-items: center;
-            pointer-events: none;       
-            z-index: 100;
-            transition: opacity 0.1s ease;
         }
 
-        #ptr.visible {
-            visibility: visible;
-            opacity: 1;
+        /* Fixed only during PTR pull */
+        .ptr-fixed {
+            position: fixed !important;
         }
 
-        /* Entire SVG acts as the unit that scales and rotates together */
+        /* Spinner stays 48×48 but scaled up */
         #ptr-svg {
-            position: relative;
+            position: absolute;
             width: 48px;
             height: 48px;
+            top: 8px;
+            left: 8px;
             transform: scale(2.4);
             transform-origin: center;
             transform-box: fill-box; 
         }
 
-        /* Fletchings stay attached to the arrow body natively */
+        /* Fletchings visible normally and used for swipe rotation */
         #g79 {
             opacity: 1;
+            transform-origin: center;
+            transform-box: fill-box;
         }
 
-        /* spin whole image seamlessly when released past threshold */
+        /* Fletchings hidden during final infinite spin */
+        #ptr.spin #g79 {
+            opacity: 0;
+        }
+
+        /* spin whole image after release — preserves scale */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
@@ -126,7 +136,7 @@
             from { transform: scale(2.4) rotate(0deg); }
             to   { transform: scale(2.4) rotate(360deg); }
         }
-            
+        
         #g1 { 
             transform-origin: 32px 32px; 
         }
@@ -1580,17 +1590,19 @@
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
-        // 1. Initialize your new audio asset at the top of the interaction block
         const ingunSound = new Audio('./IngunChant.m4a'); 
 
         let dragStartPointY = 0;
         let distanceSwipedY = 0;
         const sweepReloadThreshold = 85; 
         const ptrContainerObj = document.getElementById('ptr');
-        const ptrSvgObj = document.getElementById('ptr-svg'); // ◄--- Target the whole SVG wrapper
+        const fletchingsObj = document.getElementById('g79');
 
         function onPullInitiated(clientY) {
-            dragStartPointY = clientY;
+            // Only trigger if we are at the very top of the page/view context
+            if (window.scrollY <= 5) {
+                dragStartPointY = clientY;
+            }
         }
 
         function onPullProgressing(clientY) {
@@ -1599,19 +1611,19 @@
             const calculatedDelta = clientY - dragStartPointY;
     
             if (calculatedDelta > 0) {
-                distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 30);
+                distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 40);
         
-                // Make visible
-                ptrContainerObj.classList.add('visible');
+                // Lock position via Portal 2's .ptr-fixed class and make visible
+                ptrContainerObj.classList.add('ptr-fixed');
+                ptrContainerObj.style.opacity = '1';
 
-                // Shift down container smoothly
-                ptrContainerObj.style.transform = `translateY(${Math.min(distanceSwipedY, sweepReloadThreshold)}px)`;
+                // Shift down container smoothly with translation matching drag
+                ptrContainerObj.style.transform = `translateY(${Math.min(distanceSwipedY, sweepReloadThreshold + 10)}px)`;
 
-                // 🔥 Rotate the ENTIRE arrow unit (#ptr-svg) progressively based on swipe distance
-                if (ptrSvgObj && !ptrContainerObj.classList.contains('spin')) {
-                    // Multiplied so it can spin multiple full rotations if dragged further, or scale smoothly
+                // 🔄 Rotate ONLY the fletchings (#g79) during the swipe pull
+                if (fletchingsObj && !ptrContainerObj.classList.contains('spin')) {
                     const rotationAngle = (distanceSwipedY / sweepReloadThreshold) * 360;
-                    ptrSvgObj.style.transform = `scale(2.4) rotate(${rotationAngle}deg)`;
+                    fletchingsObj.style.transform = `rotate(${rotationAngle}deg)`;
                 }
             }
         }
@@ -1620,15 +1632,15 @@
             if (!ptrContainerObj) return;
 
             if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: trigger full CSS infinite spin animation
+                // Threshold crossed: trigger full spin state (hides fletchings via CSS, starts keyframe spin)
                 ptrContainerObj.classList.add('spin');
+                ptrContainerObj.style.opacity = '1';
                 
-                // Clear inline rotation style so the CSS @keyframes animation takes over cleanly without freezing
-                if (ptrSvgObj) {
-                    ptrSvgObj.style.transform = ''; 
+                if (fletchingsObj) {
+                    fletchingsObj.style.transform = ''; // Clear inline rotation so CSS takes over cleanly
                 }
 
-                // --- AUDIO INTERFACE ---
+                // --- SAFE LAZY AUDIO INTERFACE ---
                 try {
                     ingunSound.play().catch(err => console.log("Audio deferred: ", err));
                 } catch(audioError) {
@@ -1639,18 +1651,19 @@
                     location.reload(true);
                 }, 550);
             } else {
-                // Reset states if pulled under threshold
-                ptrContainerObj.classList.remove('visible', 'spin');
+                // Reset everything if user cancels swipe under threshold
+                ptrContainerObj.classList.remove('ptr-fixed', 'spin');
+                ptrContainerObj.style.opacity = '0';
                 ptrContainerObj.style.transform = '';
-                if (ptrSvgObj) {
-                    ptrSvgObj.style.transform = 'scale(2.4)'; // Reset back to default scale, 0 rotation
+                if (fletchingsObj) {
+                    fletchingsObj.style.transform = '';
                 }
             }
             dragStartPointY = 0;
             distanceSwipedY = 0;
         }
 
-        // Event bindings
+        // Event Listeners
         window.addEventListener('touchstart', (e) => {
             if (e.touches && e.touches.length > 0) onPullInitiated(e.touches[0].clientY);
         }, { passive: true });
