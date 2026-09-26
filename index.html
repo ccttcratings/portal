@@ -98,12 +98,10 @@
             align-items: center;
         }
 
-        /* Fixed only during PTR pull */
         .ptr-fixed {
             position: fixed !important;
         }
 
-        /* Spinner container */
         #ptr-svg {
             position: absolute;
             width: 48px;
@@ -115,17 +113,23 @@
             transform-box: fill-box; 
         }
 
+        /* Perfectly center the rotation axis over the graphic's local box center */
         #g1 { 
-            transform-origin: 24px 24px; /* Centers the pivot point directly on the 48x48 grid layout */
-            transform-box: view-box;     /* Evaluates relative to the SVG view box coordinate space */
+            transform-origin: center; 
+            transform-box: fill-box; 
         }
 
-        /* Fixed only during PTR pull */
-        .ptr-fixed {
-            position: fixed !important;
+        /* Fletchings visible normally during swipe */
+        #g79 {
+            opacity: 1;
         }
 
-        /* Continuous rotation keyframes preserving scale */
+        /* Fletchings hidden during the release spin, matching Portal 2 */
+        #ptr.spin #g79 {
+            opacity: 0;
+        }
+
+        /* Spin whole container smoothly after release */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
@@ -1658,8 +1662,10 @@
         if (drag.ptrActive) {
             if (ptr && parseFloat(ptr.style.opacity) >= 1) {
                 if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                
+                // Add 'spin' class: This triggers the CSS rule hiding #g79 and starting ptrSpin animation
                 if (ptr) ptr.classList.add('spin');
-                if (g1) g1.style.transform = ''; // Clears inline transform so CSS animation handles the loop cleanly
+                if (g1) g1.style.transform = ''; 
 
                 // --- AUDIO INTERFACE ---
                 try {
