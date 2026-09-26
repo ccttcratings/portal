@@ -116,8 +116,8 @@
         }
 
         #g1 { 
-            transform-origin: 32px 32px; 
-            transform-box: fill-box; /* ◄--- Crucial: forces rotation to anchor to its internal bounding box center */
+            transform-origin: 24px 24px; /* Centers the pivot point directly on the 48x48 grid layout */
+            transform-box: view-box;     /* Evaluates relative to the SVG view box coordinate space */
         }
 
         /* Fixed only during PTR pull */
@@ -125,7 +125,7 @@
             position: fixed !important;
         }
 
-        /* spin whole image — preserves scale */
+        /* Continuous rotation keyframes preserving scale */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
@@ -1659,7 +1659,7 @@
             if (ptr && parseFloat(ptr.style.opacity) >= 1) {
                 if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
                 if (ptr) ptr.classList.add('spin');
-                if (g1) g1.style.transform = ''; // Clears inline transform so CSS @keyframes infinite loop takes over cleanly
+                if (g1) g1.style.transform = ''; // Clears inline transform so CSS animation handles the loop cleanly
 
                 // --- AUDIO INTERFACE ---
                 try {
