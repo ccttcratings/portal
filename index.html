@@ -30,6 +30,8 @@
             overflow: hidden;
             background-color: transparent; /* Handled by ball-layer and 3D canvas */
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            touch-action: none;              /* Overrides mobile gesture overrides */
+            overscroll-behavior-y: contain; /* Prevents natural browser bounce loops */
         }
 
         button, input, select, textarea {
@@ -86,6 +88,8 @@
             height: 110px;              /* Provide comfortable bounding space for scaled SVG */
             position: relative;         /* ◄--- CRUCIAL: Creates the boundary anchor line for the SVG! */
             margin: 0 auto 10px;
+            pointer-events: none;       /* ◄--- FORCES CLICKS TO PASS STRAIGHT THROUGH TO THE TRACKER */
+        }
         }
 
         /* Spinner stays 48×48 but scaled up and centered mathematically */
