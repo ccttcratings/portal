@@ -1606,43 +1606,41 @@
             } // ◄--- This closes your 'if' statement
         } // ◄--- This closes your 'onPullProgressing' function clean! (No extra bracket here anymore)
 
-// ============================================================================
-// 🛠️ ISOLATION TEST: REMOVED ALL AUDIO TO CHECK ANIMATION COMPILE
-// ============================================================================
-function onPullTerminated() {
-    if (!ptrContainerObj) return;
+        // ============================================================================
+        // 🔄 PATH CORRECTION: MATCHING EXACT GITHUB CASE-SENSITIVE FILENAME
+        // ============================================================================
+        function onPullTerminated() {
+            if (!ptrContainerObj) return;
 
-    if (distanceSwipedY >= sweepReloadThreshold) {
-        ptrContainerObj.classList.add('spin');
-        ptrContainerObj.style.opacity = '1.0';
+            if (distanceSwipedY >= sweepReloadThreshold) {
+                ptrContainerObj.classList.add('spin');
+                ptrContainerObj.style.opacity = '1.0';
 
-        try {
-            const ingunSound = new Audio('./ingun.m4a');
-            
-            // --- 🛠️ THE CROSS-PLATFORM INTERACTION SYNC LOCK ---
-            // Tell the browser to wait until the sound is 100% finished playing before reloading!
-            ingunSound.onended = function() {
-                location.reload(true);
-            };
+                try {
+                    // --- UPDATED FILENAME STRING PATTERN TO MATCH INUNCHANT.M4A ---
+                    const ingunSound = new Audio('./IngunChant.m4a'); 
+                    
+                    // Wait for the vocal track to finish completely before refreshing the page
+                    ingunSound.onended = function() {
+                        location.reload(true);
+                    };
 
-            // Play the chant file natively
-            ingunSound.play().catch(err => {
-                console.log("Audio deferred: ", err);
-                // Fallback: If audio fails or is blocked by browser rules, reload anyway so the page doesn't freeze
-                location.reload(true);
-            });
-            
-        } catch(audioError) {
-            console.log("Audio pipeline failed: ", audioError);
-            location.reload(true);
+                    ingunSound.play().catch(err => {
+                        console.log("Audio play deferred safely: ", err);
+                        location.reload(true); // Fallback: reload anyway if browser locks autoplay
+                    });
+                    
+                } catch(audioError) {
+                    console.log("Audio block bypassed: ", audioError);
+                    location.reload(true);
+                }
+            } else {
+                ptrContainerObj.style.display = 'none';
+                ptrContainerObj.classList.remove('spin');
+            }
+            dragStartPointY = 0;
+            distanceSwipedY = 0;
         }
-    } else {
-        ptrContainerObj.style.display = 'none';
-        ptrContainerObj.classList.remove('spin');
-    }
-    dragStartPointY = 0;
-    distanceSwipedY = 0;
-}
 
         // Event bindings remain exactly the same
         window.addEventListener('touchstart', (e) => onPullInitiated(e.touches.clientY), { passive: true });
