@@ -82,40 +82,46 @@
            🔄 PULL-TO-REFRESH (PTR) INGUN SPINNER STYLING
            ============================================================ */
         #ptr {
-            display: none;              /* Hidden by default until pulled */
-            width: 100%;                
-            height: 80px;               /* Bounding space */
-            position: relative;         /* Keeps it in the document flow smoothly */
-            margin: -20px auto 10px;    /* Sits right at the top header boundary */
+            display: flex;              /* Keep in flow layout */
+            visibility: hidden;         /* Hidden safely without destroying layout sizing */
+            opacity: 0;
+            width: 100vw;               /* Span full viewport width to catch drag center */
+            height: 60px;
+            position: absolute;
+            top: -60px;                 /* Sits right above viewport/card boundary */
+            left: 0;
             justify-content: center;
             align-items: center;
             pointer-events: none;       
-            z-index: 20;
+            z-index: 100;
+            transition: opacity 0.1s ease;
         }
 
-        /* Spinner container wrapper */
+        /* Active pull state class */
+        #ptr.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
         #ptr-svg {
             position: relative;
             width: 48px;
             height: 48px;
-            transform: scale(2.4);      /* Base scaling */
+            transform: scale(2.4);
             transform-origin: center;
             transform-box: fill-box; 
         }
 
-        /* Fletchings visible normally */
         #g79 {
             opacity: 1;
             transform-origin: center;
             transform-box: fill-box;
         }
 
-        /* Fletchings hidden during spin */
         #ptr.spin #g79 {
             opacity: 0;
         }
 
-        /* spin whole image during release state */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
@@ -1579,21 +1585,17 @@
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
         // 1. Initialize your new audio asset at the top of the interaction block
-const ingunSound = new Audio('./IngunChant.m4a'); 
+        const ingunSound = new Audio('./IngunChant.m4a'); 
 
         let dragStartPointY = 0;
         let distanceSwipedY = 0;
         const sweepReloadThreshold = 85; 
         const ptrContainerObj = document.getElementById('ptr');
+        const fletchingsObj = document.getElementById('g79');
 
         function onPullInitiated(clientY) {
-            // Check if activeFrame exists and is 0, otherwise remove this guard if testing anywhere
-            if (typeof activeFrame === 'undefined' || activeFrame === 0) {
-                dragStartPointY = clientY;
-            }
+            dragStartPointY = clientY;
         }
-
-        const fletchingsObj = document.getElementById('g79');
 
         function onPullProgressing(clientY) {
             if (dragStartPointY === 0 || !ptrContainerObj) return;
@@ -1601,13 +1603,15 @@ const ingunSound = new Audio('./IngunChant.m4a');
             const calculatedDelta = clientY - dragStartPointY;
     
             if (calculatedDelta > 0) {
-                distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
+                distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 30);
         
-                // Show container
-                ptrContainerObj.style.display = 'flex';
-                ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
+                // Make visible using class toggle
+                ptrContainerObj.classList.add('visible');
 
-                // Dynamically rotate just the fletchings based on drag distance
+                // Shift down container smoothly with hardware acceleration instead of altering document padding
+                ptrContainerObj.style.transform = `translateY(${Math.min(distanceSwipedY, sweepReloadThreshold)}px)`;
+
+                // Dynamically rotate just the fletchings based on drag progress
                 if (fletchingsObj) {
                     const rotationAngle = (distanceSwipedY / sweepReloadThreshold) * 360;
                     fletchingsObj.style.transform = `rotate(${rotationAngle}deg)`;
@@ -1619,16 +1623,13 @@ const ingunSound = new Audio('./IngunChant.m4a');
             if (!ptrContainerObj) return;
 
             if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: Start full spinning animation
+                // Threshold crossed: trigger full spin
                 ptrContainerObj.classList.add('spin');
-                ptrContainerObj.style.opacity = '1.0';
-
-                // Clear inline rotation so keyframe animation takes over cleanly
                 if (fletchingsObj) {
                     fletchingsObj.style.transform = '';
                 }
 
-                // --- SAFE LAZY AUDIO INTERFACE ---
+                // --- AUDIO INTERFACE ---
                 try {
                     ingunSound.play().catch(err => console.log("Audio deferred: ", err));
                 } catch(audioError) {
@@ -1639,8 +1640,9 @@ const ingunSound = new Audio('./IngunChant.m4a');
                     location.reload(true);
                 }, 550);
             } else {
-                ptrContainerObj.style.display = 'none';
-                ptrContainerObj.classList.remove('spin');
+                // Reset states if pulled under threshold
+                ptrContainerObj.classList.remove('visible', 'spin');
+                ptrContainerObj.style.transform = '';
                 if (fletchingsObj) {
                     fletchingsObj.style.transform = '';
                 }
@@ -1648,7 +1650,22 @@ const ingunSound = new Audio('./IngunChant.m4a');
             dragStartPointY = 0;
             distanceSwipedY = 0;
         }
-        
+
+        // Event bindings
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length > 0) onPullInitiated(e.touches[0].clientY);
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length > 0) onPullProgressing(e.touches[0].clientY);
+        }, { passive: true });
+
+        window.addEventListener('touchend', onPullTerminated);
+
+        window.addEventListener('mousedown', (e) => onPullInitiated(e.clientY));
+        window.addEventListener('mousemove', (e) => { 
+            if (e.buttons === 1) onPullProgressing(e.clientY); 
+        });
         window.addEventListener('mouseup', onPullTerminated);
     </script>
 </body>
