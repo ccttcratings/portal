@@ -69,23 +69,40 @@
         }
 
         /* ============================================================
-           🔄 INTEGRATED PULL-TO-REFRESH (PTR) SPINNER STYLING
+           🔄 PULL-TO-REFRESH (PTR) INGUN SPINNER STYLING
            ============================================================ */
         /* Fixed only during PTR pull */
         .ptr-fixed {
             position: fixed !important;
         }
 
-        /* Spinner stays 48×48 but scaled up */
+        /* ============================================================
+           🛠️ CSS FIX: CENTER INGUN SPINNER INSIDE THE CARD LAYOUT
+           ============================================================ */
+        /* Update the parent wrapper to anchor and center the graphic box */
+        #ptr {
+            display: none;              /* Hidden by default until pulled */
+            width: 100%;                /* Span full card width to handle horizontal alignment */
+            height: 110px;              /* Provide comfortable bounding space for scaled SVG */
+            position: relative;         /* ◄--- CRUCIAL: Creates the boundary anchor line for the SVG! */
+            margin: 0 auto 10px;
+        }
+
+        /* Spinner stays 48×48 but scaled up and centered mathematically */
         #ptr-svg {
             position: absolute;
             width: 48px;
             height: 48px;
-            top: 8px;
-            left: 8px;
-            transform-origin: 24px 24px;
-            transform: scale(2.4);
-            transform-box: fill-box; /* Fix spinner transform box so rotation stays centered */
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(2.4); /* ◄--- Centers it perfectly inside the parent box */
+            transform-origin: center;
+            transform-box: fill-box; 
+        }
+
+        /* Fixed only during PTR pull */
+        .ptr-fixed {
+            position: fixed !important;
         }
 
         /* Fletchings visible normally */
@@ -98,15 +115,14 @@
             opacity: 0;
         }
 
-        /* spin whole image — preserves scale */
+        /* spin whole image — preserves scale and translation centers */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
-            transform: scale(2.4) rotate(0deg);
         }
 
         @keyframes ptrSpin {
-            from { transform: scale(2.4) rotate(0deg); }
-            to   { transform: scale(2.4) rotate(360deg); }
+            from { transform: translate(-50%, -50%) scale(2.4) rotate(0deg); }
+            to   { transform: translate(-50%, -50%) scale(2.4) rotate(360deg); }
         }
             
         #g1 { 
