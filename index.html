@@ -117,7 +117,7 @@
 
         #g1 { 
             transform-origin: 32px 32px; 
-            transform-box: fill-box;
+            transform-box: fill-box; /* ◄--- Crucial: forces rotation to anchor to its internal bounding box center */
         }
 
         /* Fixed only during PTR pull */
@@ -1585,7 +1585,7 @@
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
-(function(){
+    (function(){
     var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
     var friction = 0.999;
     var ptr = document.getElementById('ptr');
@@ -1607,7 +1607,7 @@
             ptr.style.marginTop = '-68px';
         }
         if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-        if (g1) g1.style.transform = '';
+        if (g1) g1.style.transform = 'rotate(0deg)';
     }
 
     function movePull(clientY) {
@@ -1641,7 +1641,7 @@
                 ptr.style.opacity = '0';
             }
             if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-            if (g1) g1.style.transform = '';
+            if (g1) g1.style.transform = 'rotate(0deg)';
         }
 
         var now = Date.now();
@@ -1659,7 +1659,7 @@
             if (ptr && parseFloat(ptr.style.opacity) >= 1) {
                 if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
                 if (ptr) ptr.classList.add('spin');
-                if (g1) g1.style.transform = '';
+                if (g1) g1.style.transform = ''; // Clears inline transform so CSS @keyframes infinite loop takes over cleanly
 
                 // --- AUDIO INTERFACE ---
                 try {
@@ -1679,7 +1679,7 @@
                     ptr.className = '';
                 }
                 if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-                if (g1) g1.style.transform = '';
+                if (g1) g1.style.transform = 'rotate(0deg)';
             }
             return;
         }
@@ -1732,7 +1732,7 @@
         requestAnimationFrame(step);
     }
 
-    // Touch Event Bindings (Portal 2 Native)
+    // Touch & Mouse Event Bindings
     document.addEventListener('touchstart', function(e){
         if(e.touches.length !== 1) return;
         startPull(e.touches[0].clientY);
@@ -1747,7 +1747,6 @@
         endPull();
     }, {passive: true});
 
-    // Desktop Mouse Fallback Bindings
     document.addEventListener('mousedown', function(e){
         startPull(e.clientY);
     });
