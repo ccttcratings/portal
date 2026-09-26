@@ -1605,7 +1605,6 @@
                 ptrContainerObj.style.transform = `translateY(${distanceSwipedY * 0.3}px)`;
                 ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
         }
-        }
 
         function onPullTerminated() {
             if (!ptrContainerObj) return;
