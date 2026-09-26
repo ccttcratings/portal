@@ -80,7 +80,7 @@
            ============================================================ */
         /* Update the parent wrapper to anchor and center the graphic box */
         #ptr {
-            display: none;              /* Hidden by default until pulled */
+            display: flex;              /* Hidden by default until pulled */
             width: 100%;                /* Span full card width to handle horizontal alignment */
             height: 110px;              /* Provide comfortable bounding space for scaled SVG */
             position: relative;         /* ◄--- CRUCIAL: Creates the boundary anchor line for the SVG! */
@@ -1649,6 +1649,37 @@
         window.addEventListener('mousedown', (e) => onPullInitiated(e.clientY));
         window.addEventListener('mousemove', (e) => { if (e.buttons === 1) onPullProgressing(e.clientY); });
         window.addEventListener('mouseup', onPullTerminated);
+
+                // ============================================================================
+        // 🔄 SPINNER TAP-REFRESH AND VOCAL CHANT CONTROLLER
+        // ============================================================================
+        const IngunSpinnerNode = document.getElementById('ptr');
+
+        if (IngunSpinnerNode) {
+            IngunSpinnerNode.style.cursor = 'pointer'; // Visual desktop pointer clue
+            
+            IngunSpinnerNode.addEventListener('click', function() {
+                // Add your original portal2 class trigger to animate fletchings on click
+                IngunSpinnerNode.classList.add('spin');
+                
+                try {
+                    const chantAudioTrack = new Audio('./IngunChant.m4a');
+                    
+                    // Wait for the chant string to complete before reloading
+                    chantAudioTrack.onended = function() {
+                        location.reload(true);
+                    };
+
+                    chantAudioTrack.play().catch(function(err) {
+                        console.log("Audio deferred: ", err);
+                        location.reload(true); // Fallback if browser locks autoplay
+                    });
+                } catch(audioError) {
+                    console.log("Audio exception handled safely: ", audioError);
+                    location.reload(true);
+                }
+            });
+        }
 
     </script>
 </body>
