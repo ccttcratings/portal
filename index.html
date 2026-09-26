@@ -1576,15 +1576,17 @@
         })();
 
         // ============================================================================
-        // 🔄 CONSOLIDATED SWIPE/DRAG INGUN SPINNER CONTROLLER INTERFACE
+        // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
+        // 1. Initialize your new audio asset at the top of the interaction block
+        const ingunSound = new Audio('ingun.m4a'); 
+
         let dragStartPointY = 0;
         let distanceSwipedY = 0;
-        const sweepReloadThreshold = 85; // Target drag length in pixels
+        const sweepReloadThreshold = 85; 
         const ptrContainerObj = document.getElementById('ptr');
 
         function onPullInitiated(clientY) {
-            // Only capture gesture tracking routines when active on Frame 0
             if (typeof activeFrame !== 'undefined' && activeFrame === 0) {
                 dragStartPointY = clientY;
             }
@@ -1592,36 +1594,33 @@
 
         function onPullProgressing(clientY) {
             if (dragStartPointY === 0 || !ptrContainerObj) return;
-    
             const calculatedDelta = clientY - dragStartPointY;
-    
-            // Process downward pull tracking increments exclusively
             if (calculatedDelta > 0) {
                 distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
-        
-                // Unhide element workspace container
                 ptrContainerObj.style.display = 'block';
-        
-                // Dynamically shift the container block downwards based on pull progress
                 ptrContainerObj.style.transform = `translateY(${distanceSwipedY * 0.3}px)`;
                 ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
-            }
+        }
         }
 
         function onPullTerminated() {
             if (!ptrContainerObj) return;
 
             if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold verified: Activate hardware-accelerated spin animation
+                // Threshold crossed: Start spinning
                 ptrContainerObj.classList.add('spin');
                 ptrContainerObj.style.opacity = '1.0';
 
-                // Brief cinematic pause to showcase rotation before updating window thread context
+                // --- 🚀 2. PLAY THE SOUND THE EXACT EXECUTING MILLISECOND ---
+                ingunSound.play().catch(err => {
+                    console.log("Audio playback waiting for an active user gesture: ", err);
+                });
+
+                // Cinematic pause to let the spinner rotate and sound play before reloading
                 setTimeout(() => {
                     location.reload(true);
-                }, 450);
+                }, 550); // Slightly increased to 550ms so your chant audio doesn't cut off instantly
             } else {
-                // If swipe gesture was discarded or incomplete, hide container clean
                 ptrContainerObj.style.display = 'none';
                 ptrContainerObj.classList.remove('spin');
             }
@@ -1629,12 +1628,10 @@
             distanceSwipedY = 0;
         }
 
-        // Map Touch Action Triggers for Android Chrome, Firefox & Opera
+        // Event bindings remain exactly the same
         window.addEventListener('touchstart', (e) => onPullInitiated(e.touches.clientY), { passive: true });
         window.addEventListener('touchmove', (e) => onPullProgressing(e.touches.clientY), { passive: true });
         window.addEventListener('touchend', onPullTerminated);
-
-        // Map Mouse Fallbacks for Simple PC Local Web Debugging Previews
         window.addEventListener('mousedown', (e) => onPullInitiated(e.clientY));
         window.addEventListener('mousemove', (e) => { if (e.buttons === 1) onPullProgressing(e.clientY); });
         window.addEventListener('mouseup', onPullTerminated);
