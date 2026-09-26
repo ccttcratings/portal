@@ -1582,7 +1582,7 @@
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
         // 1. Initialize your new audio asset at the top of the interaction block
-         const ingunSound = new Audio('./IngunChant.m4a'); 
+const ingunSound = new Audio('./IngunChant.m4a'); 
 
         let dragStartPointY = 0;
         let distanceSwipedY = 0;
@@ -1590,7 +1590,8 @@
         const ptrContainerObj = document.getElementById('ptr');
 
         function onPullInitiated(clientY) {
-            if (typeof activeFrame !== 'undefined' && activeFrame === 0) {
+            // Check if activeFrame exists and is 0, otherwise remove this guard if testing anywhere
+            if (typeof activeFrame === 'undefined' || activeFrame === 0) {
                 dragStartPointY = clientY;
             }
         }
@@ -1603,11 +1604,12 @@
             if (calculatedDelta > 0) {
                 distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 20);
         
-                ptrContainerObj.style.display = 'block';
+                // Use flex to match your intended CSS layout structure
+                ptrContainerObj.style.display = 'flex';
                 ptrContainerObj.style.transform = `translateY(${distanceSwipedY * 0.3}px)`;
                 ptrContainerObj.style.opacity = Math.min(distanceSwipedY / sweepReloadThreshold, 1.0);
-            } // ◄--- This closes your 'if' statement
-        } // ◄--- This closes your 'onPullProgressing' function clean! (No extra bracket here anymore)
+            }
+        }
 
         function onPullTerminated() {
             if (!ptrContainerObj) return;
@@ -1619,7 +1621,6 @@
 
                 // --- SAFE LAZY AUDIO INTERFACE ---
                 try {
-                    const ingunSound = new Audio('ingun.m4a');
                     ingunSound.play().catch(err => console.log("Audio deferred: ", err));
                 } catch(audioError) {
                     console.log("Audio skipped: ", audioError);
@@ -1631,19 +1632,38 @@
             } else {
                 ptrContainerObj.style.display = 'none';
                 ptrContainerObj.classList.remove('spin');
+                ptrContainerObj.style.transform = '';
             }
             dragStartPointY = 0;
             distanceSwipedY = 0;
         }
 
-        // Event bindings remain exactly the same
-        window.addEventListener('touchstart', (e) => onPullInitiated(e.touches.clientY), { passive: true });
-        window.addEventListener('touchmove', (e) => onPullProgressing(e.touches.clientY), { passive: true });
-        window.addEventListener('touchend', onPullTerminated);
-        window.addEventListener('mousedown', (e) => onPullInitiated(e.clientY));
-        window.addEventListener('mousemove', (e) => { if (e.buttons === 1) onPullProgressing(e.clientY); });
-        window.addEventListener('mouseup', onPullTerminated);
+        // FIXED EVENT BINDINGS: Properly extract index [0] for touch events 📱 & handle mouse cleanly 💻
+        window.addEventListener('touchstart', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                onPullInitiated(e.touches[0].clientY);
+            }
+        }, { passive: true });
 
+        window.addEventListener('touchmove', (e) => {
+            if (e.touches && e.touches.length > 0) {
+                onPullProgressing(e.touches[0].clientY);
+            }
+        }, { passive: true });
+
+        window.addEventListener('touchend', onPullTerminated);
+
+        window.addEventListener('mousedown', (e) => {
+            onPullInitiated(e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => { 
+            if (e.buttons === 1) {
+                onPullProgressing(e.clientY); 
+            }
+        });
+        
+        window.addEventListener('mouseup', onPullTerminated);
     </script>
 </body>
 </html>
