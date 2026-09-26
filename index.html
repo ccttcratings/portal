@@ -115,14 +115,17 @@
             transform-box: fill-box; 
         }
 
-        /* 
-           If your arrow, arrow point, and fletchings are grouped inside a specific 
-           element or ID (e.g., let's assume they are inside a group or we rotate 
-           the whole #ptr-svg container uniformly so everything locked together spins), 
-           rotating #ptr-svg directly rotates the entire arrow unit together.
-        */
+        #g1 { 
+            transform-origin: 32px 32px; 
+            transform-box: fill-box;
+        }
 
-        /* Keep background elements static if they are separate, or let #ptr-svg drive the unified arrow spin */
+        /* Fixed only during PTR pull */
+        .ptr-fixed {
+            position: fixed !important;
+        }
+
+        /* spin whole image — preserves scale */
         #ptr.spin #ptr-svg {
             animation: ptrSpin .7s linear infinite;
         }
@@ -131,10 +134,7 @@
             from { transform: scale(2.4) rotate(0deg); }
             to   { transform: scale(2.4) rotate(360deg); }
         }
-        
-        #g1 { 
-            transform-origin: 32px 32px; 
-        }
+
         #g10 { 
             transform-origin: center; 
             transform-box: fill-box; 
@@ -1585,94 +1585,183 @@
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
-        const ingunSound = new Audio('./IngunChant.m4a'); 
+(function(){
+    var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
+    var friction = 0.999;
+    var ptr = document.getElementById('ptr');
+    var ptrSvg = document.getElementById('ptr-svg');
+    var g1 = document.querySelector('#g1');
+    const ingunSound = new Audio('./IngunChant.m4a'); 
 
-        let dragStartPointY = 0;
-        let distanceSwipedY = 0;
-        const sweepReloadThreshold = 85; 
-        const ptrContainerObj = document.getElementById('ptr');
-        const ptrSvgObj = document.getElementById('ptr-svg'); // The unified container holding the arrow components
+    function startPull(clientY) {
+        if (window.scrollY > 10 || drag.animating) return;
+        drag.active = true;
+        drag.startY = clientY;
+        drag.startScroll = window.scrollY;
+        drag.history = [{ y: clientY, t: Date.now() }];
+        drag.ptrActive = false;
 
-        function onPullInitiated(clientY) {
-            if (window.scrollY <= 5) {
-                dragStartPointY = clientY;
-            }
+        if (ptr) {
+            ptr.classList.remove("ptr-fixed");
+            ptr.className = '';
+            ptr.style.marginTop = '-68px';
         }
+        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+        if (g1) g1.style.transform = '';
+    }
 
-        function onPullProgressing(clientY) {
-            if (dragStartPointY === 0 || !ptrContainerObj) return;
-    
-            const calculatedDelta = clientY - dragStartPointY;
-    
-            if (calculatedDelta > 0) {
-                distanceSwipedY = Math.min(calculatedDelta, sweepReloadThreshold + 40);
+    function movePull(clientY) {
+        if (!drag.active) return;
+        var dy = drag.startY - clientY;
         
-                // Lock position and fade in
-                ptrContainerObj.classList.add('ptr-fixed');
-                ptrContainerObj.style.opacity = '1';
+        if (window.scrollY <= 10 && dy < 0 && !drag.animating) {
+            drag.ptrActive = true;
+            if (ptr) ptr.classList.add("ptr-fixed");
 
-                // Shift down container matching the drag
-                ptrContainerObj.style.transform = `translateY(${Math.min(distanceSwipedY, sweepReloadThreshold + 10)}px)`;
+            var dist = Math.min(-dy, 120);
+            var rawDist = -dy;
+            var pct = Math.min(dist / 80, 1);
 
-                // 🔄 Rotate the ENTIRE arrow assembly (arrow, point, and fletchings attached) together during swipe
-                if (ptrSvgObj && !ptrContainerObj.classList.contains('spin')) {
-                    const rotationAngle = (distanceSwipedY / sweepReloadThreshold) * 360;
-                    ptrSvgObj.style.transform = `scale(2.4) rotate(${rotationAngle}deg)`;
-                }
+            if (ptr) {
+                ptr.style.marginTop = (dist - 60) + 'px';
+                ptr.style.opacity = pct;
+                ptr.classList.add('swiping');
             }
+            if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+
+            var angle = rawDist * 1.25;
+            if (g1) g1.style.transform = 'rotate(' + angle + 'deg)';
+        } else {
+            drag.ptrActive = false;
+            if (ptr) {
+                ptr.classList.remove("ptr-fixed");
+                ptr.classList.remove('swiping');
+                ptr.className = '';
+                ptr.style.marginTop = '-68px';
+                ptr.style.opacity = '0';
+            }
+            if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+            if (g1) g1.style.transform = '';
         }
 
-        function onPullTerminated() {
-            if (!ptrContainerObj) return;
+        var now = Date.now();
+        drag.history.push({ y: clientY, t: now });
+        if (drag.history.length > 8) drag.history.shift();
+    }
 
-            if (distanceSwipedY >= sweepReloadThreshold) {
-                // Threshold crossed: trigger full continuous spin state via CSS animation
-                ptrContainerObj.classList.add('spin');
-                ptrContainerObj.style.opacity = '1';
-                
-                if (ptrSvgObj) {
-                    ptrSvgObj.style.transform = ''; // Clear inline override so CSS @keyframes takes over smoothly
-                }
+    function endPull() {
+        if (!drag.active) return;
+        drag.active = false;
 
-                // --- SAFE LAZY AUDIO INTERFACE ---
+        if (ptr) ptr.classList.remove("ptr-fixed");
+
+        if (drag.ptrActive) {
+            if (ptr && parseFloat(ptr.style.opacity) >= 1) {
+                if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                if (ptr) ptr.classList.add('spin');
+                if (g1) g1.style.transform = '';
+
+                // --- AUDIO INTERFACE ---
                 try {
                     ingunSound.play().catch(err => console.log("Audio deferred: ", err));
                 } catch(audioError) {
                     console.log("Audio skipped: ", audioError);
                 }
 
-                setTimeout(() => {
+                setTimeout(function(){
                     location.reload(true);
-                }, 550);
+                }, 750);
+
             } else {
-                // Reset if cancelled under threshold
-                ptrContainerObj.classList.remove('ptr-fixed', 'spin');
-                ptrContainerObj.style.opacity = '0';
-                ptrContainerObj.style.transform = '';
-                if (ptrSvgObj) {
-                    ptrSvgObj.style.transform = 'scale(2.4) rotate(0deg)';
+                if (ptr) {
+                    ptr.style.marginTop = '-68px';
+                    ptr.style.opacity = '0';
+                    ptr.className = '';
                 }
+                if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                if (g1) g1.style.transform = '';
             }
-            dragStartPointY = 0;
-            distanceSwipedY = 0;
+            return;
         }
 
-        // Event Listeners
-        window.addEventListener('touchstart', (e) => {
-            if (e.touches && e.touches.length > 0) onPullInitiated(e.touches[0].clientY);
-        }, { passive: true });
+        var h = drag.history;
+        if (h.length < 2) return;
+        var last = h[h.length - 1], first = h[0];
+        var dt = last.t - first.t;
+        if (dt <= 0) return;
+        var velocity = (first.y - last.y) / dt;
+        if (Math.abs(velocity) < 0.3) return;
 
-        window.addEventListener('touchmove', (e) => {
-            if (e.touches && e.touches.length > 0) onPullProgressing(e.touches[0].clientY);
-        }, { passive: true });
+        startScrollMomentum(velocity);
+    }
 
-        window.addEventListener('touchend', onPullTerminated);
+    function startScrollMomentum(v){
+        drag.animating = true;
+        var lastTime = Date.now();
+        var vy = v;
 
-        window.addEventListener('mousedown', (e) => onPullInitiated(e.clientY));
-        window.addEventListener('mousemove', (e) => { 
-            if (e.buttons === 1) onPullProgressing(e.clientY); 
-        });
-        window.addEventListener('mouseup', onPullTerminated);
+        function step(){
+            if (!drag.animating) return;
+            var now = Date.now();
+            var elapsed = now - lastTime;
+            lastTime = now;
+
+            vy *= Math.pow(friction, elapsed / 16);
+            if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
+
+            var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+            var scroll = window.scrollY;
+            var next = scroll + vy * elapsed;
+
+            if (next < 0) {
+                next = 0;
+                drag.animating = false;
+                window.scrollTo(0, next);
+                return;
+            } else if (next > maxScroll) {
+                next = maxScroll;
+                drag.animating = false;
+                window.scrollTo(0, next);
+                return;
+            }
+
+            window.scrollTo(0, next);
+            requestAnimationFrame(step);
+        }
+
+        requestAnimationFrame(step);
+    }
+
+    // Touch Event Bindings (Portal 2 Native)
+    document.addEventListener('touchstart', function(e){
+        if(e.touches.length !== 1) return;
+        startPull(e.touches[0].clientY);
+    }, {passive: true});
+
+    document.addEventListener('touchmove', function(e){
+        if(!drag.active || e.touches.length !== 1) return;
+        movePull(e.touches[0].clientY);
+    }, {passive: true});
+
+    document.addEventListener('touchend', function(){
+        endPull();
+    }, {passive: true});
+
+    // Desktop Mouse Fallback Bindings
+    document.addEventListener('mousedown', function(e){
+        startPull(e.clientY);
+    });
+
+    document.addEventListener('mousemove', function(e){
+        if(!drag.active) return;
+        movePull(e.clientY);
+    });
+
+    document.addEventListener('mouseup', function(){
+        endPull();
+    });
+
+})();
     </script>
 </body>
 </html>
