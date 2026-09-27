@@ -1085,60 +1085,72 @@
             function drawWarpedButtonGraphics(offsetY = 0) {
     ballCtx.clearRect(0, 0, 512, 1024);
     
-    // 1. Solid background fill matching your frame 0 color
     const isNeon = document.documentElement.classList.contains('neon');
     ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
     ballCtx.fillRect(0, 0, 512, 1024);
     
-    // 2. Tighter, crisp padding heights (y-milestones) to group them closer together
+    // Exact list of all 5 buttons matching Frame 0
     const buttons = [
-        { text: 'Preview Mode', bg: '#6abf6e', y: 380, subText: '(works on most devices)' },
-        { text: 'Copy Preview URL', bg: '#a048a0', y: 450, subText: '' },
-        { text: 'Edit Mode', bg: '#e87070', y: 520, subText: '(annoying banner at top)' },
-        { text: 'Copy Edit URL', bg: '#a048a0', y: 590, subText: '' },
-        { text: 'Portal Hub', bg: '#3ba8d6', y: 660, subText: '(hub of redundant portals)' }
+        { text: 'Preview Mode', bg: 'preview', y: 380, subText: '(works on most devices)' },
+        { text: 'Copy Preview Mode URL', bg: 'copy', y: 440, subText: '' },
+        { text: 'Edit Mode', bg: 'edit', y: 500, subText: '(annoying banner at top)' },
+        { text: 'Copy Edit Mode URL', bg: 'copy', y: 560, subText: '' },
+        { text: 'Portal Hub of Portals', bg: 'hub', y: 620, subText: '(hub of redundant portals)' }
     ];
 
     buttons.forEach(btn => {
         ballCtx.save();
+        
+        // Dynamic top-spin rolling layout calculation
         let currentY = (btn.y - offsetY * 1024) % 1024;
         if (currentY < 0) currentY += 1024;
 
-        // Move to drawing coordinate center
+        // CRUCIAL: Center horizontally at 256, and lay out vertically at currentY
         ballCtx.translate(256, currentY);
 
-        // ◄--- REMOVED DISSIMILAR MULTIPLIERS ---
-        // Squeezing the buttons to 0.50 width here completely cancels out 
-        // the horizontal stretching that Three.js does automatically on the sphere!
-        ballCtx.scale(0.50, 1.0);
+        // Pre-compressing the width to 0.70 perfectly neutralizes 3D spherical stretching
+        ballCtx.scale(0.70, 1.0);
 
-        // Draw clean pill buttons
-        ballCtx.fillStyle = btn.bg;
+        const grad = ballCtx.createLinearGradient(0, -22, 0, 22);
+        if (isNeon) {
+            if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(1, '#009900'); }
+            else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(1, '#990000'); }
+            else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(1, '#077c9c'); }
+            else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(1, '#7700bb'); } 
+        } else {
+            if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(1, '#288028'); }
+            else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(1, '#a02020'); }
+            else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(1, '#0e5f80'); }
+            else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(1, '#682068'); } 
+        }
+
+        // Pill shape matching the standard CSS button aspect ratio
+        ballCtx.fillStyle = grad;
         ballCtx.beginPath();
-        ballCtx.roundRect(-220, -26, 440, 52, 12);
+        ballCtx.roundRect(-160, -22, 320, 44, 10);
         ballCtx.fill();
 
         // Gloss highlight
-        const glassGrad = ballCtx.createLinearGradient(0, -26, 0, 0);
+        const glassGrad = ballCtx.createLinearGradient(0, -22, 0, -2);
         glassGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
         glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
         ballCtx.fillStyle = glassGrad;
         ballCtx.beginPath();
-        ballCtx.roundRect(-220, -26, 440, 24);
+        ballCtx.roundRect(-160, -22, 320, 20);
         ballCtx.fill();
 
-        // Sharp black typography labels
+        // Typography
         ballCtx.fillStyle = '#000000';
-        ballCtx.font = 'bold 20px sans-serif';
+        ballCtx.font = 'bold 14px -apple-system, BlinkMacSystemFont, sans-serif';
         ballCtx.textAlign = 'center';
         
         if (btn.subText) {
             ballCtx.textBaseline = 'bottom';
-            ballCtx.fillText(btn.text, 0, 2);
+            ballCtx.fillText(btn.text, 0, 1);
             ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
-            ballCtx.font = '12px sans-serif';
+            ballCtx.font = '10px sans-serif';
             ballCtx.textBaseline = 'top';
-            ballCtx.fillText(btn.subText, 0, 5);
+            ballCtx.fillText(btn.subText, 0, 3);
         } else {
             ballCtx.textBaseline = 'middle';
             ballCtx.fillText(btn.text, 0, 0);
@@ -1150,13 +1162,26 @@
 
         drawWarpedButtonGraphics(0);
 
-        // Force texture colors to render punchy and vibrant inside Three.js
-       const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
-ballButtonTexture.colorSpace = THREE.SRGBColorSpace; 
-ballButtonTexture.wrapS = THREE.ClampToEdgeWrapping; // ◄--- Crucial: locks horizontal limits flat
-ballButtonTexture.wrapT = THREE.RepeatWrapping; 
+            // Force texture colors to render punchy and vibrant inside Three.js
+            // ============================================================
+            // 🎯 COLOR-CORRECTED CENTERED TEXTURE MAPPING Setup
+            // ============================================================
+            const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
+            
+            // Fixes the washed-out colors to match the HTML page exactly
+            ballButtonTexture.colorSpace = THREE.SRGBColorSpace; 
+            
+            // Clean unrotated mapping to prevent horizontal shifting
+            ballButtonTexture.center.set(0.5, 0.5);
+            ballButtonTexture.rotation = 0; 
 
+            // Clamp horizontal edges to stop duplications; repeat vertical for top-spin
+            ballButtonTexture.wrapS = THREE.ClampToEdgeWrapping; 
+            ballButtonTexture.wrapT = THREE.RepeatWrapping; 
 
+            // Fine-tune texture scaling to pull the outer edges in and eliminate distortion
+            ballButtonTexture.repeat.set(1.0, 1.0); 
+            ballButtonTexture.offset.set(0.0, 0.0);
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture,
@@ -1166,6 +1191,7 @@ ballButtonTexture.wrapT = THREE.RepeatWrapping;
                 roughness: 0.25,
                 metalness: 0.1
             });
+
 
             // Standard ping-pong size metrics (~0.02m radius geometry scale)
             const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
@@ -1492,13 +1518,19 @@ ballButtonTexture.wrapT = THREE.RepeatWrapping;
                 if (activeFrame === 0) {
                     // Frame 0: Original 100% portal page
                     container.style.display = 'none';
-                    ballLayer.style.display = 'block'; 
+                    ballLayer.style.display = 'flex'; // ◄--- FIX: Changed from 'block' to 'flex' to match Chunk 1 CSS layout centering!
                     ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
                     card.style.transform = 'scale(1) translateY(0px)';
+        
+                    // Fully wipe out inline canvas container tracking overrides to clear off-center shifts
                     container.style.width = '';
+                    container.style.height = '';
                     container.style.left = '';
                     container.style.transform = '';
+        
                     if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                }
+                
                 } else if (activeFrame >= 1 && activeFrame <= 20) {
                     // --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
                     container.style.display = 'block'; 
