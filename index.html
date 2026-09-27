@@ -1504,7 +1504,7 @@
                     camera.getWorldDirection(targetDirection);
 
                     // Frame 1 sits flush near the lens. Frame 20 pulls deep back over the table space
-                    const distanceFactor = THREE.MathUtils.lerp(1.15, 3.2, progressFactor);
+                    const distanceFactor = THREE.MathUtils.lerp(0.88, 3.2, progressFactor);
                     pingPongBallMesh.position.copy(camera.position)
                         .addScaledVector(targetDirection, distanceFactor);
 
