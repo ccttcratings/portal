@@ -1077,119 +1077,44 @@
                 depthWrite: true
             });
 
-            const ballCanvas = document.createElement('canvas');
-            ballCanvas.width = 512;
-            ballCanvas.height = 1024;
-            const ballCtx = ballCanvas.getContext('2d');
+           // 1. Maintain a clean, solid background color for the sphere base
+const sphereBaseMat = new THREE.MeshStandardMaterial({
+    color: document.documentElement.classList.contains('neon') ? 0x4e2a05 : 0xfce5cd,
+    roughness: 0.4,
+    metalness: 0.1
+});
 
-            function drawWarpedButtonGraphics(offsetY = 0) {
-    ballCtx.clearRect(0, 0, 512, 1024);
-    
-    const isNeon = document.documentElement.classList.contains('neon');
-    ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
-    ballCtx.fillRect(0, 0, 512, 1024);
-    
-    // Exact list of all 5 elements from your DOM structure with tighter spacing
-    const buttons = [
-        { text: 'Preview Mode', bg: 'preview', y: 310, subText: '(works on most devices)' },
-        { text: 'Copy Preview Mode URL', bg: 'copy', y: 410, subText: '' },
-        { text: 'Edit Mode', bg: 'edit', y: 510, subText: '(annoying banner at top)' },
-        { text: 'Copy Edit Mode URL', bg: 'copy', y: 610, subText: '' },
-        { text: 'Portal Hub of Portals', bg: 'hub', y: 710, subText: '(hub of redundant portals)' }
-    ];
+const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
+const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, sphereBaseMat);
+pingPongBallMesh.castShadow = true;
+scene.add(pingPongBallMesh);
 
-    buttons.forEach(btn => {
-        ballCtx.save();
-        
-        // Vertical top-spin offset applied strictly to the button sequence
-        let currentY = (btn.y - offsetY * 1024) % 1024;
-        if (currentY < 0) currentY += 1024;
+// 2. Create the exact frame zero button layout card as a 3D Plane Mesh
+// This matches your 440px wide by roughly 500px tall aspect ratio container
+const buttonCardGeo = new THREE.PlaneGeometry(0.72, 0.82); 
 
-        ballCtx.translate(256, currentY);
+// Use your clean, unwarped button images directly as a single high-res map texture
+const loader = new THREE.TextureLoader();
+const cardTexture = loader.load('path_to_your_exact_button_card_screenshot_or_render.png');
+cardTexture.colorSpace = THREE.SRGBColorSpace;
 
-        // Curvature horizontal squishing modifier
-        const distFromCenter = Math.abs(currentY - 512) / 512;
-        const scaleX = 0.90 - (distFromCenter * distFromCenter * 0.35);
-        ballCtx.scale(scaleX, 1.0);
+const buttonCardMat = new THREE.MeshBasicMaterial({
+    map: cardTexture,
+    transparent: true,
+    side: THREE.FrontSide,
+    depthWrite: false, // Prevents Z-fighting clipping artifacts with the sphere surface
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -4
+});
 
-        const grad = ballCtx.createLinearGradient(0, -32, 0, 32);
-        if (isNeon) {
-            if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(1, '#009900'); }
-            else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(1, '#990000'); }
-            else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(1, '#077c9c'); }
-            else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(1, '#7700bb'); } 
-        } else {
-            if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(1, '#288028'); }
-            else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(1, '#a02020'); }
-            else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(1, '#0e5f80'); }
-            else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(1, '#682068'); } 
-        }
+const buttonCardMesh = new THREE.Mesh(buttonCardGeo, buttonCardMat);
 
-        // Draw pills matching your .btn size ratio
-        ballCtx.fillStyle = grad;
-        ballCtx.beginPath();
-        ballCtx.roundRect(-215, -28, 430, 56, 12);
-        ballCtx.fill();
+// Position it flush right on the front apex surface of the ball (Z-axis offset)
+buttonCardMesh.position.set(0, 0, 0.501); 
 
-        // Gloss highlight
-        const glassGrad = ballCtx.createLinearGradient(0, -28, 0, -2);
-        glassGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
-        glassGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
-        ballCtx.fillStyle = glassGrad;
-        ballCtx.beginPath();
-        ballCtx.roundRect(-215, -28, 430, 26);
-        ballCtx.fill();
-
-        // Text
-        ballCtx.fillStyle = '#000000';
-        ballCtx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ballCtx.textAlign = 'center';
-        
-        if (btn.subText) {
-            ballCtx.textBaseline = 'bottom';
-            ballCtx.fillText(btn.text, 0, 2);
-            ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
-            ballCtx.font = '12px sans-serif';
-            ballCtx.textBaseline = 'top';
-            ballCtx.fillText(btn.subText, 0, 5);
-        } else {
-            ballCtx.textBaseline = 'middle';
-            ballCtx.fillText(btn.text, 0, 0);
-        }
-        
-        ballCtx.restore();
-    });
-}
-
-        drawWarpedButtonGraphics(0);
-
-        // Force texture colors to render punchy and vibrant inside Three.js
-        const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
-        ballButtonTexture.colorSpace = THREE.SRGBColorSpace; // Keeps colors matching CSS exactly
-        ballButtonTexture.wrapS = THREE.RepeatWrapping; 
-        ballButtonTexture.wrapT = THREE.RepeatWrapping; 
-        ballButtonTexture.minFilter = THREE.LinearFilter; // Smooth edge filtering
-
-
-            const ballMaterial = new THREE.MeshStandardMaterial({
-                map: ballButtonTexture,
-                transparent: true,
-                depthWrite: true,
-                depthTest: true,
-                roughness: 0.25,
-                metalness: 0.1
-            });
-
-            // Standard ping-pong size metrics (~0.02m radius geometry scale)
-            const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
-            const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
-            pingPongBallMesh.castShadow = true;
-            pingPongBallMesh.renderOrder = 9999;
-            ballMaterial.depthTest = false;
-            pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
-
-            // Physically inject it into your active 3D universe
-            scene.add(pingPongBallMesh);
+// Physically lock the card into the ball's coordinate universe
+pingPongBallMesh.add(buttonCardMesh);
             // -------------------------------------------------------------
             
             const logoCanvas = document.createElement('canvas');
