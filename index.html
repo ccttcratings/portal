@@ -1090,22 +1090,23 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // ◄--- REALISTIC 3D SPIN DELAY PAUSE ENGINE ---
-                // By scaling the tracking domain up to 1424 instead of 1024, we create an 
-                // intentional 400-pixel "dead zone" on the back half of the sphere.
+                // Realistic 3D spin loop parameters
                 const totalScrollDomain = 1424;
 
-                // ◄--- REDUCED PADDING INTERFACES ---
-                // Shifted the title text down from 345 to 370 to bring it tightly up against 
-                // the Preview button, mirroring your Frame 0 CSS ceiling padding.
                 let titleY = (370 - offsetY * totalScrollDomain) % totalScrollDomain;
                 if (titleY < 0) titleY += totalScrollDomain;
 
-                // Only render if it's currently on the front-facing section of the ball canvas
                 if (titleY >= 0 && titleY <= 1024) {
                     ballCtx.save();
                     ballCtx.translate(384, titleY);
-                    ballCtx.scale(0.14, 0.52); // Reduced width factor from 0.17 to 0.14
+                    
+                    // ◄--- EDGE TITLE CORRECTION ---
+                    // Calculates distance from the equator midpoint (512)
+                    let distTitle = Math.abs(titleY - 512) / 512;
+                    // Dynamically widens the text scale if it drifts up toward the edge
+                    let widthTitle = 0.14 + (distTitle * distTitle * 0.08);
+                    
+                    ballCtx.scale(widthTitle, 0.52);
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = '800 30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
@@ -1122,23 +1123,25 @@
                     { text: 'Portal Hub of Portals', bg: 'hub', y: 630, subText: '(hub of redundant portals)', h: 80 }
                 ];
 
-                 buttons.forEach(btn => {
+                buttons.forEach(btn => {
                     let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
                     if (currentY < 0) currentY += totalScrollDomain;
 
-                    // Only paint the button elements if they fall inside the visible canvas viewport boundaries
                     if (currentY >= 0 && currentY <= 1024) {
                         ballCtx.save();
                         ballCtx.translate(384, currentY);
 
-                        // ◄--- THE STRETCHING FIX ---
-                        // Replaced the changing distance scale check with a constant width scale (0.165).
-                        // This leaves them wider at the edges, letting Three.js do the curving work naturally!
-                        ballCtx.scale(0.165, 0.52);
+                        // ◄--- DYNAMIC CANVAS EDGE STRETCH MULTIPLIER ---
+                        // Measures exactly how far the button has traveled from the equator (pixel 512).
+                        let distFromEquator = Math.abs(currentY - 512) / 512;
+                        
+                        // Generates a scaling curve: starts at a slim 0.14 at the dead-center,
+                        // and expands up to 0.23 as it approaches the compressed sphere poles.
+                        let dynamicStretchWidth = 0.14 + (distFromEquator * distFromEquator * 0.09);
+                        
+                        ballCtx.scale(dynamicStretchWidth, 0.52);
 
                         const halfH = btn.h / 2;
-
-                        // High-vibrance multi-stop linear layout gradients
                         const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
                         if (isNeon) {
                             if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
@@ -1152,13 +1155,11 @@
                             else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
                         }
 
-                        // Draw pill body
                         ballCtx.fillStyle = grad;
                         ballCtx.beginPath();
                         ballCtx.roundRect(-200, -halfH, 400, btn.h, 12);
                         ballCtx.fill();
 
-                        // Deepened shading overlay properties
                         const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
                         glassGrad.addColorStop(0, 'rgba(255,255,255,0.30)');
                         glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
@@ -1167,7 +1168,6 @@
                         ballCtx.roundRect(-200, -halfH, 400, btn.h * 0.45, 8);
                         ballCtx.fill();
 
-                        // Crisp typography
                         ballCtx.fillStyle = '#000000';
                         ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ballCtx.textAlign = 'center';
@@ -1175,8 +1175,6 @@
                         if (btn.subText) {
                             ballCtx.textBaseline = 'bottom';
                             ballCtx.fillText(btn.text, 0, 4);
-                            
-                            // Sharp black fine print configurations
                             ballCtx.fillStyle = '#000000';
                             ballCtx.font = '11px sans-serif';
                             ballCtx.textBaseline = 'top';
