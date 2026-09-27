@@ -1004,7 +1004,7 @@
                 sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
             ];
             const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
-            tableTop.position.set(-0.15, TABLE_H - TOP_THICK / 2, 0);
+            tableTop.position.set(0.15, TABLE_H - TOP_THICK / 2, 0);
             tableTop.castShadow = true;
             tableTop.receiveShadow = false;
             scene.add(tableTop);
@@ -1041,19 +1041,19 @@
             linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
             linesGeo.computeVertexNormals();
             const linesMesh = new THREE.Mesh(linesGeo, lineMat);
-			linesMesh.position.x = -0.15;
+			linesMesh.position.x = 0.15;
             scene.add(linesMesh);
 
             const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
 
             const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
             const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
-            playerApron.position.set(-0.15, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+            playerApron.position.set(0.15, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
             scene.add(playerApron);
 
             const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
             const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
-            oppApron.position.set(-0.15, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+            oppApron.position.set(0.15, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
             scene.add(oppApron);
 
             const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
@@ -1064,8 +1064,8 @@
 
             [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
                 const leg = new THREE.Mesh(legGeo, legMat);
-                // ◄--- SUBTRACTING MOVES THE SUPPORT LEGS LEFT ---
-                leg.position.set(x - 0.15, (TABLE_H - TOP_THICK) / 2, z);
+                // ◄--- CHANGED TO PLUS (+) TO SHIFT LEGS ---
+                leg.position.set(x + 0.15, (TABLE_H - TOP_THICK) / 2, z);
                 leg.castShadow = true;
                 scene.add(leg);
             });
@@ -1255,8 +1255,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
             const logoTexture = new THREE.CanvasTexture(logoCanvas);
             logoTexture.wrapT = THREE.RepeatWrapping;
             const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
-            // ◄--- SUBTRACTING MOVES THE NET FABRIC MESH LEFT ---
-            netMesh.position.set(-0.15, TABLE_H + NET_H / 2, NET_Z);
+            // ◄--- CHANGED TO POSITIVE TO SHIFT NET FABRIC ---
+            netMesh.position.set(0.15, TABLE_H + NET_H / 2, NET_Z);
             netMesh.castShadow = true;
             netMesh.renderOrder = 1;
             scene.add(netMesh);
@@ -1266,8 +1266,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
             );
             cordMesh.rotation.z = Math.PI / 2;
-            // ◄--- SUBTRACTING MOVES THE TOP TAPE CORD LEFT ---
-            cordMesh.position.set(-0.15, TABLE_H + NET_H, NET_Z);
+            // ◄--- CHANGED TO POSITIVE TO SHIFT TOP TAPE CORD ---
+            cordMesh.position.set(0.15, TABLE_H + NET_H, NET_Z);
             scene.add(cordMesh);
 
             const silverMat = new THREE.MeshStandardMaterial({
@@ -1354,9 +1354,9 @@ ballButtonTexture.offset.set(0.0, 0.0);
             rightBadgeGeo.computeVertexNormals();
 
             [-1, 1].forEach((sign) => {
-                // ◄--- SUBTRACTING MOVES ALL POST CALCULATIONS COHERENTLY LEFT ---
-                const tableEdgeX = sign * (W_AT_NET / 2) - 0.15;
-                const px = sign * (W_AT_NET / 2 + NET_OVERHANG) - 0.15;
+                // ◄--- CHANGED TO PLUS (+) TO SHIFT POST CALCULATIONS ---
+                const tableEdgeX = sign * (W_AT_NET / 2) + 0.15;
+                const px = sign * (W_AT_NET / 2 + NET_OVERHANG) + 0.15;
 
                 const yTop = TABLE_H + 0.015;
                 const yDonicMid = TABLE_H - 0.006;
@@ -1412,9 +1412,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 const badgeMat = sign === 1 ? donicBadgeMatRight : donicBadgeMat;
                 const frontBadge = new THREE.Mesh(rightBadgeGeo, badgeMat);
                 frontBadge.position.set(armCenterX, armCenterY, NET_Z - 0.021);
-                frontBadge.rotation.x = -0.20;
-                frontBadge.renderOrder = 999;
-                scene.add(frontBadge);
+                frontBadge.rotation.x = -0.20; frontBadge.renderOrder = 999; scene.add(frontBadge);
 
                 const heightRod = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.024, 16), steelMat);
                 heightRod.position.set(px, TABLE_H - 0.024, NET_Z);
