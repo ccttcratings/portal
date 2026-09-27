@@ -1088,7 +1088,26 @@
                 ballCtx.clearRect(0, 0, 1024, 2048);
                 
                 const isNeon = document.documentElement.classList.contains('neon');
-                ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
+                
+                // ◄--- NEON BALL COLOR MORPHING ENGINE ---
+                if (isNeon) {
+                    // Map your scroll offset progress to a 0.0 - 1.0 interval specifically across the first 5 frames.
+                    // Frame 1 corresponds to currentProgress = 0.05, Frame 5 corresponds to currentProgress = 0.25.
+                    // We lock the color transition bounds to clamp perfectly at Frame 5 max brightness.
+                    const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
+
+                    // Deconstruct your starting dark orange (#4e2a05 -> RGB: 78, 42, 5) 
+                    // and your target bright neon orange (#d96009 -> RGB: 217, 96, 9)
+                    const r = Math.round(78 + (217 - 78) * morphProgress);
+                    const g = Math.round(42 + (96 - 42) * morphProgress);
+                    const b = Math.round(5 + (9 - 5) * morphProgress);
+
+                    ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                } else {
+                    // Standard theme retains its original base layout color unchanged
+                    ballCtx.fillStyle = '#fce5cd';
+                }
+                
                 ballCtx.fillRect(0, 0, 1024, 2048);
                 
                 // Realistic 3D spin loop boundaries (scaled up for high-res map)
