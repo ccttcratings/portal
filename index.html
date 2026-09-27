@@ -1083,43 +1083,42 @@
             ballCanvas.height = 2048;
             const ballCtx = ballCanvas.getContext('2d');
 
-            function drawWarpedButtonGraphics(offsetY = 0) {
-                // Wipe the high-res 1024x2048 canvas grid completely clean
-                ballCtx.clearRect(0, 0, 1024, 2048);
-                
-                const isNeon = document.documentElement.classList.contains('neon');
-                
-                // ◄--- NEON BALL COLOR MORPHING ENGINE ---
-                if (isNeon) {
-                    // Normalize scroll progress specifically through the early step vector.
-                    // Frame 1 starts at 0.05, and color morphing reaches its destination at Frame 5 (0.25).
-                    const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
+        function drawWarpedButtonGraphics(offsetY = 0) {
+            // Wipe the high-res 1024x2048 canvas grid completely clean
+            ballCtx.clearRect(0, 0, 1024, 2048);
+    
+            const isNeon = document.documentElement.classList.contains('neon');
+    
+            // ◄--- NEON BALL COLOR MORPHING ENGINE ---
+            if (isNeon) {
+                // Normalize scroll progress specifically through the early step vector.
+                // Frame 1 starts at 0.05, and color morphing reaches its destination at Frame 5 (0.25).
+                const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
 
-                    // Smoothly blend channels between your custom starting dark brown-orange
-                    // and your refined deep table tennis orange milestone
-                    const r = Math.round(78 + (255 - 78) * morphProgress);
-                    const g = Math.round(42 + (90 - 42) * morphProgress); // Calibrated mid-point green vector
-                    const b = Math.round(5 + (0 - 5) * morphProgress);
+                // Smoothly blend channels between your custom starting dark brown-orange
+                // and your refined deep table tennis orange milestone
+                const r = Math.round(78 + (255 - 78) * morphProgress);
+                const g = Math.round(42 + (90 - 42) * morphProgress); // Calibrated mid-point green vector
+                const b = Math.round(5 + (0 - 5) * morphProgress);
 
-                    ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
                 } else {
                     // Standard theme retains its original base layout color profile
                     ballCtx.fillStyle = '#fce5cd';
                 }
-                
+    
+                // Paint the background color across the upgraded high-res texture bounds
                 ballCtx.fillRect(0, 0, 1024, 2048);
-                } else {
-                    // Standard theme retains its original base layout color unchanged for now
-                    ballCtx.fillStyle = '#fce5cd';
-                }
-                
-                ballCtx.fillRect(0, 0, 1024, 2048);
-                
+    
+                // ============================================================
+                // 🚀 CONTINUATION OF YOUR LAYOUT ELEMENTS (BUTTON LOOPS CONTINUE BELOW)
+                // ============================================================
                 // Realistic 3D spin loop boundaries (scaled up for high-res map)
                 const totalScrollDomain = 2848; // 1424 * 2
 
                 // Title coordinates upscaled
                 let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
+
                 if (titleY < 0) titleY += totalScrollDomain;
 
                 if (titleY >= 0 && titleY <= 2048) {
