@@ -1090,6 +1090,7 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
+                // Keep the compact, tight vertical equator grouping
                 const buttons = [
                     { text: 'Preview Mode', bg: '#6abf6e', y: 390, subText: '(works on most devices)' },
                     { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 450, subText: '' },
@@ -1099,52 +1100,41 @@
                 ];
 
                 buttons.forEach(btn => {
-                    // --- DRAW LEFT HALF ---
                     ballCtx.save();
+                    
                     let currentY = (btn.y - offsetY * 1024) % 1024;
                     if (currentY < 0) currentY += 1024;
 
-                    // Anchor at horizontal pixel 0 (the front center stitch line)
-                    ballCtx.translate(0, currentY);
+                    // ◄--- THE TRUE FRONT CENTER ALIGNMENT ---
+                    // Moving the horizontal center to exactly 384 pulls the button group 
+                    // out of the right-hand quadrant, snapping it dead-center in front of the lens!
+                    ballCtx.translate(384, currentY);
+
+                    // ◄--- FINE-TUNED SHARP RE-SCALE ---
+                    // Squeezing the width to 0.28 counters the sphere's stretching effect.
+                    // Scaling the height to 0.70 thins out the pills to look sleek and unbloated.
+                    ballCtx.scale(0.28, 0.70);
+
+                    // Draw the pill button shape matching your CSS layout proportions
+                    ballCtx.fillStyle = btn.bg;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-200, -24, 400, 48, 12);
+                    ballCtx.fill();
+
+                    // Gloss reflection highlight overlay
+                    const glassGrad = ballCtx.createLinearGradient(0, -24, 0, 0);
+                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
+                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+                    ballCtx.fillStyle = glassGrad;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-200, -24, 400, 22);
+                    ballCtx.fill();
+
+                    // Render black sharp typography string labels
+                    ballCtx.fillStyle = '#000000';
+                    ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ballCtx.textAlign = 'center';
                     
-                    // Compact scaling factor: 0.45 width removes the bloated look
-                    ballCtx.scale(0.45, 0.85);
-
-                    ballCtx.fillStyle = btn.bg;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -24, 400, 48, 12);
-                    ballCtx.fill();
-
-                    // Text
-                    ballCtx.fillStyle = '#000000';
-                    ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ballCtx.textAlign = 'center';
-                    if (btn.subText) {
-                        ballCtx.textBaseline = 'bottom';
-                        ballCtx.fillText(btn.text, 0, 2);
-                        ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
-                        ballCtx.font = '11px sans-serif';
-                        ballCtx.textBaseline = 'top';
-                        ballCtx.fillText(btn.subText, 0, 4);
-                    } else {
-                        ballCtx.textBaseline = 'middle';
-                        ballCtx.fillText(btn.text, 0, 0);
-                    }
-                    ballCtx.restore();
-
-                    // --- DRAW RIGHT HALF (Duplicate at width boundary for seamless wrapping) ---
-                    ballCtx.save();
-                    ballCtx.translate(512, currentY);
-                    ballCtx.scale(0.45, 0.85);
-
-                    ballCtx.fillStyle = btn.bg;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -24, 400, 48, 12);
-                    ballCtx.fill();
-
-                    ballCtx.fillStyle = '#000000';
-                    ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ballCtx.textAlign = 'center';
                     if (btn.subText) {
                         ballCtx.textBaseline = 'bottom';
                         ballCtx.fillText(btn.text, 0, 2);
