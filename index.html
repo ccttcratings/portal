@@ -1090,15 +1090,15 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // ◄--- FINE-TUNED VERTICAL PADDING SPACING ---
-                // Rebalanced the Hub button to y: 665 to dial back the extra spacing.
-                // Added a 'h' (height) parameter to selectively make the main content buttons fatter.
+                // ◄--- TIGHTENED PADDING MATRIX ---
+                // Tucked copy buttons closer to their parent actions (y: 432 and 522).
+                // Lowered padding above the bottom hub button by shifting it up to y: 640.
                 const buttons = [
-                    { text: 'Preview Mode', bg: '#6abf6e', y: 395, subText: '(works on most devices)', h: 64 },
-                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 445, subText: '', h: 48 },
-                    { text: 'Edit Mode', bg: '#e87070', y: 495, subText: '(annoying banner at top)', h: 64 },
-                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 545, subText: '', h: 48 },
-                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 665, subText: '(hub of redundant portals)', h: 64 }
+                    { text: 'Preview Mode', bg: 'preview', y: 390, subText: '(works on most devices)', h: 64 },
+                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 432, subText: '', h: 48 },
+                    { text: 'Edit Mode', bg: 'edit', y: 480, subText: '(annoying banner at top)', h: 64 },
+                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 522, subText: '', h: 48 },
+                    { text: 'Portal Hub of Portals', bg: 'hub', y: 640, subText: '(hub of redundant portals)', h: 64 }
                 ];
 
                 buttons.forEach(btn => {
@@ -1107,32 +1107,43 @@
                     let currentY = (btn.y - offsetY * 1024) % 1024;
                     if (currentY < 0) currentY += 1024;
 
-                    // Centered right on your perfect 384 horizontal anchor
                     ballCtx.translate(384, currentY);
-
-                    // ◄--- SMALLER OVERALL BUTTON CONTAINER SCALE ---
-                    // Dropped width scale to 0.17 and height scale to 0.52 to shrink the layout.
                     ballCtx.scale(0.17, 0.52);
 
-                    // Calculate half-height bounds dynamically for symmetric drawing
                     const halfH = btn.h / 2;
 
-                    // Draw the custom pill shape using the individual button height variable
-                    ballCtx.fillStyle = btn.bg;
+                    // ◄--- DYNAMIC HIGH-VIBRANCE GRADIENTS MATCHING CSS ---
+                    // Recreated your exact CSS gradients using multi-stop linear paths
+                    // to completely bypass standard 3D scene canvas washing.
+                    const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
+                    if (isNeon) {
+                        if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
+                        else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(0.4, '#cc0000'); grad.addColorStop(1, '#990000'); }
+                        else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(0.4, '#09a3b5'); grad.addColorStop(1, '#077c9c'); }
+                        else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(0.4, '#9900dd'); grad.addColorStop(1, '#7700bb'); } // copy-btn
+                    } else {
+                        if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(0.4, '#3a9e3e'); grad.addColorStop(1, '#288028'); }
+                        else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(0.4, '#c84040'); grad.addColorStop(1, '#a02020'); }
+                        else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(0.4, '#1a7daa'); grad.addColorStop(1, '#0e5f80'); }
+                        else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); } // copy-btn
+                    }
+
+                    // Draw pill body
+                    ballCtx.fillStyle = grad;
                     ballCtx.beginPath();
                     ballCtx.roundRect(-200, -halfH, 400, btn.h, 12);
                     ballCtx.fill();
 
-                    // Gloss reflection highlight overlay scaled dynamically
-                    const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, 0);
-                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
-                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+                    // White glossy top reflection highlight overlay (matches your ::after rules)
+                    const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
+                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.7)');
+                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
                     ballCtx.fillStyle = glassGrad;
                     ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -halfH, 400, halfH - 2);
+                    ballCtx.roundRect(-200, -halfH, 400, btn.h * 0.45, 8);
                     ballCtx.fill();
 
-                    // Typography settings
+                    // Crisp text rendering
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
