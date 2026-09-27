@@ -1083,91 +1083,83 @@
             const ballCtx = ballCanvas.getContext('2d');
 
             function drawWarpedButtonGraphics(offsetY = 0) {
-                ballCtx.clearRect(0, 0, 512, 1024);
+    ballCtx.clearRect(0, 0, 512, 1024);
     
-             // 1. Maintain a stationary card background color (Standard vs Neon check)
-            const isNeon = document.documentElement.classList.contains('neon');
-            ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
-            ballCtx.fillRect(0, 0, 512, 1024);
+    const isNeon = document.documentElement.classList.contains('neon');
+    ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
+    ballCtx.fillRect(0, 0, 512, 1024);
     
-            // 2. Exact replication of your CSS layout styles and compact padding dimensions
-            const buttons = [
-                { text: 'Preview Mode', bg: 'linear-gradient(#6abf6e, #288028)', y: 220, subText: '(works on most devices)' },
-                { text: 'Copy Preview Mode URL', bg: 'linear-gradient(#a048a0, #682068)', y: 340, subText: '' },
-                { text: 'Edit Mode', bg: 'linear-gradient(#e87070, #a02020)', y: 460, subText: '(annoying banner at top)' },
-                { text: 'Copy Edit Mode URL', bg: 'linear-gradient(#a048a0, #682068)', y: 580, subText: '' },
-                { text: 'Portal Hub of Portals', bg: 'linear-gradient(#3ba8d6, #0e5f80)', y: 700, subText: '(hub of redundant portals)' }
-            ];
+    // Exact list of all 5 elements from your DOM structure with tighter spacing
+    const buttons = [
+        { text: 'Preview Mode', bg: 'preview', y: 310, subText: '(works on most devices)' },
+        { text: 'Copy Preview Mode URL', bg: 'copy', y: 410, subText: '' },
+        { text: 'Edit Mode', bg: 'edit', y: 510, subText: '(annoying banner at top)' },
+        { text: 'Copy Edit Mode URL', bg: 'copy', y: 610, subText: '' },
+        { text: 'Portal Hub of Portals', bg: 'hub', y: 710, subText: '(hub of redundant portals)' }
+    ];
 
-                buttons.forEach(btn => {
-                ballCtx.save();
+    buttons.forEach(btn => {
+        ballCtx.save();
         
-                // Apply vertical top-spin offset strictly to the buttons loop
-                // Multiplying by 1024 creates smooth pixel-perfect scrolling jumps
-                let currentY = (btn.y - offsetY * 1024) % 1024;
-                if (currentY < 0) currentY += 1024;
+        // Vertical top-spin offset applied strictly to the button sequence
+        let currentY = (btn.y - offsetY * 1024) % 1024;
+        if (currentY < 0) currentY += 1024;
 
-                // Anchor canvas transformation matrix to the middle horizontal axis
-                ballCtx.translate(256, currentY);
+        ballCtx.translate(256, currentY);
 
-                // Perfectly calculate dynamic edge squishing based on ball curvature progress
-                const distFromCenter = Math.abs(currentY - 512) / 512;
-                const scaleX = 0.84 - (distFromCenter * distFromCenter * 0.40);
-                ballCtx.scale(scaleX, 1.0);
+        // Curvature horizontal squishing modifier
+        const distFromCenter = Math.abs(currentY - 512) / 512;
+        const scaleX = 0.90 - (distFromCenter * distFromCenter * 0.35);
+        ballCtx.scale(scaleX, 1.0);
 
-               // Create HTML/CSS matching linear gradients inside the canvas engine
-               const grad = ballCtx.createLinearGradient(0, -35, 0, 35);
-            if (isNeon) {
-             // Neon overrides
-            if (btn.text.includes('Preview')) { grad.addColorStop(0, '#00ff00'); grad.addColorStop(1, '#009900'); }
-                else if (btn.text.includes('Edit')) { grad.addColorStop(0, '#ff0000'); grad.addColorStop(1, '#990000'); }
-                else if (btn.text.includes('Hub')) { grad.addColorStop(0, '#0bcade'); grad.addColorStop(1, '#077c9c'); }
-                else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(1, '#7700bb'); } // Copy buttons
-                } else {
-                // Standard colors matching your CSS
-                if (btn.text.includes('Preview')) { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(1, '#288028'); }
-                else if (btn.text.includes('Edit')) { grad.addColorStop(0, '#e87070'); grad.addColorStop(1, '#a02020'); }
-                else if (btn.text.includes('Hub')) { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(1, '#0e5f80'); }
-                else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(1, '#682068'); } // Copy buttons
-            }
-
-                    // Draw exact border-radius pill shapes matching .btn style
-                    ballCtx.fillStyle = grad;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-210, -32, 420, 64, 12);
-                    ballCtx.fill();
-
-                // White glossy top-reflection highlights matching your ::after elements
-                const glassGrad = ballCtx.createLinearGradient(0, -32, 0, -3);
-                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
-                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
-                    ballCtx.fillStyle = glassGrad;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-210, -32, 420, 29, [12, 12, 20, 20]);
-                    ballCtx.fill();
-
-                    // Render black crisp typography
-                    ballCtx.fillStyle = '#000000';
-                    ballCtx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                    ballCtx.textAlign = 'center';
-        
-                if (btn.subText) {
-                    ballCtx.textBaseline = 'bottom';
-                    ballCtx.fillText(btn.text, 0, 4);
-            
-                    // Render light subtexts beneath headers
-                    ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#333333';
-                    ballCtx.font = '13px sans-serif';
-                    ballCtx.textBaseline = 'top';
-                    ballCtx.fillText(btn.subText, 0, 8);
-                } else {
-                    ballCtx.textBaseline = 'middle';
-                    ballCtx.fillText(btn.text, 0, 0);
-                }
-        
-                ballCtx.restore();
-            });
+        const grad = ballCtx.createLinearGradient(0, -32, 0, 32);
+        if (isNeon) {
+            if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(1, '#009900'); }
+            else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(1, '#990000'); }
+            else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(1, '#077c9c'); }
+            else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(1, '#7700bb'); } 
+        } else {
+            if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(1, '#288028'); }
+            else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(1, '#a02020'); }
+            else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(1, '#0e5f80'); }
+            else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(1, '#682068'); } 
         }
+
+        // Draw pills matching your .btn size ratio
+        ballCtx.fillStyle = grad;
+        ballCtx.beginPath();
+        ballCtx.roundRect(-215, -28, 430, 56, 12);
+        ballCtx.fill();
+
+        // Gloss highlight
+        const glassGrad = ballCtx.createLinearGradient(0, -28, 0, -2);
+        glassGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+        glassGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
+        ballCtx.fillStyle = glassGrad;
+        ballCtx.beginPath();
+        ballCtx.roundRect(-215, -28, 430, 26);
+        ballCtx.fill();
+
+        // Text
+        ballCtx.fillStyle = '#000000';
+        ballCtx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ballCtx.textAlign = 'center';
+        
+        if (btn.subText) {
+            ballCtx.textBaseline = 'bottom';
+            ballCtx.fillText(btn.text, 0, 2);
+            ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
+            ballCtx.font = '12px sans-serif';
+            ballCtx.textBaseline = 'top';
+            ballCtx.fillText(btn.subText, 0, 5);
+        } else {
+            ballCtx.textBaseline = 'middle';
+            ballCtx.fillText(btn.text, 0, 0);
+        }
+        
+        ballCtx.restore();
+    });
+}
 
         drawWarpedButtonGraphics(0);
 
