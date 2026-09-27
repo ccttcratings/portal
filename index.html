@@ -1124,9 +1124,6 @@
 				// Shift horizontal center anchor from 384 to 768 to match 1024 width midpoint
 				ballCtx.translate(768, titleY);
 				
-				// ◄--- THE SEAMLESS DIAGONAL SPIN FOR HEADER ---
-				ballCtx.rotate(-0.245);
-				
 				let distTitle = Math.abs(titleY - 1024) / 1024;
 				let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
 				
@@ -1154,13 +1151,8 @@
 
 				if (currentY >= 0 && currentY <= 2048) {
 					ballCtx.save();
+					// Flat tracking alignment layout
 					ballCtx.translate(768, currentY);
-
-					// ◄--- THE SEAMLESS DIAGONAL SPIN MATRIX ---
-					// Twisting the drawing plane by -14 degrees (-0.245 radians) forces the buttons 
-					// to glide across the ball diagonally, exiting at the top right and 
-					// smoothly re-emerging from the bottom left horizon in a perfect mechanical loop!
-					ballCtx.rotate(-0.245);
 
 					let distFromEquator = Math.abs(currentY - 1024) / 1024;
 					let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
@@ -1192,7 +1184,7 @@
 					glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
 					ballCtx.fillStyle = glassGrad;
 					ballCtx.beginPath();
-					ballRect = ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
+					ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
 					ballCtx.fill();
 
 					// High-density Typography rendering engines (doubled text sizing)
