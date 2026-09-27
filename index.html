@@ -1122,7 +1122,7 @@
                     { text: 'Portal Hub of Portals', bg: 'hub', y: 630, subText: '(hub of redundant portals)', h: 80 }
                 ];
 
-                buttons.forEach(btn => {
+                 buttons.forEach(btn => {
                     let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
                     if (currentY < 0) currentY += totalScrollDomain;
 
@@ -1131,9 +1131,10 @@
                         ballCtx.save();
                         ballCtx.translate(384, currentY);
 
-                        // ◄--- SLIMMED DOWN WIDTH FACTOR ---
-                        // Reduced the horizontal scale multiplier from 0.17 to 0.14 to make the buttons narrower.
-                        ballCtx.scale(0.14, 0.52);
+                        // ◄--- THE STRETCHING FIX ---
+                        // Replaced the changing distance scale check with a constant width scale (0.165).
+                        // This leaves them wider at the edges, letting Three.js do the curving work naturally!
+                        ballCtx.scale(0.165, 0.52);
 
                         const halfH = btn.h / 2;
 
