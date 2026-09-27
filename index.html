@@ -1100,9 +1100,9 @@
                     ballCtx.save();
                     ballCtx.translate(384, titleY);
                     
-                    // Extreme Title Test Scaling
+                    // Calibrated Title Width Tracking
                     let distTitle = Math.abs(titleY - 512) / 512;
-                    let dynamicTitleWidth = 0.14 + (distTitle * distTitle * distTitle * distTitle * 0.45);
+                    let dynamicTitleWidth = 0.14 + (distTitle * distTitle * 0.11);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
@@ -1132,11 +1132,12 @@
                         // Measures distance from equator midpoint (pixel 512)
                         let distFromEquator = Math.abs(currentY - 512) / 512;
                         
-                        // ◄--- EXTREME PARABOLIC EDGE FLARE TEST ---
-                        // Stays tight and normal near the middle (0.14), but as distFromEquator climbs,
-                        // raising it to the 4th power keeps it small until the very last moment,
-                        // where it aggressively explodes outward by adding 0.65 to the width scale factor.
-                        let dynamicStretchWidth = 0.14 + (distFromEquator * distFromEquator * distFromEquator * distFromEquator * 0.65);
+                        // ◄--- THE BALANCED EDGE RETENTION MATRIX ---
+                        // Replaced the extreme 4th power with a standard squaring (dist * dist).
+                        // Dialed the multiplier way down to 0.13. This gives you a slight, stable 
+                        // horizontal expansion that perfectly locks the perceived width on screen 
+                        // as the buttons move toward the top and bottom edges.
+                        let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.13);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
 
