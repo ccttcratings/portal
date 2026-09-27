@@ -1113,14 +1113,14 @@
                     ballCtx.restore();
                 }
                 
-                // ◄--- TIGHTENED COPY BUTTON PADDING ---
-                // Lowered the 'y' positions of both copy buttons (460 and 550) 
-                // to pull them up closer to the Preview and Edit pills.
+                // ◄--- BALANCED 50% PADDING MATRIX ---
+                // Re-indexed y positions of copy buttons to 465 and 555.
+                // This keeps them clean and separated without feeling spaced too far apart.
                 const buttons = [
                     { text: 'Preview Mode', bg: 'preview', y: 425, subText: '(works on most devices)', h: 80 },
-                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 460, subText: '', h: 48 },
+                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 465, subText: '', h: 48 },
                     { text: 'Edit Mode', bg: 'edit', y: 515, subText: '(annoying banner at top)', h: 80 },
-                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 550, subText: '', h: 48 },
+                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 555, subText: '', h: 48 },
                     { text: 'Portal Hub of Portals', bg: 'hub', y: 630, subText: '(hub of redundant portals)', h: 80 }
                 ];
 
@@ -1133,8 +1133,6 @@
                         ballCtx.translate(384, currentY);
 
                         let distFromEquator = Math.abs(currentY - 512) / 512;
-                        
-                        // ◄--- LOCKED IN CHOSEN 0.3 MULTIPLIER ---
                         let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
