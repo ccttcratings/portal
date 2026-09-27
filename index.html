@@ -1581,39 +1581,46 @@ ballButtonTexture.offset.set(0.0, 0.0);
 			if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
 				const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
 				
-				// 1. Existing sphere footprint geometry scale
+				// 1. Existing sphere scale
 				const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
 				pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-				// ◄--- THE LOCKED VIEW AXIS PIVOT ENGINE WITH RIGHT-SIDE PAN ---
-				// camera.rotation.x -= 0.18 tilts the lens UP (suspending the table down low).
-				// camera.rotation.y -= 0.22 pans the lens LEFT, which physically shifts the ball's
-				// trajectory line over to line up perfectly with the right side of the table tennis grid!
+				// ◄--- THE STABLE CAMERA TILT AND AXIS RE-LOCK ---
+				// Tilts the camera line of sight straight UP to lock the table down low.
 				const staticTiltAngle = 0.18;
-				const staticPanRightAngle = 0.22;
-				
-				camera.rotation.x -= staticTiltAngle;
-				camera.rotation.y -= staticPanRightAngle;
+				camera.rotation.set(-staticTiltAngle, 0, 0); 
+				camera.position.set(0, TABLE_H + 0.58, -TABLE_LEN / 2 - 1.12); 
 
-				// 2. Track camera focal vectors (now pointing slightly upward and leftward)
+				// 2. Track camera focal vectors 
 				const targetDirection = new THREE.Vector3();
 				camera.getWorldDirection(targetDirection);
 
-				// 3. Move the ball along the tilted/panned camera line of sight
-				// This guarantees the ball stays perfectly centered in front of the lens!
+				// 3. Move the ball cleanly along the camera line of sight
 				const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
 				pingPongBallMesh.position.copy(camera.position)
 					.addScaledVector(targetDirection, distanceFactor);
+
+				// ◄--- THE GROUP CORRIDOR MOVE PASS ---
+				// Shifting the entire group parent to the left by -0.42 meters forces 
+				// every single custom geometry, net line, and floor plank to slide left together, 
+				// perfectly landing the centered ball over the right half court!
+				if (typeof tableGroup !== 'undefined') {
+					tableGroup.position.x = -0.42;
+				}
 
 				// 4. Smoothly shift sphere depth thickness matrix
 				const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
 				pingPongBallMesh.scale.z *= depthFactor;
 
-				// 5. Balance layout repeat mappings to standard 1:1 default scaling states
+				// 5. Standard flat texture mappings
 				ballButtonTexture.repeat.set(1.0, 1.0);
 				ballButtonTexture.offset.set(0.0, 0.0);
+				pingPongBallMesh.rotation.set(0, 0, 0); 
 			} else {
 				pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+				if (typeof tableGroup !== 'undefined') {
+					tableGroup.position.x = 0;
+				}
 			}
 
 			// Global Top-Spin Texture Offsets
