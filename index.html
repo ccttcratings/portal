@@ -1090,15 +1090,15 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // ◄--- UPDATED VERTICAL SPACING MATRIX ---
-                // Retains tight gaps for the top four elements, then pushes the fifth 
-                // button ('Portal Hub') down from 630 to 710 to mirror the extra CSS margin-top!
+                // ◄--- FINE-TUNED VERTICAL PADDING SPACING ---
+                // Rebalanced the Hub button to y: 665 to dial back the extra spacing.
+                // Added a 'h' (height) parameter to selectively make the main content buttons fatter.
                 const buttons = [
-                    { text: 'Preview Mode', bg: '#6abf6e', y: 390, subText: '(works on most devices)' },
-                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 445, subText: '' },
-                    { text: 'Edit Mode', bg: '#e87070', y: 500, subText: '(annoying banner at top)' },
-                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 555, subText: '' },
-                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 710, subText: '(hub of redundant portals)' }
+                    { text: 'Preview Mode', bg: '#6abf6e', y: 395, subText: '(works on most devices)', h: 64 },
+                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 445, subText: '', h: 48 },
+                    { text: 'Edit Mode', bg: '#e87070', y: 495, subText: '(annoying banner at top)', h: 64 },
+                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 545, subText: '', h: 48 },
+                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 665, subText: '(hub of redundant portals)', h: 64 }
                 ];
 
                 buttons.forEach(btn => {
@@ -1107,30 +1107,32 @@
                     let currentY = (btn.y - offsetY * 1024) % 1024;
                     if (currentY < 0) currentY += 1024;
 
-                    // Kept right on your perfect 384 horizontal anchor
+                    // Centered right on your perfect 384 horizontal anchor
                     ballCtx.translate(384, currentY);
 
-                    // ◄--- COMPACT RE-SIZING COUNTER ---
-                    // Dropped width from 0.28 to 0.22 to make the buttons smaller.
-                    // Dropped height from 0.70 to 0.58 to stop the vertical bloating.
-                    ballCtx.scale(0.22, 0.58);
+                    // ◄--- SMALLER OVERALL BUTTON CONTAINER SCALE ---
+                    // Dropped width scale to 0.17 and height scale to 0.52 to shrink the layout.
+                    ballCtx.scale(0.17, 0.52);
 
-                    // Draw the crisp pill shape matching Frame 0 size scales
+                    // Calculate half-height bounds dynamically for symmetric drawing
+                    const halfH = btn.h / 2;
+
+                    // Draw the custom pill shape using the individual button height variable
                     ballCtx.fillStyle = btn.bg;
                     ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -24, 400, 48, 12);
+                    ballCtx.roundRect(-200, -halfH, 400, btn.h, 12);
                     ballCtx.fill();
 
-                    // Gloss reflection highlight overlay
-                    const glassGrad = ballCtx.createLinearGradient(0, -24, 0, 0);
+                    // Gloss reflection highlight overlay scaled dynamically
+                    const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, 0);
                     glassGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
                     glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
                     ballCtx.fillStyle = glassGrad;
                     ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -24, 400, 22);
+                    ballCtx.roundRect(-200, -halfH, 400, halfH - 2);
                     ballCtx.fill();
 
-                    // Typography settings scaled cleanly
+                    // Typography settings
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
