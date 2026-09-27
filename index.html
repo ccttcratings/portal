@@ -1090,15 +1090,28 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // ◄--- INCREASING THICKNESS & ELIMINATING EXCESS GAP ---
-                // Fatter buttons: Increased height parameter 'h' from 64 to 80 on major elements.
-                // Erased lingering padding gap: Moved Portal Hub from 640 up to 595.
+                // ◄--- RENDER MISSING TITLE HEADER ---
+                ballCtx.save();
+                // Applies the identical vertical top-spin offset loop tracking
+                let titleY = (345 - offsetY * 1024) % 1024;
+                if (titleY < 0) titleY += 1024;
+                ballCtx.translate(384, titleY);
+                ballCtx.scale(0.17, 0.52);
+                ballCtx.fillStyle = '#000000';
+                ballCtx.font = '800 30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ballCtx.textAlign = 'center';
+                ballCtx.textBaseline = 'middle';
+                ballCtx.fillText('View Mode Portal', 0, 0);
+                ballCtx.restore();
+                
+                // ◄--- LOWERED BASELINE POSITION MATRIX ---
+                // Added +35 pixels to every Y-coordinate to push the entire group downward.
                 const buttons = [
-                    { text: 'Preview Mode', bg: 'preview', y: 390, subText: '(works on most devices)', h: 80 },
-                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 436, subText: '', h: 48 },
-                    { text: 'Edit Mode', bg: 'edit', y: 480, subText: '(annoying banner at top)', h: 80 },
-                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 526, subText: '', h: 48 },
-                    { text: 'Portal Hub of Portals', bg: 'hub', y: 595, subText: '(hub of redundant portals)', h: 80 }
+                    { text: 'Preview Mode', bg: 'preview', y: 425, subText: '(works on most devices)', h: 80 },
+                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 471, subText: '', h: 48 },
+                    { text: 'Edit Mode', bg: 'edit', y: 515, subText: '(annoying banner at top)', h: 80 },
+                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 561, subText: '', h: 48 },
+                    { text: 'Portal Hub of Portals', bg: 'hub', y: 630, subText: '(hub of redundant portals)', h: 80 }
                 ];
 
                 buttons.forEach(btn => {
@@ -1112,7 +1125,7 @@
 
                     const halfH = btn.h / 2;
 
-                    // Exact replica high-vibrance CSS gradients
+                    // High-vibrance multi-stop linear layout gradients
                     const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
                     if (isNeon) {
                         if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
@@ -1126,22 +1139,23 @@
                         else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
                     }
 
-                    // Draw pill body using individual button height dimensions dynamically
+                    // Draw pill body bounds
                     ballCtx.fillStyle = grad;
                     ballCtx.beginPath();
                     ballCtx.roundRect(-200, -halfH, 400, btn.h, 12);
                     ballCtx.fill();
 
-                    // White glossy top reflection highlight overlay (pill height proportional)
+                    // ◄--- DARKENED SHADING OVERLAY ---
+                    // Lowered opacities to 0.30 and 0.05 to deepen the top reflection shadow properties.
                     const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
-                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.7)');
-                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
+                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.30)');
+                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
                     ballCtx.fillStyle = glassGrad;
                     ballCtx.beginPath();
                     ballCtx.roundRect(-200, -halfH, 400, btn.h * 0.45, 8);
                     ballCtx.fill();
 
-                    // Sharp typography text rendering engine
+                    // Crisp black text labels rendering
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
@@ -1149,7 +1163,10 @@
                     if (btn.subText) {
                         ballCtx.textBaseline = 'bottom';
                         ballCtx.fillText(btn.text, 0, 4);
-                        ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
+                        
+                        // ◄--- FIXED BLACK SUBTEXT ENGINE ---
+                        // Swapped color profiles to pure solid black (#000000) for sharp legibility.
+                        ballCtx.fillStyle = '#000000';
                         ballCtx.font = '11px sans-serif';
                         ballCtx.textBaseline = 'top';
                         ballCtx.fillText(btn.subText, 0, 6);
