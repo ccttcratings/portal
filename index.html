@@ -1103,7 +1103,7 @@
                     // Measure distance from the equator midpoint (512)
                     let distTitle = Math.abs(titleY - 512) / 512;
                     // Dynamically broadens the horizontal scale as it approaches the pole limits
-                    let dynamicTitleWidth = 0.14 + (distTitle * distTitle * 0.12);
+                    let dynamicTitleWidth = 0.17 + (distTitle * distTitle * 0.08);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
@@ -1210,7 +1210,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
             });
 
             // Standard ping-pong size metrics (~0.02m radius geometry scale)
-            const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
+            const pingPongBallGeo = new THREE.SphereGeometry(0.50, 0.50, 1.00);
             const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
             pingPongBallMesh.castShadow = true;
             pingPongBallMesh.renderOrder = 9999;
