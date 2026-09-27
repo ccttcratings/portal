@@ -925,197 +925,170 @@
                 return tex;
             }
 
-			function makePostTexture() {
-				const c = document.createElement('canvas');
-				c.width = 512;
-				c.height = 1024;
-				const ctx = c.getContext('2d');
-				const tex = new THREE.CanvasTexture(c);
-				tex.colorSpace = THREE.SRGBColorSpace;
-				if (!ctx) return tex;
+                function makePostTexture() {
+                const c = document.createElement('canvas');
+                c.width = 512;
+                c.height = 1024;
+                const ctx = c.getContext('2d');
+                const tex = new THREE.CanvasTexture(c);
+                tex.colorSpace = THREE.SRGBColorSpace;
+                if (!ctx) return tex;
 
-				ctx.fillStyle = '#f1f5f9';
-				ctx.fillRect(0, 0, c.width, c.height);
+                ctx.fillStyle = '#f1f5f9';
+                ctx.fillRect(0, 0, c.width, c.height);
 
-				const frontGrad = ctx.createLinearGradient(128, 0, 384, 0);
-				frontGrad.addColorStop(0.00, '#788494');
-				frontGrad.addColorStop(0.12, '#9ba7b6');
-				frontGrad.addColorStop(0.28, '#d4dce6');
-				frontGrad.addColorStop(0.44, '#ffffff');
-				frontGrad.addColorStop(0.56, '#f8fafc');
-				frontGrad.addColorStop(0.72, '#d4dce6');
-				frontGrad.addColorStop(0.88, '#9ba7b6');
-				frontGrad.addColorStop(1.00, '#788494');
-				ctx.fillStyle = frontGrad;
-				ctx.fillRect(128, 0, 256, c.height);
+                const frontGrad = ctx.createLinearGradient(128, 0, 384, 0);
+                frontGrad.addColorStop(0.00, '#788494');
+                frontGrad.addColorStop(0.12, '#9ba7b6');
+                frontGrad.addColorStop(0.28, '#d4dce6');
+                frontGrad.addColorStop(0.44, '#ffffff');
+                frontGrad.addColorStop(0.56, '#f8fafc');
+                frontGrad.addColorStop(0.72, '#d4dce6');
+                frontGrad.addColorStop(0.88, '#9ba7b6');
+                frontGrad.addColorStop(1.00, '#788494');
+                ctx.fillStyle = frontGrad;
+                ctx.fillRect(128, 0, 256, c.height);
 
-				const rearGrad1 = ctx.createLinearGradient(384, 0, 512, 0);
-				rearGrad1.addColorStop(0.0, '#788494');
-				rearGrad1.addColorStop(0.4, '#c0cad6');
-				rearGrad1.addColorStop(0.85, '#f8fafc');
-				rearGrad1.addColorStop(1.0, '#ffffff');
-				ctx.fillStyle = rearGrad1;
-				ctx.fillRect(384, 0, 128, c.height);
+                const rearGrad1 = ctx.createLinearGradient(384, 0, 512, 0);
+                rearGrad1.addColorStop(0.0, '#788494');
+                rearGrad1.addColorStop(0.4, '#c0cad6');
+                rearGrad1.addColorStop(0.85, '#f8fafc');
+                rearGrad1.addColorStop(1.0, '#ffffff');
+                ctx.fillStyle = rearGrad1;
+                ctx.fillRect(384, 0, 128, c.height);
 
-				const rearGrad2 = ctx.createLinearGradient(0, 0, 128, 0);
-				rearGrad2.addColorStop(0.0, '#ffffff');
-				rearGrad2.addColorStop(0.15, '#f8fafc');
-				rearGrad2.addColorStop(0.6, '#c0cad6');
-				rearGrad2.addColorStop(1.0, '#788494');
-				ctx.fillStyle = rearGrad2;
-				ctx.fillRect(0, 0, 128, c.height);
+                const rearGrad2 = ctx.createLinearGradient(0, 0, 128, 0);
+                rearGrad2.addColorStop(0.0, '#ffffff');
+                rearGrad2.addColorStop(0.15, '#f8fafc');
+                rearGrad2.addColorStop(0.6, '#c0cad6');
+                rearGrad2.addColorStop(1.0, '#788494');
+                ctx.fillStyle = rearGrad2;
+                ctx.fillRect(0, 0, 128, c.height);
 
-				ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
-				for (let y = 2; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1);
-				ctx.fillStyle = 'rgba(15, 23, 42, 0.05)';
-				for (let y = 4; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+                for (let y = 2; y < c.height; y += 4) ctx.fillRect(0, y, c.width, 1);
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.05)';
+                for (let y = 4; y < c.height; y += 6) ctx.fillRect(0, y, c.width, 1);
 
-				const topShadow = ctx.createLinearGradient(0, 0, 0, 32);
-				topShadow.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
-				topShadow.addColorStop(1, 'rgba(15, 23, 42, 0)');
-				ctx.fillStyle = topShadow;
-				ctx.fillRect(0, 0, c.width, 32);
+                const topShadow = ctx.createLinearGradient(0, 0, 0, 32);
+                topShadow.addColorStop(0, 'rgba(15, 23, 42, 0.35)');
+                topShadow.addColorStop(1, 'rgba(15, 23, 42, 0)');
+                ctx.fillStyle = topShadow;
+                ctx.fillRect(0, 0, c.width, 32);
 
-				const botShadow = ctx.createLinearGradient(0, c.height - 48, 0, c.height);
-				botShadow.addColorStop(0, 'rgba(15, 23, 42, 0)');
-				botShadow.addColorStop(1, 'rgba(15, 23, 42, 0.40)');
-				ctx.fillStyle = botShadow;
-				ctx.fillRect(0, c.height - 48, c.width, 48);
+                const botShadow = ctx.createLinearGradient(0, c.height - 48, 0, c.height);
+                botShadow.addColorStop(0, 'rgba(15, 23, 42, 0)');
+                botShadow.addColorStop(1, 'rgba(15, 23, 42, 0.40)');
+                ctx.fillStyle = botShadow;
+                ctx.fillRect(0, c.height - 48, c.width, 48);
 
-				return tex;
-			}
+                return tex;
+            }
 
-			const tableGeo = new THREE.BoxGeometry(1, TOP_THICK, TABLE_LEN, 1, 1, 1);
-			const pos = tableGeo.attributes.position;
-			for (let i = 0; i < pos.count; i++) {
-				const x = pos.getX(i);
-				const z = pos.getZ(i);
-				pos.setX(i, x * getW(z));
-			}
-			pos.needsUpdate = true;
-			tableGeo.computeVertexNormals();
+            const tableGeo = new THREE.BoxGeometry(1, TOP_THICK, TABLE_LEN, 1, 1, 1);
+            const pos = tableGeo.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i);
+                const z = pos.getZ(i);
+                pos.setX(i, x * getW(z));
+            }
+            pos.needsUpdate = true;
+            tableGeo.computeVertexNormals();
 
-			const sideMat = new THREE.MeshStandardMaterial({ color: 0x040e22, roughness: 0.45, metalness: 0.05, dithering: true });
-			const edgeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3 });
-			const topMat = new THREE.MeshStandardMaterial({ map: makeTableTexture(), roughness: 0.42, metalness: 0.03, dithering: true });
-			const botMat = new THREE.MeshStandardMaterial({ color: 0x070b14, roughness: 0.8 });
+            const sideMat = new THREE.MeshStandardMaterial({ color: 0x040e22, roughness: 0.45, metalness: 0.05, dithering: true });
+            const edgeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.3 });
+            const topMat = new THREE.MeshStandardMaterial({ map: makeTableTexture(), roughness: 0.42, metalness: 0.03, dithering: true });
+            const botMat = new THREE.MeshStandardMaterial({ color: 0x070b14, roughness: 0.8 });
 
-			const tableMaterials = [
-				sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
-			];
-			const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
-			// ◄--- TABLE TOP POSITION SHIFT ---
-			// Shifted -0.21 horizontally to perfectly move the surface to the left side
-			tableTop.position.set(-0.21, TABLE_H - TOP_THICK / 2, 0);
-			tableTop.castShadow = true;
-			tableTop.receiveShadow = false;
-			scene.add(tableTop);
+            const tableMaterials = [
+                sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
+            ];
+            const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
+            // ◄--- TABLE TOP POSITION SHIFT ---
+            // Grounded at -0.42 horizontally to slide the surface into the right court corridor
+            tableTop.position.set(-0.42, TABLE_H - TOP_THICK / 2, 0);
+            tableTop.castShadow = true;
+            tableTop.receiveShadow = false;
+            scene.add(tableTop);
 
-			const lineMat = new THREE.MeshStandardMaterial({
-				color: 0xf8fafc,
-				roughness: 0.25,
-				polygonOffset: true,
-				polygonOffsetFactor: -2,
-				polygonOffsetUnits: -2,
-				side: THREE.DoubleSide
-			});
+            const lineMat = new THREE.MeshStandardMaterial({
+                color: 0xf8fafc,
+                roughness: 0.25,
+                polygonOffset: true,
+                polygonOffsetFactor: -2,
+                polygonOffsetUnits: -2,
+                side: THREE.DoubleSide
+            });
 
-			const LINE_W = 0.02;
-			const CENTER_W_NEAR = 0.009;
-			const CENTER_W_FAR = 0.003;
-			const zNear = -TABLE_LEN / 2;
-			const zFar = TABLE_LEN / 2;
-			const lineY = TABLE_H + 0.0004;
+            const LINE_W = 0.02;
+            const CENTER_W_NEAR = 0.009;
+            const CENTER_W_FAR = 0.003;
+            const zNear = -TABLE_LEN / 2;
+            const zFar = TABLE_LEN / 2;
+            const lineY = TABLE_H + 0.0004;
 
-			const linePositions = [];
-			function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
-				linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
-				linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
-			}
+            const linePositions = [];
+            function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
+                linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
+                linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
+            }
 
-			addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
-			addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
-			addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
-			addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
-			addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
+            addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
+            addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
+            addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
+            addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
+            addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
 
-			const linesGeo = new THREE.BufferGeometry();
-			linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-			linesGeo.computeVertexNormals();
-			const linesMesh = new THREE.Mesh(linesGeo, lineMat);
-			// ◄--- BOUNDARY LINES SHIFT LEFT ---
-			linesMesh.position.x = -0.21;
-			scene.add(linesMesh);
+            const linesGeo = new THREE.BufferGeometry();
+            linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            linesGeo.computeVertexNormals();
+            const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+            // ◄--- BOUNDARY LINES POSITION SHIFT ---
+            linesMesh.position.x = -0.42;
+            scene.add(linesMesh);
 
-			const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
+            const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
 
-			const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
-			const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
-			// ◄--- PLAYER APRON SHIFT LEFT ---
-			playerApron.position.set(-0.21, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
-			scene.add(playerApron);
+            const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
+            const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
+            // ◄--- PLAYER APRON SHIFT ---
+            playerApron.position.set(-0.42, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+            scene.add(playerApron);
 
-			const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
-			const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
-			// ◄--- OPPONENT APRON SHIFT LEFT ---
-			oppApron.position.set(-0.21, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
-			scene.add(oppApron);
+            const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
+            const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
+            // ◄--- OPPONENT APRON SHIFT ---
+            oppApron.position.set(-0.42, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+            scene.add(oppApron);
 
-			const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
-			const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
-			const lz = TABLE_LEN / 2 - 0.28;
-			const lx_near = getW(-lz) / 2 - 0.14;
-			const lx_far = getW(lz) / 2 - 0.14;
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
+            const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
+            const lz = TABLE_LEN / 2 - 0.28;
+            const lx_near = getW(-lz) / 2 - 0.14;
+            const lx_far = getW(lz) / 2 - 0.14;
 
-			[[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+            [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
                 const leg = new THREE.Mesh(legGeo, legMat);
-				// ◄--- INDIVIDUAL LEGS SHIFT LEFT ---
-                leg.position.set(x - 0.21, (TABLE_H - TOP_THICK) / 2, z);
+                // ◄--- INDIVIDUAL LEGS ARRAY GENERATION SHIFT ---
+                leg.position.set(x - 0.42, (TABLE_H - TOP_THICK) / 2, z);
                 leg.castShadow = true;
                 scene.add(leg);
-			});
+            });
 
-			const netMat = new THREE.MeshStandardMaterial({
-				map: makeNetTexture(),
-				transparent: true,
-				alphaTest: 0.1,
-				side: THREE.DoubleSide,
-				roughness: 0.9,
-				depthWrite: true
-			});
+            const netMat = new THREE.MeshStandardMaterial({
+                map: makeNetTexture(),
+                transparent: true,
+                alphaTest: 0.1,
+                side: THREE.DoubleSide,
+                roughness: 0.9,
+                depthWrite: true
+            });
 
-			// ◄--- THE NET infrastructure ASSEMBLY SHIFT LEFT ---
-			// This generates a complete net bounding box configuration matching your exact net structure dimension tracking rules, 
-			// shifting its initialization axis horizontally left by -0.21 to lock it perfectly with the table!
-			const W_AT_NET = getW(0);
-			const NET_OVERHANG = 0.1524; 
-			const netW = W_AT_NET + NET_OVERHANG * 2;
-			const netH = 0.1525;
-			const postCenterY = TABLE_H + netH / 2;
-			const NET_Z = 0;
-
-			const netGeo = new THREE.PlaneGeometry(netW, netH);
-			const netMesh = new THREE.Mesh(netGeo, netMat);
-			netMesh.position.set(-0.21, postCenterY, NET_Z); // Applied leftward shift directly
-			scene.add(netMesh);
-
-			const cordMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.1 });
-			const cordGeo = new THREE.BoxGeometry(netW, 0.006, 0.006);
-			const cordMesh = new THREE.Mesh(cordGeo, cordMat);
-			cordMesh.position.set(-0.21, TABLE_H + netH - 0.003, NET_Z); // Applied leftward shift directly
-			scene.add(cordMesh);
-
-			const postMat = new THREE.MeshStandardMaterial({ map: makePostTexture(), roughness: 0.35, metalness: 0.8 });
-			const postGeo = new THREE.BoxGeometry(0.035, netH + 0.02, 0.035);
-			const postXOffset = netW / 2;
-
-			const leftPost = new THREE.Mesh(postGeo, postMat);
-			leftPost.position.set(-postXOffset - 0.21, TABLE_H + (netH + 0.02) / 2 - 0.02, NET_Z); // Shift left
-			scene.add(leftPost);
-
-			const rightPost = new THREE.Mesh(postGeo, postMat);
-			rightPost.position.set(postXOffset - 0.21, TABLE_H + (netH + 0.02) / 2 - 0.02, NET_Z); // Shift left
-			scene.add(rightPost);
+            // Keep the dimensions identical to your working code to avoid breaking Three.js
+            const ballCanvas = document.createElement('canvas');
+            ballCanvas.width = 1024;
+            ballCanvas.height = 2048;
+            const ballCtx = ballCanvas.getContext('2d');
 
 		function drawWarpedButtonGraphics(offsetY = 0) {
 			// Wipe the high-res 1024x2048 canvas grid completely clean
