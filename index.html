@@ -1063,8 +1063,7 @@
 
             [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
                 const leg = new THREE.Mesh(legGeo, legMat);
-                // ◄--- THIS MOVES THE LEGS LEFT
-                leg.position.set(x - 0.15, (TABLE_H - TOP_THICK) / 2, z);
+                leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
                 leg.castShadow = true;
                 scene.add(leg);
             });
@@ -1254,7 +1253,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
             const logoTexture = new THREE.CanvasTexture(logoCanvas);
             logoTexture.wrapT = THREE.RepeatWrapping;
             const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
-            netMesh.position.set(-0.15, postCenterY, NET_Z);
+            netMesh.position.set(0, TABLE_H + NET_H / 2, NET_Z);
             netMesh.castShadow = true;
             netMesh.renderOrder = 1;
             scene.add(netMesh);
@@ -1264,7 +1263,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
             );
             cordMesh.rotation.z = Math.PI / 2;
-            cordMesh.position.set(-0.15, TABLE_H + netH - 0.003, NET_Z);
+            cordMesh.position.set(0, TABLE_H + NET_H, NET_Z);
             scene.add(cordMesh);
 
             const silverMat = new THREE.MeshStandardMaterial({
