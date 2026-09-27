@@ -1083,40 +1083,38 @@
             ballCanvas.height = 1024;
             const ballCtx = ballCanvas.getContext('2d');
 
-            function drawWarpedButtonGraphics(offsetY = 0) {
+             function drawWarpedButtonGraphics(offsetY = 0) {
                 ballCtx.clearRect(0, 0, 512, 1024);
                 
                 const isNeon = document.documentElement.classList.contains('neon');
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // Tighten the button grouping inside the middle of the texture space
+                // Group the buttons closely together vertically
                 const buttons = [
-                    { text: 'Preview Mode', bg: '#6abf6e', y: 380, subText: '(works on most devices)' },
-                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 445, subText: '' },
+                    { text: 'Preview Mode', bg: '#6abf6e', y: 390, subText: '(works on most devices)' },
+                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 450, subText: '' },
                     { text: 'Edit Mode', bg: '#e87070', y: 510, subText: '(annoying banner at top)' },
-                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 575, subText: '' },
-                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 640, subText: '(hub of redundant portals)' }
+                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 570, subText: '' },
+                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 630, subText: '(hub of redundant portals)' }
                 ];
 
                 buttons.forEach(btn => {
                     ballCtx.save();
                     
-                    // Controls the top-spin direction. Changing the operator from + to - 
-                    // flips the texture scrolling vector to roll perfectly upward!
+                    // Maintained top-spin layout logic
                     let currentY = (btn.y - offsetY * 1024) % 1024;
                     if (currentY < 0) currentY += 1024;
 
-                    // ◄--- THE LAYOUT AXIS RE-CENTER FIX ---
-                    // By translating to 256 (the exact horizontal center of your 512 canvas),
-                    // the buttons are perfectly centered on the front face of your ball.
-                    ballCtx.translate(256, currentY);
+                    // ◄--- THE CENTERING OFFSET FIX ---
+                    // Translating to 128 instead of 256 counteracts the sphere mapping's
+                    // default rotation, centering the buttons on the front face of the ball!
+                    ballCtx.translate(128, currentY);
 
-                    // --- NATIVE WIDTH SQUEEZE ---
-                    // Downscaling the width to 0.45 pre-compresses the layout card.
-                    // When Three.js projects this onto the sphere, it stretches back out
-                    // to match your target HTML proportions without any edge clipping!
-                    ballCtx.scale(0.45, 1.0);
+                    // ◄--- THE COMPACT SIZING FIX ---
+                    // Squeezing the scale to 0.35 width and 0.85 height shrinks the overall 
+                    // graphic container, keeping it from looking too big or bloated on Frame 1!
+                    ballCtx.scale(0.35, 0.85);
 
                     // Draw the pill button shape
                     ballCtx.fillStyle = btn.bg;
@@ -1124,7 +1122,7 @@
                     ballCtx.roundRect(-200, -24, 400, 48, 12);
                     ballCtx.fill();
 
-                    // Gloss reflection highlight
+                    // Gloss reflection highlight overlay
                     const glassGrad = ballCtx.createLinearGradient(0, -24, 0, 0);
                     glassGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
                     glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
@@ -1133,7 +1131,7 @@
                     ballCtx.roundRect(-200, -24, 400, 22);
                     ballCtx.fill();
 
-                    // Crisp black text labels
+                    // Render typography strings
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
@@ -1160,9 +1158,6 @@ const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
 ballButtonTexture.colorSpace = THREE.SRGBColorSpace;
 ballButtonTexture.repeat.set(1.0, 1.0);
 ballButtonTexture.offset.set(0.0, 0.0);
-
-
-
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture,
