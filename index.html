@@ -1089,31 +1089,30 @@
     ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
     ballCtx.fillRect(0, 0, 512, 1024);
     
-    // ◄--- REBALANCED PADDING SCALE & ANCHORS ---
-    // Centered tighter vertically between pixels 380 and 660 so they don't drift apart.
+    // Exact list of all 5 elements from your DOM structure with tighter spacing
     const buttons = [
-        { text: 'Preview Mode', bg: 'preview', y: 380, subText: '(works on most devices)' },
-        { text: 'Copy Preview Mode URL', bg: 'copy', y: 450, subText: '' },
-        { text: 'Edit Mode', bg: 'edit', y: 520, subText: '(annoying banner at top)' },
-        { text: 'Copy Edit Mode URL', bg: 'copy', y: 590, subText: '' },
-        { text: 'Portal Hub of Portals', bg: 'hub', y: 660, subText: '(hub of redundant portals)' }
+        { text: 'Preview Mode', bg: 'preview', y: 310, subText: '(works on most devices)' },
+        { text: 'Copy Preview Mode URL', bg: 'copy', y: 410, subText: '' },
+        { text: 'Edit Mode', bg: 'edit', y: 510, subText: '(annoying banner at top)' },
+        { text: 'Copy Edit Mode URL', bg: 'copy', y: 610, subText: '' },
+        { text: 'Portal Hub of Portals', bg: 'hub', y: 710, subText: '(hub of redundant portals)' }
     ];
 
     buttons.forEach(btn => {
         ballCtx.save();
         
-        // Vertical top-spin rolling calculations
+        // Vertical top-spin offset applied strictly to the button sequence
         let currentY = (btn.y - offsetY * 1024) % 1024;
         if (currentY < 0) currentY += 1024;
 
         ballCtx.translate(256, currentY);
 
-        // Curvature horizon squishing modifier
+        // Curvature horizontal squishing modifier
         const distFromCenter = Math.abs(currentY - 512) / 512;
         const scaleX = 0.90 - (distFromCenter * distFromCenter * 0.35);
         ballCtx.scale(scaleX, 1.0);
 
-        const grad = ballCtx.createLinearGradient(0, -24, 0, 24);
+        const grad = ballCtx.createLinearGradient(0, -32, 0, 32);
         if (isNeon) {
             if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(1, '#009900'); }
             else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(1, '#990000'); }
@@ -1126,34 +1125,33 @@
             else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(1, '#682068'); } 
         }
 
-        // ◄--- COMPACT LAYOUT PILL DIMENSIONS ---
-        // Width reduced to 340 and height to 48 to keep Frame 1 matching standard phone screen widths.
+        // Draw pills matching your .btn size ratio
         ballCtx.fillStyle = grad;
         ballCtx.beginPath();
-        ballCtx.roundRect(-170, -24, 340, 48, 10);
+        ballCtx.roundRect(-215, -28, 430, 56, 12);
         ballCtx.fill();
 
-        // White reflection highlight overlay
-        const glassGrad = ballCtx.createLinearGradient(0, -24, 0, 0);
-        glassGrad.addColorStop(0, 'rgba(255,255,255,0.50)');
-        glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+        // Gloss highlight
+        const glassGrad = ballCtx.createLinearGradient(0, -28, 0, -2);
+        glassGrad.addColorStop(0, 'rgba(255,255,255,0.55)');
+        glassGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
         ballCtx.fillStyle = glassGrad;
         ballCtx.beginPath();
-        ballCtx.roundRect(-170, -24, 340, 22);
+        ballCtx.roundRect(-215, -28, 430, 26);
         ballCtx.fill();
 
         // Text
         ballCtx.fillStyle = '#000000';
-        ballCtx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ballCtx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ballCtx.textAlign = 'center';
         
         if (btn.subText) {
             ballCtx.textBaseline = 'bottom';
             ballCtx.fillText(btn.text, 0, 2);
             ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
-            ballCtx.font = '10px sans-serif';
+            ballCtx.font = '12px sans-serif';
             ballCtx.textBaseline = 'top';
-            ballCtx.fillText(btn.subText, 0, 4);
+            ballCtx.fillText(btn.subText, 0, 5);
         } else {
             ballCtx.textBaseline = 'middle';
             ballCtx.fillText(btn.text, 0, 0);
@@ -1167,21 +1165,10 @@
 
         // Force texture colors to render punchy and vibrant inside Three.js
         const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
-ballButtonTexture.colorSpace = THREE.SRGBColorSpace; 
-
-// Rotate mapping coordinates 90 degrees to lock the vertical spinning direction
-ballButtonTexture.center.set(0.5, 0.5);
-ballButtonTexture.rotation = Math.PI / 2;
-
-// ◄--- FIX SIDE-BY-SIDE REPEATS ---
-// Because the texture is rotated 90 degrees, wrapT now governs the horizontal axis. 
-// Changing wrapT to ClampToEdge ensures exactly ONE set of buttons sits on the ball equator.
-ballButtonTexture.wrapS = THREE.RepeatWrapping; 
-ballButtonTexture.wrapT = THREE.ClampToEdgeWrapping; 
-
-ballButtonTexture.minFilter = THREE.LinearMipmapLinearFilter;
-ballButtonTexture.magFilter = THREE.LinearFilter;
-
+        ballButtonTexture.colorSpace = THREE.SRGBColorSpace; // Keeps colors matching CSS exactly
+        ballButtonTexture.wrapS = THREE.RepeatWrapping; 
+        ballButtonTexture.wrapT = THREE.RepeatWrapping; 
+        ballButtonTexture.minFilter = THREE.LinearFilter; // Smooth edge filtering
 
 
             const ballMaterial = new THREE.MeshStandardMaterial({
@@ -1549,39 +1536,44 @@ ballButtonTexture.magFilter = THREE.LinearFilter;
                     // Normalize a factor baseline spanning from frame 1 up to frame 20
                     const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
     
-    // Inside function applyFrame(frameNum) -> inside the progressFactor block:
+                    // 1. Smoothly scale the overall sphere footprint
+                    const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
+                    pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
+
+                    // 2. Track camera focal vectors
+                    const targetDirection = new THREE.Vector3();
+                    camera.getWorldDirection(targetDirection);
+
+                    // 3. Move the ball away at your custom 0.75 distance profile
+                    const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
+                    pingPongBallMesh.position.copy(camera.position)
+                   .addScaledVector(targetDirection, distanceFactor);
+
+                    // 4. FIX: Smoothly morph texture offsets & depth instead of using step blocks
+                    // This scales the ball's thickness smoothly from flat (0.001) to full sphere (1.0)
+                    const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
+                    pingPongBallMesh.scale.z *= depthFactor;
+
+                    // Smoothly scale text wrapping repeat and offset based on progress
+                    const textureRepeat = THREE.MathUtils.lerp(1.0, 4.0, progressFactor);
+                    const textureOffset = THREE.MathUtils.lerp(0.0, 0.375, progressFactor);
     
-    // Scale the sphere footprint geometry size
-    const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
-    pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
+                    ballButtonTexture.repeat.set(textureRepeat, 1.0);
+                    ballButtonTexture.offset.x = textureOffset;
 
-    // Track camera focal vectors
-    const targetDirection = new THREE.Vector3();
-    camera.getWorldDirection(targetDirection);
+                } else {
+                // Fallback for frames 21+
+                    pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+                }
 
-    // Distance vector calculation
-    const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
-    pingPongBallMesh.position.copy(camera.position)
-        .addScaledVector(targetDirection, distanceFactor);
+                // Global Top-Spin Texture Offsets
+                logoTexture.offset.y = currentProgress;
+                drawWarpedButtonGraphics(currentProgress);
+                ballButtonTexture.needsUpdate = true;
 
-    // Smoothly shift sphere depth thickness matrix
-    const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
-    pingPongBallMesh.scale.z *= depthFactor;
+                render();
 
-    // ◄--- FIX TEXTURE HORIZONTAL REPEATING & WIDTH ---
-    // Forcing repeat.set(1.5, 1.0) locks down the texture aspect ratio across all 20 frames,
-    // making sure the labels stay tracking properly and never duplicate on the sides!
-    ballButtonTexture.repeat.set(1.5, 1.0);
-    ballButtonTexture.offset.x = 0.0; 
-
-    // Global Top-Spin Texture Offsets
-    drawWarpedButtonGraphics(currentProgress);
-    ballButtonTexture.needsUpdate = true;
-
-    ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, progressFactor);
-
-    render();
-
+            }
 
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
             if (copyPreviewBtn) {
