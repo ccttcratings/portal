@@ -1005,7 +1005,7 @@
 			];
 			const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
 			// ◄--- TABLE TOP POSITION SHIFT ---
-			// Shifted -0.21 horizontally to perfectly offset the background matrix to your 25% target metric
+			// Shifted -0.21 horizontally to perfectly move the surface to the left side
 			tableTop.position.set(-0.21, TABLE_H - TOP_THICK / 2, 0);
 			tableTop.castShadow = true;
 			tableTop.receiveShadow = false;
@@ -1043,7 +1043,7 @@
 			linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
 			linesGeo.computeVertexNormals();
 			const linesMesh = new THREE.Mesh(linesGeo, lineMat);
-			// ◄--- BOUNDARY LINES POSITION SHIFT ---
+			// ◄--- BOUNDARY LINES SHIFT LEFT ---
 			linesMesh.position.x = -0.21;
 			scene.add(linesMesh);
 
@@ -1051,13 +1051,13 @@
 
 			const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
 			const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
-			// ◄--- PLAYER APRON SHIFT ---
+			// ◄--- PLAYER APRON SHIFT LEFT ---
 			playerApron.position.set(-0.21, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
 			scene.add(playerApron);
 
 			const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
 			const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
-			// ◄--- OPPONENT APRON SHIFT ---
+			// ◄--- OPPONENT APRON SHIFT LEFT ---
 			oppApron.position.set(-0.21, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
 			scene.add(oppApron);
 
@@ -1068,11 +1068,11 @@
 			const lx_far = getW(lz) / 2 - 0.14;
 
 			[[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
-				const leg = new THREE.Mesh(legGeo, legMat);
-				// ◄--- INDIVIDUAL LEGS ARRAY GENERATION SHIFT ---
-				leg.position.set(x - 0.21, (TABLE_H - TOP_THICK) / 2, z);
-				leg.castShadow = true;
-				scene.add(leg);
+                const leg = new THREE.Mesh(legGeo, legMat);
+				// ◄--- INDIVIDUAL LEGS SHIFT LEFT ---
+                leg.position.set(x - 0.21, (TABLE_H - TOP_THICK) / 2, z);
+                leg.castShadow = true;
+                scene.add(leg);
 			});
 
 			const netMat = new THREE.MeshStandardMaterial({
@@ -1084,11 +1084,38 @@
 				depthWrite: true
 			});
 
-            // Keep the dimensions identical to your working code to avoid breaking Three.js
-            const ballCanvas = document.createElement('canvas');
-            ballCanvas.width = 1024;
-            ballCanvas.height = 2048;
-            const ballCtx = ballCanvas.getContext('2d');
+			// ◄--- THE NET infrastructure ASSEMBLY SHIFT LEFT ---
+			// This generates a complete net bounding box configuration matching your exact net structure dimension tracking rules, 
+			// shifting its initialization axis horizontally left by -0.21 to lock it perfectly with the table!
+			const W_AT_NET = getW(0);
+			const NET_OVERHANG = 0.1524; 
+			const netW = W_AT_NET + NET_OVERHANG * 2;
+			const netH = 0.1525;
+			const postCenterY = TABLE_H + netH / 2;
+			const NET_Z = 0;
+
+			const netGeo = new THREE.PlaneGeometry(netW, netH);
+			const netMesh = new THREE.Mesh(netGeo, netMat);
+			netMesh.position.set(-0.21, postCenterY, NET_Z); // Applied leftward shift directly
+			scene.add(netMesh);
+
+			const cordMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1, metalness: 0.1 });
+			const cordGeo = new THREE.BoxGeometry(netW, 0.006, 0.006);
+			const cordMesh = new THREE.Mesh(cordGeo, cordMat);
+			cordMesh.position.set(-0.21, TABLE_H + netH - 0.003, NET_Z); // Applied leftward shift directly
+			scene.add(cordMesh);
+
+			const postMat = new THREE.MeshStandardMaterial({ map: makePostTexture(), roughness: 0.35, metalness: 0.8 });
+			const postGeo = new THREE.BoxGeometry(0.035, netH + 0.02, 0.035);
+			const postXOffset = netW / 2;
+
+			const leftPost = new THREE.Mesh(postGeo, postMat);
+			leftPost.position.set(-postXOffset - 0.21, TABLE_H + (netH + 0.02) / 2 - 0.02, NET_Z); // Shift left
+			scene.add(leftPost);
+
+			const rightPost = new THREE.Mesh(postGeo, postMat);
+			rightPost.position.set(postXOffset - 0.21, TABLE_H + (netH + 0.02) / 2 - 0.02, NET_Z); // Shift left
+			scene.add(rightPost);
 
 		function drawWarpedButtonGraphics(offsetY = 0) {
 			// Wipe the high-res 1024x2048 canvas grid completely clean
