@@ -1083,52 +1083,53 @@
             ballCanvas.height = 2048;
             const ballCtx = ballCanvas.getContext('2d');
 
-            function drawWarpedButtonGraphics(offsetY = 0) {
-                // Wipe the high-res 1024x2048 canvas grid completely clean
-                ballCtx.clearRect(0, 0, 1024, 2048);
-                
-                const isNeon = document.documentElement.classList.contains('neon');
-                
-                // ◄--- NEON BALL COLOR MORPHING ENGINE ---
-                if (isNeon) {
-                    // Map your scroll offset progress to a 0.0 - 1.0 interval specifically across the first 5 frames.
-                    // Frame 1 corresponds to currentProgress = 0.05, Frame 5 corresponds to currentProgress = 0.25.
-                    // We lock the color transition bounds to clamp perfectly at Frame 5 max brightness.
-                    const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
+        function drawWarpedButtonGraphics(offsetY = 0) {
+            // Wipe the high-res 1024x2048 canvas grid completely clean
+            ballCtx.clearRect(0, 0, 1024, 2048);
+    
+            const isNeon = document.documentElement.classList.contains('neon');
+    
+            // ◄--- NEON BALL COLOR MORPHING ENGINE ---
+            if (isNeon) {
+                // Normalize scroll progress specifically through the early step vector.
+                // Frame 1 starts at 0.05, and color morphing reaches its destination at Frame 5 (0.25).
+                const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
 
-                    // Deconstruct your starting dark orange (#4e2a05 -> RGB: 78, 42, 5) 
-                    // and your target bright neon orange (#d96009 -> RGB: 217, 96, 9)
-                    const r = Math.round(78 + (217 - 78) * morphProgress);
-                    const g = Math.round(42 + (96 - 42) * morphProgress);
-                    const b = Math.round(5 + (9 - 5) * morphProgress);
+                // Smoothly blend channels between your custom starting dark brown-orange
+                // and your refined deep table tennis orange milestone
+                const r = Math.round(78 + (255 - 78) * morphProgress);
+                const g = Math.round(42 + (90 - 42) * morphProgress); // Calibrated mid-point green vector
+                const b = Math.round(5 + (0 - 5) * morphProgress);
 
-                    ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
                 } else {
-                    // Standard theme retains its original base layout color unchanged
+                    // Standard theme retains its original base layout color profile
                     ballCtx.fillStyle = '#fce5cd';
                 }
-                
+    
+                // Paint the background color across the upgraded high-res texture bounds
                 ballCtx.fillRect(0, 0, 1024, 2048);
-                
+    
+                // ============================================================
+                // 🚀 CONTINUATION OF YOUR LAYOUT ELEMENTS (BUTTON LOOPS CONTINUE BELOW)
+                // ============================================================
                 // Realistic 3D spin loop boundaries (scaled up for high-res map)
                 const totalScrollDomain = 2848; // 1424 * 2
 
                 // Title coordinates upscaled
                 let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
+
                 if (titleY < 0) titleY += totalScrollDomain;
 
                 if (titleY >= 0 && titleY <= 2048) {
                     ballCtx.save();
-                    // Shift horizontal center anchor from 384 to 768 to match 1024 width midpoint
                     ballCtx.translate(768, titleY);
                     
-                    // High-res Synced Title Tracking
                     let distTitle = Math.abs(titleY - 1024) / 1024;
                     let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
-                    // Doubled font size from 30px to 60px for extreme crispness
                     ballCtx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
                     ballCtx.textBaseline = 'middle';
@@ -1136,7 +1137,6 @@
                     ballCtx.restore();
                 }
                 
-                // Upscaled Button Tracking coordinates (all multiplied by 2)
                 const buttons = [
                     { text: 'Preview Mode', bg: 'preview', y: 850, subText: '(works on most devices)', h: 160 },
                     { text: 'Copy Preview Mode URL', bg: 'copy', y: 930, subText: '', h: 96 },
@@ -1172,7 +1172,6 @@
                             else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
                         }
 
-                        // Upscaled Pill dimensions (width doubled to 800)
                         ballCtx.fillStyle = grad;
                         ballCtx.beginPath();
                         ballCtx.roundRect(-400, -halfH, 800, btn.h, 24);
@@ -1186,7 +1185,6 @@
                         ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
                         ballCtx.fill();
 
-                        // High-density Typography rendering engines (doubled text sizing)
                         ballCtx.fillStyle = '#000000';
                         ballCtx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ballCtx.textAlign = 'center';
