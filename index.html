@@ -1211,7 +1211,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
             });
 
             // Standard ping-pong size metrics (~0.02m radius geometry scale)
-            const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
+            const pingPongBallGeo = new THREE.CapsuleGeometry(0.50, 0.35, 16, 32);
             const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
             pingPongBallMesh.castShadow = true;
             pingPongBallMesh.renderOrder = 9999;
