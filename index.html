@@ -1100,10 +1100,9 @@
                     ballCtx.save();
                     ballCtx.translate(384, titleY);
                     
-                    // Measure distance from the equator midpoint (512)
+                    // Extreme Title Test Scaling
                     let distTitle = Math.abs(titleY - 512) / 512;
-                    // Dynamically broadens the horizontal scale as it approaches the pole limits
-                    let dynamicTitleWidth = 0.14 + (distTitle * distTitle * 0.12);
+                    let dynamicTitleWidth = 0.14 + (distTitle * distTitle * distTitle * distTitle * 0.45);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
@@ -1130,15 +1129,14 @@
                         ballCtx.save();
                         ballCtx.translate(384, currentY);
 
-                        // Measures exactly how far the button has traveled from the equator (pixel 512)
+                        // Measures distance from equator midpoint (pixel 512)
                         let distFromEquator = Math.abs(currentY - 512) / 512;
                         
-                        // ◄--- THE HORIZONTAL PINCH FIX ---
-                        // Keeps a constant vertical height scale (0.52) so the top-to-bottom thickness is stable.
-                        // Starts at a crisp 0.145 width at the equator midpoint, then smoothly expands the 
-                        // horizontal scale up to 0.285 as the button approaches the compressed sphere poles.
-                        // Three.js wraps this expanded width, resulting in a perfectly uniform layout width!
-                        let dynamicStretchWidth = 0.145 + (distFromEquator * distFromEquator * 0.14);
+                        // ◄--- EXTREME PARABOLIC EDGE FLARE TEST ---
+                        // Stays tight and normal near the middle (0.14), but as distFromEquator climbs,
+                        // raising it to the 4th power keeps it small until the very last moment,
+                        // where it aggressively explodes outward by adding 0.65 to the width scale factor.
+                        let dynamicStretchWidth = 0.14 + (distFromEquator * distFromEquator * distFromEquator * distFromEquator * 0.65);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
 
