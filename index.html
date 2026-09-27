@@ -1107,18 +1107,18 @@
                     if (currentY < 0) currentY += 1024;
 
                     // Move to the exact horizontal and vertical center of the canvas layout
-                    ballCtx.translate(256, currentY);
+        // Move to center of drawing layer
+        ballCtx.translate(256, currentY);
 
-                    // --- BALANCED STRETCHING CORRECTION ---
-                    // Using a uniform 0.50 scale factor squashes the canvas width,
-                    // perfectly canceling out the extreme horizontal stretching on the sphere!
-                    ballCtx.scale(0.50, 1.0);
+        // A stable ratio to counter horizontal distortion perfectly on Frame 1
+        ballCtx.scale(0.65, 1.0);
 
-                    // Draw the button body pill shape matching your CSS look
-                    ballCtx.fillStyle = btn.bg;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -24, 400, 48, 12);
-                    ballCtx.fill();
+        // Draw the button body pill shape matching your CSS look
+        ballCtx.fillStyle = btn.bg;
+        ballCtx.beginPath();
+        ballCtx.roundRect(-180, -26, 360, 52, 12);
+        ballCtx.fill();
+
 
                     // Render black crisp typography text strings
                     ballCtx.fillStyle = '#000000';
@@ -1143,12 +1143,15 @@
             drawWarpedButtonGraphics(0);
 
         // Force texture colors to render punchy and vibrant inside Three.js
-       const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
-ballButtonTexture.colorSpace = THREE.SRGBColorSpace; 
-ballButtonTexture.wrapS = THREE.ClampToEdgeWrapping; // ◄--- Crucial: locks horizontal limits flat
-ballButtonTexture.wrapT = THREE.RepeatWrapping; 
-
-
+            // Create the unique ball texture mapping
+            const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
+            ballButtonTexture.colorSpace = THREE.SRGBColorSpace; // Pushes true CSS color vibrancy
+            
+            // Revert texture matrix locks to predictable 1:1 default scaling states
+            ballButtonTexture.wrapS = THREE.RepeatWrapping; 
+            ballButtonTexture.wrapT = THREE.ClampToEdgeWrapping; 
+            ballButtonTexture.repeat.set(1.0, 1.0);
+            ballButtonTexture.offset.set(0.0, 0.0);
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture,
@@ -1159,16 +1162,21 @@ ballButtonTexture.wrapT = THREE.RepeatWrapping;
                 metalness: 0.1
             });
 
-            // Standard ping-pong size metrics (~0.02m radius geometry scale)
             const pingPongBallGeo = new THREE.SphereGeometry(0.50, 64, 64);
+            
+            // ◄--- THE NATIVE 3D ALIGNMENT FIX ---
+            // Shifting the sphere's mesh coordinates 90 degrees fixes texture mapping alignment,
+            // placing the button layout perfectly in the center of the camera viewport on Frame 1.
+            pingPongBallGeo.rotateY(-Math.PI / 2);
+
             const pingPongBallMesh = new THREE.Mesh(pingPongBallGeo, ballMaterial);
             pingPongBallMesh.castShadow = true;
             pingPongBallMesh.renderOrder = 9999;
             ballMaterial.depthTest = false;
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
-            // Physically inject it into your active 3D universe
             scene.add(pingPongBallMesh);
+
             // -------------------------------------------------------------
             
             const logoCanvas = document.createElement('canvas');
@@ -1481,16 +1489,23 @@ ballButtonTexture.wrapT = THREE.RepeatWrapping;
 
                 if (!card || !container || !ballLayer) return;
 
-                if (activeFrame === 0) {
-                    // Frame 0: Original 100% portal page
-                    container.style.display = 'none';
-                    ballLayer.style.display = 'block'; 
-                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-                    card.style.transform = 'scale(1) translateY(0px)';
-                    container.style.width = '';
-                    container.style.left = '';
-                    container.style.transform = '';
-                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+    if (activeFrame === 0) {
+        // Frame 0: Original 100% portal page
+        container.style.display = 'none';
+        
+        // ◄--- FIX: Restores exact horizontal layout centering from Chunk 1 CSS rules!
+        ballLayer.style.display = 'flex'; 
+        
+        ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
+        card.style.transform = 'scale(1) translateY(0px)';
+        
+        container.style.width = '';
+        container.style.left = '';
+        container.style.transform = '';
+        if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+    }
+
+                    
                 } else if (activeFrame >= 1 && activeFrame <= 20) {
                     // --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
                     container.style.display = 'block'; 
