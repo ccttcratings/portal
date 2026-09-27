@@ -1026,62 +1026,83 @@
             const lineY = TABLE_H + 0.0004;
 
             const linePositions = [];
-            function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
-                linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
-                linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
-            }
+		function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
+			linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
+			linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
+		}
 
-            addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
-            addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
-            addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
-            addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
-            addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
+		// Create the global parent container right before elements are injected
+		const tableGroup = new THREE.Group();
+		window.tableGroup = tableGroup;
+		scene.add(tableGroup);
 
-            const linesGeo = new THREE.BufferGeometry();
-            linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-            linesGeo.computeVertexNormals();
-            const linesMesh = new THREE.Mesh(linesGeo, lineMat);
-            scene.add(linesMesh);
+		addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
+		addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
+		addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
+		addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
+		addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
 
-            const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
+		const linesGeo = new THREE.BufferGeometry();
+		linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+		linesGeo.computeVertexNormals();
+		const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+		tableGroup.add(linesMesh);
 
-            const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
-            const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
-            playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
-            scene.add(playerApron);
+		// Safely group the pre-generated table top from your previous block
+		if (typeof tableTop !== 'undefined') {
+			tableGroup.add(tableTop);
+		}
+		
+		// Safely group environmental elements if they exist at this initialization boundary
+		if (typeof floor !== 'undefined') tableGroup.add(floor);
+		if (typeof wall !== 'undefined') tableGroup.add(wall);
+		if (typeof baseboard !== 'undefined') tableGroup.add(baseboard);
 
-            const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
-            const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
-            oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
-            scene.add(oppApron);
+		const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
 
-            const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
-            const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
-            const lz = TABLE_LEN / 2 - 0.28;
-            const lx_near = getW(-lz) / 2 - 0.14;
-            const lx_far = getW(lz) / 2 - 0.14;
+		const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
+		const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
+		playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+		tableGroup.add(playerApron);
 
-            [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
-                const leg = new THREE.Mesh(legGeo, legMat);
-                leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
-                leg.castShadow = true;
-                scene.add(leg);
-            });
+		const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
+		const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
+		oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+		tableGroup.add(oppApron);
 
-            const netMat = new THREE.MeshStandardMaterial({
-                map: makeNetTexture(),
-                transparent: true,
-                alphaTest: 0.1,
-                side: THREE.DoubleSide,
-                roughness: 0.9,
-                depthWrite: true
-            });
+		const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
+		const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
+		const lz = TABLE_LEN / 2 - 0.28;
+		const lx_near = getW(-lz) / 2 - 0.14;
+		const lx_far = getW(lz) / 2 - 0.14;
 
-            // Keep the dimensions identical to your working code to avoid breaking Three.js
-            const ballCanvas = document.createElement('canvas');
-            ballCanvas.width = 1024;
-            ballCanvas.height = 2048;
-            const ballCtx = ballCanvas.getContext('2d');
+		[[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+			const leg = new THREE.Mesh(legGeo, legMat);
+			leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
+			leg.castShadow = true;
+			tableGroup.add(leg);
+		});
+
+		const netMat = new THREE.MeshStandardMaterial({
+			map: makeNetTexture(),
+			transparent: true,
+			alphaTest: 0.1,
+			side: THREE.DoubleSide,
+			roughness: 0.9,
+			depthWrite: true
+		});
+
+		// Safely bind any net structures generated further down the block
+		window.tableGroupNetHook = function(netMeshComponent, cordMeshComponent) {
+			if (netMeshComponent) tableGroup.add(netMeshComponent);
+			if (cordMeshComponent) tableGroup.add(cordMeshComponent);
+		};
+
+		// Keep the dimensions identical to your working code to avoid breaking Three.js
+		const ballCanvas = document.createElement('canvas');
+		ballCanvas.width = 1024;
+		ballCanvas.height = 2048;
+		const ballCtx = ballCanvas.getContext('2d');
 
 		function drawWarpedButtonGraphics(offsetY = 0) {
 			// Wipe the high-res 1024x2048 canvas grid completely clean
@@ -1599,10 +1620,11 @@ ballButtonTexture.offset.set(0.0, 0.0);
 				pingPongBallMesh.position.copy(camera.position)
 					.addScaledVector(targetDirection, distanceFactor);
 
-				// ◄--- CRASH-PROOF SCENE ENVIRONMENT TRANSLATION SHIFT ---
-				// Slide the entire table infrastructure cleanly over to the left by -0.42 meters
-				if (typeof tableGroup !== 'undefined') {
-					tableGroup.position.x = -0.42;
+				// ◄--- THE STABLE COURT TRANSLATION SHIFT ---
+				// Read the global window hook. This forces every leg, net string, 
+				// and custom line boundary mesh to slide left simultaneously by -0.42!
+				if (window.tableGroup) {
+					window.tableGroup.position.x = -0.42;
 				}
 
 				// 5. Smoothly shift sphere depth thickness matrix
@@ -1615,8 +1637,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
 				pingPongBallMesh.rotation.set(0, 0, 0); 
 			} else {
 				pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
-				if (typeof tableGroup !== 'undefined') {
-					tableGroup.position.x = 0;
+				if (window.tableGroup) {
+					window.tableGroup.position.x = 0;
 				}
 			}
 
