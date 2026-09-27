@@ -1133,12 +1133,11 @@
                         // Measures exactly how far the button has traveled from the equator (pixel 512)
                         let distFromEquator = Math.abs(currentY - 512) / 512;
                         
-                        // ◄--- THE HORIZONTAL PINCH FIX ---
-                        // Keeps a constant vertical height scale (0.52) so the top-to-bottom thickness is stable.
-                        // Starts at a crisp 0.145 width at the equator midpoint, then smoothly expands the 
-                        // horizontal scale up to 0.285 as the button approaches the compressed sphere poles.
-                        // Three.js wraps this expanded width, resulting in a perfectly uniform layout width!
-                        let dynamicStretchWidth = 0.145 + (distFromEquator * distFromEquator * 0.14);
+                        // ◄--- INCREASED HORIZONTAL POLE EXPANSION ---
+                        // Increased the curve multiplier from 0.14 to 0.36.
+                        // This forces the buttons to flare outward significantly wider at the top and bottom,
+                        // completely neutralizing the extreme left/right compression near the sphere edge.
+                        let dynamicStretchWidth = 0.145 + (distFromEquator * distFromEquator * 0.36);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
 
@@ -1187,7 +1186,6 @@
                         ballCtx.restore();
                     }
                 });
-            }
 
             drawWarpedButtonGraphics(0);
 
