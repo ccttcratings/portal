@@ -1517,43 +1517,41 @@ ballButtonTexture.wrapT = THREE.RepeatWrapping;
     if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
         const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
         
-    // Inside function applyFrame(frameNum) -> inside the progressFactor block:
-    
-    // 1. Maintain your uniform sphere footprint geometry scale
-    const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
-    pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
+        // 1. Maintain your uniform sphere scale scaling
+        const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
+        pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-    // 2. Track camera focal vectors
-    const targetDirection = new THREE.Vector3();
-    camera.getWorldDirection(targetDirection);
+        // 2. Track camera focal vectors
+        const targetDirection = new THREE.Vector3();
+        camera.getWorldDirection(targetDirection);
 
-    // 3. Keep your custom 0.75 distance vector factor profile
-    const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
-    pingPongBallMesh.position.copy(camera.position)
-        .addScaledVector(targetDirection, distanceFactor);
+        // 3. Keep your custom 0.75 distance vector factor profile
+        const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
+        pingPongBallMesh.position.copy(camera.position)
+            .addScaledVector(targetDirection, distanceFactor);
 
-    // 4. Smoothly shift sphere depth thickness matrix
-    const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
-    pingPongBallMesh.scale.z *= depthFactor;
+        // 4. Keep your smooth depth squashing calculation transition
+        const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
+        pingPongBallMesh.scale.z *= depthFactor;
 
-    // ◄--- THE ALL-IN-ONE ORIENTATION & DIRECTION FIX ---
-    // Instead of transforming texture offsets which breaks axis alignment, 
-    // we reset texture repetitions flat and handle the motion via pure 3D space!
-    ballButtonTexture.repeat.set(1.0, 1.0);
-    ballButtonTexture.offset.set(0.0, 0.0);
+        // ◄--- THE ALL-IN-ONE SHIFT & WIDTH CORRECTION ---
+        // Setting repeat.x to 2.0 squeezes the canvas horizontally to counteract 
+        // the sphere's stretching. Setting offset.x to exactly 0.50 rotates the texture 
+        // around the ball's equator to bring the left side fully back onto the screen!
+        ballButtonTexture.repeat.set(1.0, 1.0);
+        ballButtonTexture.offset.x = 0.0; 
+        ballButtonTexture.offset.y = 0.0;
 
-    // Turn the entire 3D ball mesh itself on its axes:
-    // Y-rotation at Math.PI positioning places the layout perfectly center facing the camera.
-    // X-rotation maps progress directly to a true vertical top-spin rolling direction!
-    pingPongBallMesh.rotation.y = Math.PI; 
-    pingPongBallMesh.rotation.x = progressFactor * (Math.PI * 2); 
-    pingPongBallMesh.rotation.z = 0; // Lock the roll straight
+    } else {
+        pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+    }
 
-    // Run layout texture redraw updates safely without moving background vectors
-    drawWarpedButtonGraphics(currentProgress);
-    ballButtonTexture.needsUpdate = true;
+                // Global Top-Spin Texture Offsets
+                logoTexture.offset.y = currentProgress;
+                drawWarpedButtonGraphics(currentProgress);
+                ballButtonTexture.needsUpdate = true;
 
-    render();
+                render();
 
             }
 
