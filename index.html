@@ -1090,13 +1090,15 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // Keep the compact, tight vertical equator grouping
+                // ◄--- UPDATED VERTICAL SPACING MATRIX ---
+                // Retains tight gaps for the top four elements, then pushes the fifth 
+                // button ('Portal Hub') down from 630 to 710 to mirror the extra CSS margin-top!
                 const buttons = [
                     { text: 'Preview Mode', bg: '#6abf6e', y: 390, subText: '(works on most devices)' },
-                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 450, subText: '' },
-                    { text: 'Edit Mode', bg: '#e87070', y: 510, subText: '(annoying banner at top)' },
-                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 570, subText: '' },
-                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 630, subText: '(hub of redundant portals)' }
+                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 445, subText: '' },
+                    { text: 'Edit Mode', bg: '#e87070', y: 500, subText: '(annoying banner at top)' },
+                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 555, subText: '' },
+                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 710, subText: '(hub of redundant portals)' }
                 ];
 
                 buttons.forEach(btn => {
@@ -1105,17 +1107,15 @@
                     let currentY = (btn.y - offsetY * 1024) % 1024;
                     if (currentY < 0) currentY += 1024;
 
-                    // ◄--- THE TRUE FRONT CENTER ALIGNMENT ---
-                    // Moving the horizontal center to exactly 384 pulls the button group 
-                    // out of the right-hand quadrant, snapping it dead-center in front of the lens!
+                    // Kept right on your perfect 384 horizontal anchor
                     ballCtx.translate(384, currentY);
 
-                    // ◄--- FINE-TUNED SHARP RE-SCALE ---
-                    // Squeezing the width to 0.28 counters the sphere's stretching effect.
-                    // Scaling the height to 0.70 thins out the pills to look sleek and unbloated.
-                    ballCtx.scale(0.28, 0.70);
+                    // ◄--- COMPACT RE-SIZING COUNTER ---
+                    // Dropped width from 0.28 to 0.22 to make the buttons smaller.
+                    // Dropped height from 0.70 to 0.58 to stop the vertical bloating.
+                    ballCtx.scale(0.22, 0.58);
 
-                    // Draw the pill button shape matching your CSS layout proportions
+                    // Draw the crisp pill shape matching Frame 0 size scales
                     ballCtx.fillStyle = btn.bg;
                     ballCtx.beginPath();
                     ballCtx.roundRect(-200, -24, 400, 48, 12);
@@ -1130,7 +1130,7 @@
                     ballCtx.roundRect(-200, -24, 400, 22);
                     ballCtx.fill();
 
-                    // Render black sharp typography string labels
+                    // Typography settings scaled cleanly
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
