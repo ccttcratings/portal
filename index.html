@@ -1165,24 +1165,16 @@
 
         drawWarpedButtonGraphics(0);
 
-        // Force texture colors to render punchy and vibrant inside Three.js
-        const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
+// A completely standard, stable texture mapping setup
+const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
 ballButtonTexture.colorSpace = THREE.SRGBColorSpace; 
 
-// Rotate mapping coordinates 90 degrees to lock the vertical spinning direction
-ballButtonTexture.center.set(0.5, 0.5);
-ballButtonTexture.rotation = Math.PI / 2;
-
-// ◄--- FIX SIDE-BY-SIDE REPEATS ---
-// Because the texture is rotated 90 degrees, wrapT now governs the horizontal axis. 
-// Changing wrapT to ClampToEdge ensures exactly ONE set of buttons sits on the ball equator.
+// Standard wrapping that won't break the WebGL shader pipeline
 ballButtonTexture.wrapS = THREE.RepeatWrapping; 
 ballButtonTexture.wrapT = THREE.ClampToEdgeWrapping; 
 
-ballButtonTexture.minFilter = THREE.LinearMipmapLinearFilter;
+ballButtonTexture.minFilter = THREE.LinearFilter;
 ballButtonTexture.magFilter = THREE.LinearFilter;
-
-
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture,
