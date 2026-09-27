@@ -1100,9 +1100,9 @@
                     ballCtx.save();
                     ballCtx.translate(384, titleY);
                     
-                    // Gentle Title Edge Boost
+                    // Synced Title Tracking using your 0.3 choice
                     let distTitle = Math.abs(titleY - 512) / 512;
-                    let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.045);
+                    let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
@@ -1113,11 +1113,14 @@
                     ballCtx.restore();
                 }
                 
+                // ◄--- TIGHTENED COPY BUTTON PADDING ---
+                // Lowered the 'y' positions of both copy buttons (460 and 550) 
+                // to pull them up closer to the Preview and Edit pills.
                 const buttons = [
                     { text: 'Preview Mode', bg: 'preview', y: 425, subText: '(works on most devices)', h: 80 },
-                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 471, subText: '', h: 48 },
+                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 460, subText: '', h: 48 },
                     { text: 'Edit Mode', bg: 'edit', y: 515, subText: '(annoying banner at top)', h: 80 },
-                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 561, subText: '', h: 48 },
+                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 550, subText: '', h: 48 },
                     { text: 'Portal Hub of Portals', bg: 'hub', y: 630, subText: '(hub of redundant portals)', h: 80 }
                 ];
 
@@ -1129,13 +1132,9 @@
                         ballCtx.save();
                         ballCtx.translate(384, currentY);
 
-                        // Measures distance from equator midpoint (pixel 512)
                         let distFromEquator = Math.abs(currentY - 512) / 512;
                         
-                        // ◄--- THE PERFECTLY BALANCED EDGE STRETCH ---
-                        // Starts at your standard 0.142 width at the center.
-                        // By using a plus (+) and a tiny 0.045 multiplier, it flares open just 
-                        // enough to fight the sphere's pinching effect without looking cartoonish.
+                        // ◄--- LOCKED IN CHOSEN 0.3 MULTIPLIER ---
                         let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
