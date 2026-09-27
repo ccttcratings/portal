@@ -1004,7 +1004,7 @@
                 sideMat, sideMat, topMat, botMat, edgeWhiteMat, edgeWhiteMat
             ];
             const tableTop = new THREE.Mesh(tableGeo, tableMaterials);
-            tableTop.position.set(0, TABLE_H - TOP_THICK / 2, 0);
+            tableTop.position.set(-0.15, TABLE_H - TOP_THICK / 2, 0);
             tableTop.castShadow = true;
             tableTop.receiveShadow = false;
             scene.add(tableTop);
@@ -1041,18 +1041,19 @@
             linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
             linesGeo.computeVertexNormals();
             const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+			linesMesh.position.x = -0.15;
             scene.add(linesMesh);
 
             const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
 
             const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
             const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
-            playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+            playerApron.position.set(-0.15, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
             scene.add(playerApron);
 
             const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
             const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
-            oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+            oppApron.position.set(-0.15, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
             scene.add(oppApron);
 
             const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
@@ -1061,25 +1062,25 @@
             const lx_near = getW(-lz) / 2 - 0.14;
             const lx_far = getW(lz) / 2 - 0.14;
 
-			[[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
-				const leg = new THREE.Mesh(legGeo, legMat);
-				// ◄--- MOVES THE LEGS LEFT BY 0.15 ---
-				leg.position.set(x - 0.15, (TABLE_H - TOP_THICK) / 2, z);
-				leg.castShadow = true;
-				scene.add(leg);
-			});
+            [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+                const leg = new THREE.Mesh(legGeo, legMat);
+                // ◄--- SUBTRACTING MOVES THE SUPPORT LEGS LEFT ---
+                leg.position.set(x - 0.15, (TABLE_H - TOP_THICK) / 2, z);
+                leg.castShadow = true;
+                scene.add(leg);
+            });
 
-			const netMat = new THREE.MeshStandardMaterial({
-				map: makeNetTexture(),
-				transparent: true,
-				alphaTest: 0.1,
-				side: THREE.DoubleSide,
-				roughness: 0.9,
-				depthWrite: true
-			});
+            const netMat = new THREE.MeshStandardMaterial({
+                map: makeNetTexture(),
+                transparent: true,
+                alphaTest: 0.1,
+                side: THREE.DoubleSide,
+                roughness: 0.9,
+                depthWrite: true
+            });
 
-			// Keep the dimensions identical to your working code to avoid breaking Three.js
-			const ballCanvas = document.createElement('canvas');
+            // Keep the dimensions identical to your working code to avoid breaking Three.js
+            const ballCanvas = document.createElement('canvas');
             ballCanvas.width = 1024;
             ballCanvas.height = 2048;
             const ballCtx = ballCanvas.getContext('2d');
@@ -1240,205 +1241,202 @@ ballButtonTexture.offset.set(0.0, 0.0);
             scene.add(pingPongBallMesh);
             // -------------------------------------------------------------
             
-			const logoCanvas = document.createElement('canvas');
-			logoCanvas.width = 512;
-			logoCanvas.height = 512;
-			const logoCtx = logoCanvas.getContext('2d');
-			logoCtx.fillStyle = '#ffcc00';
-			logoCtx.fillRect(0, 0, 512, 512);
-			logoCtx.fillStyle = '#000000';
-			logoCtx.font = 'bold 48px sans-serif';
-			logoCtx.textAlign = 'center';
-			logoCtx.fillText('PORTAL LOGO', 256, 256);
-			
-			const logoTexture = new THREE.CanvasTexture(logoCanvas);
-			logoTexture.wrapT = THREE.RepeatWrapping;
-			const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
-			// ◄--- SHIFT NET FABRIC MESH LEFT BY 0.15 ---
-			netMesh.position.set(-0.15, TABLE_H + NET_H / 2, NET_Z);
-			netMesh.castShadow = true;
-			netMesh.renderOrder = 1;
-			scene.add(netMesh);
+            const logoCanvas = document.createElement('canvas');
+            logoCanvas.width = 512;
+            logoCanvas.height = 512;
+            const logoCtx = logoCanvas.getContext('2d');
+            logoCtx.fillStyle = '#ffcc00';
+            logoCtx.fillRect(0, 0, 512, 512);
+            logoCtx.fillStyle = '#000000';
+            logoCtx.font = 'bold 48px sans-serif';
+            logoCtx.textAlign = 'center';
+            logoCtx.fillText('PORTAL LOGO', 256, 256);
+            
+            const logoTexture = new THREE.CanvasTexture(logoCanvas);
+            logoTexture.wrapT = THREE.RepeatWrapping;
+            const netMesh = new THREE.Mesh(new THREE.PlaneGeometry(NET_LEN, NET_H), netMat);
+            // ◄--- SUBTRACTING MOVES THE NET FABRIC MESH LEFT ---
+            netMesh.position.set(-0.15, TABLE_H + NET_H / 2, NET_Z);
+            netMesh.castShadow = true;
+            netMesh.renderOrder = 1;
+            scene.add(netMesh);
 
-			const cordMesh = new THREE.Mesh(
-				new THREE.CylinderGeometry(0.003, 0.003, NET_LEN, 12),
-				new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
-			);
-			cordMesh.rotation.z = Math.PI / 2;
-			// ◄--- SHIFT TOP CORD MESH LEFT BY 0.15 ---
-			cordMesh.position.set(-0.15, TABLE_H + NET_H, NET_Z);
-			scene.add(cordMesh);
+            const cordMesh = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.003, 0.003, NET_LEN, 12),
+                new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3 })
+            );
+            cordMesh.rotation.z = Math.PI / 2;
+            // ◄--- SUBTRACTING MOVES THE TOP TAPE CORD LEFT ---
+            cordMesh.position.set(-0.15, TABLE_H + NET_H, NET_Z);
+            scene.add(cordMesh);
 
-			const silverMat = new THREE.MeshStandardMaterial({
-				color: 0xf1f5f9,
-				metalness: 0.55,
-				roughness: 0.22,
-			});
-			const blackPolymerMat = new THREE.MeshStandardMaterial({
-				color: 0x18181b,
-				metalness: 0.12,
-				roughness: 0.55,
-			});
-			const steelMat = new THREE.MeshStandardMaterial({
-				color: 0xe2e8f0,
-				metalness: 0.92,
-				roughness: 0.18,
-			});
-			const clampPadMat = new THREE.MeshStandardMaterial({
-				color: 0x09090b,
-				roughness: 0.85,
-			});
+            const silverMat = new THREE.MeshStandardMaterial({
+                color: 0xf1f5f9,
+                metalness: 0.55,
+                roughness: 0.22,
+            });
+            const blackPolymerMat = new THREE.MeshStandardMaterial({
+                color: 0x18181b,
+                metalness: 0.12,
+                roughness: 0.55,
+            });
+            const steelMat = new THREE.MeshStandardMaterial({
+                color: 0xe2e8f0,
+                metalness: 0.92,
+                roughness: 0.18,
+            });
+            const clampPadMat = new THREE.MeshStandardMaterial({
+                color: 0x09090b,
+                roughness: 0.85,
+            });
 
-			const donicBadgeMat = new THREE.MeshStandardMaterial({
-				map: makeDonicStressTexture(),
-				roughness: 0.25,
-				metalness: 0.20,
-				transparent: true,
-				side: THREE.FrontSide,
-				polygonOffset: true,
-				polygonOffsetFactor: -12,
-				polygonOffsetUnits: -12,
-			});
-			const donicBadgeMatRight = new THREE.MeshStandardMaterial({
-				map: makeDonicStressTextureRight(),
-				roughness: 0.25,
-				metalness: 0.20,
-				transparent: true,
-				side: THREE.FrontSide,
-				polygonOffset: true,
-				polygonOffsetFactor: -12,
-				polygonOffsetUnits: -12,
-			});
-			const postMat = new THREE.MeshStandardMaterial({
-				map: makePostTexture(),
-				roughness: 0.22,
-				metalness: 0.45,
-			});
+            const donicBadgeMat = new THREE.MeshStandardMaterial({
+                map: makeDonicStressTexture(),
+                roughness: 0.25,
+                metalness: 0.20,
+                transparent: true,
+                side: THREE.FrontSide,
+                polygonOffset: true,
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12,
+            });
+            const donicBadgeMatRight = new THREE.MeshStandardMaterial({
+                map: makeDonicStressTextureRight(),
+                roughness: 0.25,
+                metalness: 0.20,
+                transparent: true,
+                side: THREE.FrontSide,
+                polygonOffset: true,
+                polygonOffsetFactor: -12,
+                polygonOffsetUnits: -12,
+            });
+            const postMat = new THREE.MeshStandardMaterial({
+                map: makePostTexture(),
+                roughness: 0.22,
+                metalness: 0.45,
+            });
 
-			const postH = NET_H + 0.013;
-			const postCenterY = TABLE_H + (NET_H - 0.007) / 2;
+            const postH = NET_H + 0.013;
+            const postCenterY = TABLE_H + (NET_H - 0.007) / 2;
 
-			const badgeW = 0.216;
-			const badgeH = 0.069;
+            const badgeW = 0.216;
+            const badgeH = 0.069;
 
-			const rightBadgeGeo = new THREE.BufferGeometry();
-			rightBadgeGeo.setAttribute(
-				'position',
-				new THREE.BufferAttribute(
-					new Float32Array([
-						-badgeW / 2, -badgeH / 2, 0,
-						-badgeW / 2,  badgeH / 2, 0,
-						 badgeW / 2,  badgeH / 2, 0,
-						-badgeW / 2, -badgeH / 2, 0,
-						 badgeW / 2,  badgeH / 2, 0,
-						 badgeW / 2, -badgeH / 2, 0,
-					]),
-					3
-				)
-			);
-			rightBadgeGeo.setAttribute(
-				'uv',
-				new THREE.BufferAttribute(
-					new Float32Array([
-						1, 0,
-						1, 1,
-						0, 1,
-						1, 0,
-						0, 1,
-						0, 0,
+            const rightBadgeGeo = new THREE.BufferGeometry();
+            rightBadgeGeo.setAttribute(
+                'position',
+                new THREE.BufferAttribute(
+                    new Float32Array([
+                        -badgeW / 2, -badgeH / 2, 0,
+                        -badgeW / 2,  badgeH / 2, 0,
+                         badgeW / 2,  badgeH / 2, 0,
+                        -badgeW / 2, -badgeH / 2, 0,
+                         badgeW / 2,  badgeH / 2, 0,
+                         badgeW / 2, -badgeH / 2, 0,
                     ]),
-					2
-				)
-			);
-			rightBadgeGeo.computeVertexNormals();
+                    3
+                )
+            );
+            rightBadgeGeo.setAttribute(
+                'uv',
+                new THREE.BufferAttribute(
+                    new Float32Array([
+                        1, 0,
+                        1, 1,
+                        0, 1,
+                        1, 0,
+                        0, 1,
+                        0, 0,
+                    ]),
+                    2
+                )
+            );
+            rightBadgeGeo.computeVertexNormals();
 
-			[-1, 1].forEach((sign) => {
-				// ◄--- THE MECHANICAL SHIFT MATRIX ---
-				// Shifting the anchor points left by 0.15 makes the loop calculate positions
-				// for the clamps, brackets, and posts that line up perfectly with the table edges!
-				const tableEdgeX = sign * (W_AT_NET / 2) - 0.15;
-				const px = sign * (W_AT_NET / 2 + NET_OVERHANG) - 0.15;
+            [-1, 1].forEach((sign) => {
+                // ◄--- SUBTRACTING MOVES ALL POST CALCULATIONS COHERENTLY LEFT ---
+                const tableEdgeX = sign * (W_AT_NET / 2) - 0.15;
+                const px = sign * (W_AT_NET / 2 + NET_OVERHANG) - 0.15;
 
-				const yTop = TABLE_H + 0.015;
-				const yDonicMid = TABLE_H - 0.006;
-				const dySlope = 0.048;
-				const yBottom = yDonicMid - dySlope;
-				
-				// Apply the shift into the shape calculation boundaries
-				const xInner = tableEdgeX - sign * 0.048;
-				const xOuter = px + sign * 0.008;
+                const yTop = TABLE_H + 0.015;
+                const yDonicMid = TABLE_H - 0.006;
+                const dySlope = 0.048;
+                const yBottom = yDonicMid - dySlope;
+                
+                const xInner = tableEdgeX - sign * 0.048;
+                const xOuter = px + sign * 0.008;
 
-				const runX = dySlope / TAN_40;
-				const xSlopeEnd = xOuter - sign * runX;
-				const cornerR = 0.012;
+                const runX = dySlope / TAN_40;
+                const xSlopeEnd = xOuter - sign * runX;
+                const cornerR = 0.012;
 
-				const rubberPad = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.0025, 0.065), clampPadMat);
-				rubberPad.position.set(tableEdgeX - sign * 0.024, TABLE_H + 0.0012, NET_Z);
-				scene.add(rubberPad);
+                const rubberPad = new THREE.Mesh(new THREE.BoxGeometry(0.046, 0.0025, 0.065), clampPadMat);
+                rubberPad.position.set(tableEdgeX - sign * 0.024, TABLE_H + 0.0012, NET_Z);
+                scene.add(rubberPad);
 
-				const armShape = new THREE.Shape();
-				if (sign === 1) {
-					armShape.moveTo(xInner, yBottom);
-					armShape.lineTo(xInner, yTop - cornerR);
-					armShape.quadraticCurveTo(xInner, yTop, xInner + cornerR, yTop);
-					armShape.lineTo(xOuter, yTop);
-					armShape.lineTo(xOuter, yDonicMid);
-					armShape.lineTo(xSlopeEnd, yBottom);
-					armShape.closePath();
-				} else {
-					armShape.moveTo(xInner, yBottom);
-					armShape.lineTo(xInner, yTop - cornerR);
-					armShape.quadraticCurveTo(xInner, yTop, xInner - cornerR, yTop);
-					armShape.lineTo(xOuter, yTop);
-					armShape.lineTo(xOuter, yDonicMid);
-					armShape.lineTo(xSlopeEnd, yBottom);
-					armShape.closePath();
-				}
+                const armShape = new THREE.Shape();
+                if (sign === 1) {
+                    armShape.moveTo(xInner, yBottom);
+                    armShape.lineTo(xInner, yTop - cornerR);
+                    armShape.quadraticCurveTo(xInner, yTop, xInner + cornerR, yTop);
+                    armShape.lineTo(xOuter, yTop);
+                    armShape.lineTo(xOuter, yDonicMid);
+                    armShape.lineTo(xSlopeEnd, yBottom);
+                    armShape.closePath();
+                } else {
+                    armShape.moveTo(xInner, yBottom);
+                    armShape.lineTo(xInner, yTop - cornerR);
+                    armShape.quadraticCurveTo(xInner, yTop, xInner - cornerR, yTop);
+                    armShape.lineTo(xOuter, yTop);
+                    armShape.lineTo(xOuter, yDonicMid);
+                    armShape.lineTo(xSlopeEnd, yBottom);
+                    armShape.closePath();
+                }
 
-				const armExtrudeGeo = new THREE.ExtrudeGeometry(armShape, {
-					steps: 1,
-					depth: 0.034,
-					bevelEnabled: true,
-					bevelThickness: 0.002,
-					bevelSize: 0.002,
-					bevelSegments: 2,
-				});
-				armExtrudeGeo.translate(0, 0, NET_Z - 0.017);
-				const armMesh = new THREE.Mesh(armExtrudeGeo, silverMat);
-				armMesh.castShadow = true;
-				scene.add(armMesh);
+                const armExtrudeGeo = new THREE.ExtrudeGeometry(armShape, {
+                    steps: 1,
+                    depth: 0.034,
+                    bevelEnabled: true,
+                    bevelThickness: 0.002,
+                    bevelSize: 0.002,
+                    bevelSegments: 2,
+                });
+                armExtrudeGeo.translate(0, 0, NET_Z - 0.017);
+                const armMesh = new THREE.Mesh(armExtrudeGeo, silverMat);
+                armMesh.castShadow = true;
+                scene.add(armMesh);
 
-				const armCenterX = (xInner + xOuter) / 2;
-				const armCenterY = (yTop + yBottom) / 2;
+                const armCenterX = (xInner + xOuter) / 2;
+                const armCenterY = (yTop + yBottom) / 2;
 
-				const badgeMat = sign === 1 ? donicBadgeMatRight : donicBadgeMat;
-				const frontBadge = new THREE.Mesh(rightBadgeGeo, badgeMat);
-				frontBadge.position.set(armCenterX, armCenterY, NET_Z - 0.021);
-				frontBadge.rotation.x = -0.20;
-				frontBadge.renderOrder = 999;
-				scene.add(frontBadge);
+                const badgeMat = sign === 1 ? donicBadgeMatRight : donicBadgeMat;
+                const frontBadge = new THREE.Mesh(rightBadgeGeo, badgeMat);
+                frontBadge.position.set(armCenterX, armCenterY, NET_Z - 0.021);
+                frontBadge.rotation.x = -0.20;
+                frontBadge.renderOrder = 999;
+                scene.add(frontBadge);
 
-				const heightRod = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.024, 16), steelMat);
-				heightRod.position.set(px, TABLE_H - 0.024, NET_Z);
-				scene.add(heightRod);
+                const heightRod = new THREE.Mesh(new THREE.CylinderGeometry(0.0055, 0.0055, 0.024, 16), steelMat);
+                heightRod.position.set(px, TABLE_H - 0.024, NET_Z);
+                scene.add(heightRod);
 
-				const heightKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.018, 24), blackPolymerMat);
-				heightKnob.position.set(px, TABLE_H - 0.040, NET_Z);
-				scene.add(heightKnob);
+                const heightKnob = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.018, 24), blackPolymerMat);
+                heightKnob.position.set(px, TABLE_H - 0.040, NET_Z);
+                scene.add(heightKnob);
 
-				const post = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, postH, 32), postMat);
-				post.position.set(px, postCenterY, NET_Z);
-				post.castShadow = true;
-				scene.add(post);
+                const post = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, postH, 32), postMat);
+                post.position.set(px, postCenterY, NET_Z);
+                post.castShadow = true;
+                scene.add(post);
 
-				const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.004, 32), blackPolymerMat);
-				cap.position.set(px, TABLE_H + NET_H + 0.005, NET_Z);
-				scene.add(cap);
+                const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.0115, 0.0115, 0.004, 32), blackPolymerMat);
+                cap.position.set(px, TABLE_H + NET_H + 0.005, NET_Z);
+                scene.add(cap);
 
-				const baseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.020, 24), silverMat);
-				baseCollar.position.set(px, TABLE_H - 0.010, NET_Z);
-				scene.add(baseCollar);
-			});
+                const baseCollar = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.020, 24), silverMat);
+                baseCollar.position.set(px, TABLE_H - 0.010, NET_Z);
+                scene.add(baseCollar);
+            });
 
             const woodFloorTex = makeWoodFloorTexture();
             const floor = new THREE.Mesh(
