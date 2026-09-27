@@ -1084,51 +1084,100 @@
 
             function drawWarpedButtonGraphics(offsetY = 0) {
                 ballCtx.clearRect(0, 0, 512, 1024);
-                ballCtx.fillStyle = '#fce5cd'; // Card background color
-                ballCtx.fillRect(0, 0, 512, 1024);
-                
+    
+             // 1. Maintain a stationary card background color (Standard vs Neon check)
+            const isNeon = document.documentElement.classList.contains('neon');
+            ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
+            ballCtx.fillRect(0, 0, 512, 1024);
+    
+            // 2. Exact replication of your CSS layout styles and compact padding dimensions
             const buttons = [
-            { text: 'Preview Mode', bg: '#6abf6e', y: 200 },
-            { text: 'Copy Preview URL', bg: '#a048a0', y: 400 },
-            { text: 'Edit Mode', bg: '#e87070', y: 600 },
-            { text: 'Portal Hub', bg: '#3ba8d6', y: 800 }
-        ];
+                { text: 'Preview Mode', bg: 'linear-gradient(#6abf6e, #288028)', y: 220, subText: '(works on most devices)' },
+                { text: 'Copy Preview Mode URL', bg: 'linear-gradient(#a048a0, #682068)', y: 340, subText: '' },
+                { text: 'Edit Mode', bg: 'linear-gradient(#e87070, #a02020)', y: 460, subText: '(annoying banner at top)' },
+                { text: 'Copy Edit Mode URL', bg: 'linear-gradient(#a048a0, #682068)', y: 580, subText: '' },
+                { text: 'Portal Hub of Portals', bg: 'linear-gradient(#3ba8d6, #0e5f80)', y: 700, subText: '(hub of redundant portals)' }
+            ];
 
-        buttons.forEach(btn => {
-            ballCtx.save();
-            let currentY = (btn.y + offsetY * 1024) % 1024;
-            if (currentY < 0) currentY += 1024;
+                buttons.forEach(btn => {
+                ballCtx.save();
+        
+                // Apply vertical top-spin offset strictly to the buttons loop
+                // Multiplying by 1024 creates smooth pixel-perfect scrolling jumps
+                let currentY = (btn.y - offsetY * 1024) % 1024;
+                if (currentY < 0) currentY += 1024;
 
-            // Move to center of drawing layer
-            ballCtx.translate(256, currentY);
+                // Anchor canvas transformation matrix to the middle horizontal axis
+                ballCtx.translate(256, currentY);
 
-            // --- FIX STRETCHING MATH ---
-            const distFromCenter = Math.abs(currentY - 512) / 512;
-            const scaleX = 0.42 + (distFromCenter * distFromCenter * 0.35);
-            ballCtx.scale(scaleX, 1.0);
+                // Perfectly calculate dynamic edge squishing based on ball curvature progress
+                const distFromCenter = Math.abs(currentY - 512) / 512;
+                const scaleX = 0.84 - (distFromCenter * distFromCenter * 0.40);
+                ballCtx.scale(scaleX, 1.0);
 
-            // Draw the button body pill shape
-            ballCtx.fillStyle = btn.bg;
-            ballCtx.beginPath();
-            ballCtx.roundRect(-220, -35, 440, 70, 14);
-            ballCtx.fill();
+               // Create HTML/CSS matching linear gradients inside the canvas engine
+               const grad = ballCtx.createLinearGradient(0, -35, 0, 35);
+            if (isNeon) {
+             // Neon overrides
+            if (btn.text.includes('Preview')) { grad.addColorStop(0, '#00ff00'); grad.addColorStop(1, '#009900'); }
+                else if (btn.text.includes('Edit')) { grad.addColorStop(0, '#ff0000'); grad.addColorStop(1, '#990000'); }
+                else if (btn.text.includes('Hub')) { grad.addColorStop(0, '#0bcade'); grad.addColorStop(1, '#077c9c'); }
+                else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(1, '#7700bb'); } // Copy buttons
+                } else {
+                // Standard colors matching your CSS
+                if (btn.text.includes('Preview')) { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(1, '#288028'); }
+                else if (btn.text.includes('Edit')) { grad.addColorStop(0, '#e87070'); grad.addColorStop(1, '#a02020'); }
+                else if (btn.text.includes('Hub')) { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(1, '#0e5f80'); }
+                else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(1, '#682068'); } // Copy buttons
+            }
 
-            // Render text label string sharp
-            ballCtx.fillStyle = '#000000';
-            ballCtx.font = 'bold 26px sans-serif';
-            ballCtx.textAlign = 'center';
-            ballCtx.textBaseline = 'middle';
-            ballCtx.fillText(btn.text, 0, 0);
-            ballCtx.restore();
-        });
-    }
+                    // Draw exact border-radius pill shapes matching .btn style
+                    ballCtx.fillStyle = grad;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-210, -32, 420, 64, 12);
+                    ballCtx.fill();
 
-            drawWarpedButtonGraphics(0);
+                // White glossy top-reflection highlights matching your ::after elements
+                const glassGrad = ballCtx.createLinearGradient(0, -32, 0, -3);
+                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.6)');
+                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.1)');
+                    ballCtx.fillStyle = glassGrad;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-210, -32, 420, 29, [12, 12, 20, 20]);
+                    ballCtx.fill();
 
-            // Create the unique ball texture mapping
-            const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
-            ballButtonTexture.wrapS = THREE.RepeatWrapping; 
-            ballButtonTexture.wrapT = THREE.RepeatWrapping; 
+                    // Render black crisp typography
+                    ballCtx.fillStyle = '#000000';
+                    ballCtx.font = 'bold 22px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ballCtx.textAlign = 'center';
+        
+                if (btn.subText) {
+                    ballCtx.textBaseline = 'bottom';
+                    ballCtx.fillText(btn.text, 0, 4);
+            
+                    // Render light subtexts beneath headers
+                    ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#333333';
+                    ballCtx.font = '13px sans-serif';
+                    ballCtx.textBaseline = 'top';
+                    ballCtx.fillText(btn.subText, 0, 8);
+                } else {
+                    ballCtx.textBaseline = 'middle';
+                    ballCtx.fillText(btn.text, 0, 0);
+                }
+        
+                ballCtx.restore();
+            });
+        }
+
+        drawWarpedButtonGraphics(0);
+
+        // Force texture colors to render punchy and vibrant inside Three.js
+        const ballButtonTexture = new THREE.CanvasTexture(ballCanvas);
+        ballButtonTexture.colorSpace = THREE.SRGBColorSpace; // Keeps colors matching CSS exactly
+        ballButtonTexture.wrapS = THREE.RepeatWrapping; 
+        ballButtonTexture.wrapT = THREE.RepeatWrapping; 
+        ballButtonTexture.minFilter = THREE.LinearFilter; // Smooth edge filtering
+
 
             const ballMaterial = new THREE.MeshStandardMaterial({
                 map: ballButtonTexture,
