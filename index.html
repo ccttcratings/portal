@@ -1090,51 +1090,61 @@
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
                 
-                // ◄--- THE EQUATOR CENTERING FIX ---
-                // Shifted the baseline y-milestones upward so the middle button ('Edit Mode') 
-                // sits exactly at pixel 512 (the equator). This centers the group on the sphere.
                 const buttons = [
-                    { text: 'Preview Mode', bg: '#6abf6e', y: 392, subText: '(works on most devices)' },
-                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 452, subText: '' },
-                    { text: 'Edit Mode', bg: '#e87070', y: 512, subText: '(annoying banner at top)' },
-                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 572, subText: '' },
-                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 632, subText: '(hub of redundant portals)' }
+                    { text: 'Preview Mode', bg: '#6abf6e', y: 390, subText: '(works on most devices)' },
+                    { text: 'Copy Preview Mode URL', bg: '#a048a0', y: 450, subText: '' },
+                    { text: 'Edit Mode', bg: '#e87070', y: 510, subText: '(annoying banner at top)' },
+                    { text: 'Copy Edit Mode URL', bg: '#a048a0', y: 570, subText: '' },
+                    { text: 'Portal Hub of Portals', bg: '#3ba8d6', y: 630, subText: '(hub of redundant portals)' }
                 ];
 
                 buttons.forEach(btn => {
+                    // --- DRAW LEFT HALF ---
                     ballCtx.save();
-                    
                     let currentY = (btn.y - offsetY * 1024) % 1024;
                     if (currentY < 0) currentY += 1024;
 
-                    // Keep horizontal centered at 256, use our updated vertical milestones
-                    ballCtx.translate(256, currentY);
+                    // Anchor at horizontal pixel 0 (the front center stitch line)
+                    ballCtx.translate(0, currentY);
+                    
+                    // Compact scaling factor: 0.45 width removes the bloated look
+                    ballCtx.scale(0.45, 0.85);
 
-                    // ◄--- COMPACT SIZING OVERRIDE ---
-                    // Squeezing the width to 0.40 completely cancels out the 3D spherical stretching.
-                    // Scaling the height to 0.80 prevents them from looking vertically bloated on Frame 1.
-                    ballCtx.scale(0.40, 0.80);
-
-                    // Draw the pill button shape matching your CSS look
                     ballCtx.fillStyle = btn.bg;
                     ballCtx.beginPath();
                     ballCtx.roundRect(-200, -24, 400, 48, 12);
                     ballCtx.fill();
 
-                    // Gloss reflection highlight
-                    const glassGrad = ballCtx.createLinearGradient(0, -24, 0, 0);
-                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
-                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
-                    ballCtx.fillStyle = glassGrad;
-                    ballCtx.beginPath();
-                    ballCtx.roundRect(-200, -24, 400, 22);
-                    ballCtx.fill();
-
-                    // Crisp typography
+                    // Text
                     ballCtx.fillStyle = '#000000';
                     ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
-                    
+                    if (btn.subText) {
+                        ballCtx.textBaseline = 'bottom';
+                        ballCtx.fillText(btn.text, 0, 2);
+                        ballCtx.fillStyle = isNeon ? '#ffb3b3' : '#475569';
+                        ballCtx.font = '11px sans-serif';
+                        ballCtx.textBaseline = 'top';
+                        ballCtx.fillText(btn.subText, 0, 4);
+                    } else {
+                        ballCtx.textBaseline = 'middle';
+                        ballCtx.fillText(btn.text, 0, 0);
+                    }
+                    ballCtx.restore();
+
+                    // --- DRAW RIGHT HALF (Duplicate at width boundary for seamless wrapping) ---
+                    ballCtx.save();
+                    ballCtx.translate(512, currentY);
+                    ballCtx.scale(0.45, 0.85);
+
+                    ballCtx.fillStyle = btn.bg;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-200, -24, 400, 48, 12);
+                    ballCtx.fill();
+
+                    ballCtx.fillStyle = '#000000';
+                    ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ballCtx.textAlign = 'center';
                     if (btn.subText) {
                         ballCtx.textBaseline = 'bottom';
                         ballCtx.fillText(btn.text, 0, 2);
