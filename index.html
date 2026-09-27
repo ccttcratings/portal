@@ -1585,11 +1585,11 @@ ballButtonTexture.offset.set(0.0, 0.0);
         const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
         pingPongBallMesh.scale.z *= depthFactor;
 
-        // ◄--- THE ACTIVE POLE COMPENSATOR PASS ---
-        // Dynamically drops repeat.x as the animation advances, which stretches 
-        // the button texture wider to cancel out the sphere's natural pinch!
-        const dynamicWidthCounter = THREE.MathUtils.lerp(1.0, 0.72, progressFactor);
-        ballButtonTexture.repeat.set(dynamicWidthCounter, 1.0);
+        // ◄--- THE ALL-IN-ONE SHIFT & WIDTH CORRECTION ---
+        // Setting repeat.x to 2.0 squeezes the canvas horizontally to counteract 
+        // the sphere's stretching. Setting offset.x to exactly 0.50 rotates the texture 
+        // around the ball's equator to bring the left side fully back onto the screen!
+        ballButtonTexture.repeat.set(1.0, 1.0);
         ballButtonTexture.offset.x = 0.0; 
         ballButtonTexture.offset.y = 0.0;
 
