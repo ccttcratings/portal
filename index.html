@@ -1026,207 +1026,186 @@
             const lineY = TABLE_H + 0.0004;
 
             const linePositions = [];
-		function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
-			linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
-			linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
-		}
+            function addQuad(x0, z0, x1, z1, x2, z2, x3, z3) {
+                linePositions.push(x0, lineY, z0,  x1, lineY, z1,  x2, lineY, z2);
+                linePositions.push(x0, lineY, z0,  x2, lineY, z2,  x3, lineY, z3);
+            }
 
-		// Create the global parent container right before elements are injected
-		const tableGroup = new THREE.Group();
-		window.tableGroup = tableGroup;
-		scene.add(tableGroup);
+            addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
+            addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
+            addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
+            addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
+            addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
 
-		addQuad(-W_NEAR / 2, zNear, -W_NEAR / 2 + LINE_W, zNear, -W_FAR / 2 + LINE_W, zFar, -W_FAR / 2, zFar);
-		addQuad(W_NEAR / 2 - LINE_W, zNear, W_NEAR / 2, zNear, W_FAR / 2, zFar, W_FAR / 2 - LINE_W, zFar);
-		addQuad(-W_NEAR / 2, zNear, W_NEAR / 2, zNear, W_NEAR / 2, zNear + LINE_W, -W_NEAR / 2, zNear + LINE_W);
-		addQuad(-W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar - LINE_W, W_FAR / 2, zFar, -W_FAR / 2, zFar);
-		addQuad(-CENTER_W_NEAR / 2, zNear, CENTER_W_NEAR / 2, zNear, CENTER_W_FAR / 2, zFar, -CENTER_W_FAR / 2, zFar);
+            const linesGeo = new THREE.BufferGeometry();
+            linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+            linesGeo.computeVertexNormals();
+            const linesMesh = new THREE.Mesh(linesGeo, lineMat);
+            scene.add(linesMesh);
 
-		const linesGeo = new THREE.BufferGeometry();
-		linesGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
-		linesGeo.computeVertexNormals();
-		const linesMesh = new THREE.Mesh(linesGeo, lineMat);
-		tableGroup.add(linesMesh);
+            const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
 
-		// Safely group the pre-generated table top from your previous block
-		if (typeof tableTop !== 'undefined') {
-			tableGroup.add(tableTop);
-		}
-		
-		// Safely group environmental elements if they exist at this initialization boundary
-		if (typeof floor !== 'undefined') tableGroup.add(floor);
-		if (typeof wall !== 'undefined') tableGroup.add(wall);
-		if (typeof baseboard !== 'undefined') tableGroup.add(baseboard);
+            const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
+            const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
+            playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
+            scene.add(playerApron);
 
-		const apronMat = new THREE.MeshStandardMaterial({ color: 0x070b14, metalness: 0.6, roughness: 0.35 });
+            const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
+            const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
+            oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
+            scene.add(oppApron);
 
-		const playerApronGeo = new THREE.BoxGeometry(W_NEAR - 0.08, 0.05, 0.025);
-		const playerApron = new THREE.Mesh(playerApronGeo, apronMat);
-		playerApron.position.set(0, TABLE_H - TOP_THICK - 0.025, -TABLE_LEN / 2 + 0.03);
-		tableGroup.add(playerApron);
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
+            const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
+            const lz = TABLE_LEN / 2 - 0.28;
+            const lx_near = getW(-lz) / 2 - 0.14;
+            const lx_far = getW(lz) / 2 - 0.14;
 
-		const oppApronGeo = new THREE.BoxGeometry(W_FAR - 0.08, 0.05, 0.025);
-		const oppApron = new THREE.Mesh(oppApronGeo, apronMat);
-		oppApron.position.set(0, TABLE_H - TOP_THICK - 0.025, TABLE_LEN / 2 - 0.03);
-		tableGroup.add(oppApron);
+            [[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
+                const leg = new THREE.Mesh(legGeo, legMat);
+                leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
+                leg.castShadow = true;
+                scene.add(leg);
+            });
 
-		const legMat = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.75, roughness: 0.3 });
-		const legGeo = new THREE.BoxGeometry(0.045, TABLE_H - TOP_THICK, 0.045);
-		const lz = TABLE_LEN / 2 - 0.28;
-		const lx_near = getW(-lz) / 2 - 0.14;
-		const lx_far = getW(lz) / 2 - 0.14;
+            const netMat = new THREE.MeshStandardMaterial({
+                map: makeNetTexture(),
+                transparent: true,
+                alphaTest: 0.1,
+                side: THREE.DoubleSide,
+                roughness: 0.9,
+                depthWrite: true
+            });
 
-		[[-lx_near, -lz], [lx_near, -lz], [-lx_far, lz], [lx_far, lz]].forEach(([x, z]) => {
-			const leg = new THREE.Mesh(legGeo, legMat);
-			leg.position.set(x, (TABLE_H - TOP_THICK) / 2, z);
-			leg.castShadow = true;
-			tableGroup.add(leg);
-		});
+            // Keep the dimensions identical to your working code to avoid breaking Three.js
+            const ballCanvas = document.createElement('canvas');
+            ballCanvas.width = 1024;
+            ballCanvas.height = 2048;
+            const ballCtx = ballCanvas.getContext('2d');
 
-		const netMat = new THREE.MeshStandardMaterial({
-			map: makeNetTexture(),
-			transparent: true,
-			alphaTest: 0.1,
-			side: THREE.DoubleSide,
-			roughness: 0.9,
-			depthWrite: true
-		});
+            function drawWarpedButtonGraphics(offsetY = 0) {
+                // Wipe the high-res 1024x2048 canvas grid completely clean
+                ballCtx.clearRect(0, 0, 1024, 2048);
+                
+                const isNeon = document.documentElement.classList.contains('neon');
+                
+                // ◄--- NEON BALL COLOR MORPHING ENGINE ---
+                if (isNeon) {
+                    // Map your scroll offset progress to a 0.0 - 1.0 interval specifically across the first 5 frames.
+                    // Frame 1 corresponds to currentProgress = 0.05, Frame 5 corresponds to currentProgress = 0.25.
+                    // We lock the color transition bounds to clamp perfectly at Frame 5 max brightness.
+                    const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
 
-		// Safely bind any net structures generated further down the block
-		window.tableGroupNetHook = function(netMeshComponent, cordMeshComponent) {
-			if (netMeshComponent) tableGroup.add(netMeshComponent);
-			if (cordMeshComponent) tableGroup.add(cordMeshComponent);
-		};
+                    // Deconstruct your starting dark orange (#4e2a05 -> RGB: 78, 42, 5) 
+                    // and your target bright neon orange (#d96009 -> RGB: 217, 96, 9)
+                    const r = Math.round(78 + (217 - 78) * morphProgress);
+                    const g = Math.round(42 + (96 - 42) * morphProgress);
+                    const b = Math.round(5 + (9 - 5) * morphProgress);
 
-		// Keep the dimensions identical to your working code to avoid breaking Three.js
-		const ballCanvas = document.createElement('canvas');
-		ballCanvas.width = 1024;
-		ballCanvas.height = 2048;
-		const ballCtx = ballCanvas.getContext('2d');
+                    ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                } else {
+                    // Standard theme retains its original base layout color unchanged
+                    ballCtx.fillStyle = '#fce5cd';
+                }
+                
+                ballCtx.fillRect(0, 0, 1024, 2048);
+                
+                // Realistic 3D spin loop boundaries (scaled up for high-res map)
+                const totalScrollDomain = 2848; // 1424 * 2
 
-		function drawWarpedButtonGraphics(offsetY = 0) {
-			// Wipe the high-res 1024x2048 canvas grid completely clean
-			ballCtx.clearRect(0, 0, 1024, 2048);
-			
-			const isNeon = document.documentElement.classList.contains('neon');
-			
-			// ============================================================
-			// 🔄 TRANSITIONAL NEON BALL COLOR LIFECYCLE
-			// ============================================================
-			if (isNeon) {
-				// Normalize scroll progress specifically through the early step vector.
-				// Frame 1 starts at 0.05, and color morphing reaches its destination at Frame 5 (0.25).
-				const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
+                // Title coordinates upscaled
+                let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
+                if (titleY < 0) titleY += totalScrollDomain;
 
-				// Smoothly blend channels between your custom starting dark brown-orange
-				// and your refined deep table tennis orange milestone
-				const r = Math.round(78 + (255 - 78) * morphProgress);
-				const g = Math.round(42 + (64 - 42) * morphProgress); 
-				const b = Math.round(5 + (0 - 5) * morphProgress);
+                if (titleY >= 0 && titleY <= 2048) {
+                    ballCtx.save();
+                    // Shift horizontal center anchor from 384 to 768 to match 1024 width midpoint
+                    ballCtx.translate(768, titleY);
+                    
+                    // High-res Synced Title Tracking
+                    let distTitle = Math.abs(titleY - 1024) / 1024;
+                    let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
+                    
+                    ballCtx.scale(dynamicTitleWidth, 0.52);
+                    ballCtx.fillStyle = '#000000';
+                    // Doubled font size from 30px to 60px for extreme crispness
+                    ballCtx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ballCtx.textAlign = 'center';
+                    ballCtx.textBaseline = 'middle';
+                    ballCtx.fillText('View Mode Portal', 0, 0);
+                    ballCtx.restore();
+                }
+                
+                // Upscaled Button Tracking coordinates (all multiplied by 2)
+                const buttons = [
+                    { text: 'Preview Mode', bg: 'preview', y: 850, subText: '(works on most devices)', h: 160 },
+                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 930, subText: '', h: 96 },
+                    { text: 'Edit Mode', bg: 'edit', y: 1030, subText: '(annoying banner at top)', h: 160 },
+                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 1110, subText: '', h: 96 },
+                    { text: 'Portal Hub of Portals', bg: 'hub', y: 1260, subText: '(hub of redundant portals)', h: 160 }
+                ];
 
-				ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-			} else {
-				// Standard theme retains its original base layout color profile
-				ballCtx.fillStyle = '#fce5cd';
-			}
-			
-			// Paint the background color across the upgraded high-res texture bounds
-			ballCtx.fillRect(0, 0, 1024, 2048);
-			
-			// Realistic 3D spin loop boundaries (scaled up for high-res map)
-			const totalScrollDomain = 2848; // 1424 * 2
+                buttons.forEach(btn => {
+                    let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
+                    if (currentY < 0) currentY += totalScrollDomain;
 
-			// Title coordinates upscaled
-			let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
-			if (titleY < 0) titleY += totalScrollDomain;
+                    if (currentY >= 0 && currentY <= 2048) {
+                        ballCtx.save();
+                        ballCtx.translate(768, currentY);
 
-			if (titleY >= 0 && titleY <= 2048) {
-				ballCtx.save();
-				// Shift horizontal center anchor to 384 (768 on doubled resolution map)
-				ballCtx.translate(768, titleY);
-				
-				let distTitle = Math.abs(titleY - 1024) / 1024;
-				let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
-				
-				ballCtx.scale(dynamicTitleWidth, 0.52);
-				ballCtx.fillStyle = '#000000';
-				ballCtx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-				ballCtx.textAlign = 'center';
-				ballCtx.textBaseline = 'middle';
-				ballCtx.fillText('View Mode Portal', 0, 0);
-				ballCtx.restore();
-			}
-			
-			// Upscaled Button Tracking coordinates (all multiplied by 2)
-			const buttons = [
-				{ text: 'Preview Mode', bg: 'preview', y: 850, subText: '(works on most devices)', h: 160 },
-				{ text: 'Copy Preview Mode URL', bg: 'copy', y: 930, subText: '', h: 96 },
-				{ text: 'Edit Mode', bg: 'edit', y: 1030, subText: '(annoying banner at top)', h: 160 },
-				{ text: 'Copy Edit Mode URL', bg: 'copy', y: 1110, subText: '', h: 96 },
-				{ text: 'Portal Hub of Portals', bg: 'hub', y: 1260, subText: '(hub of redundant portals)', h: 160 }
-			];
+                        let distFromEquator = Math.abs(currentY - 1024) / 1024;
+                        let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
+                        
+                        ballCtx.scale(dynamicStretchWidth, 0.52);
 
-			buttons.forEach(btn => {
-				let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
-				if (currentY < 0) currentY += totalScrollDomain;
+                        const halfH = btn.h / 2;
+                        const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
+                        if (isNeon) {
+                            if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
+                            else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(0.4, '#cc0000'); grad.addColorStop(1, '#990000'); }
+                            else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(0.4, '#09a3b5'); grad.addColorStop(1, '#077c9c'); }
+                            else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(0.4, '#9900dd'); grad.addColorStop(1, '#7700bb'); }
+                        } else {
+                            if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(0.4, '#3a9e3e'); grad.addColorStop(1, '#288028'); }
+                            else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(0.4, '#c84040'); grad.addColorStop(1, '#a02020'); }
+                            else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(0.4, '#1a7daa'); grad.addColorStop(1, '#0e5f80'); }
+                            else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
+                        }
 
-				if (currentY >= 0 && currentY <= 2048) {
-					ballCtx.save();
-					ballCtx.translate(768, currentY);
+                        // Upscaled Pill dimensions (width doubled to 800)
+                        ballCtx.fillStyle = grad;
+                        ballCtx.beginPath();
+                        ballCtx.roundRect(-400, -halfH, 800, btn.h, 24);
+                        ballCtx.fill();
 
-					let distFromEquator = Math.abs(currentY - 1024) / 1024;
-					let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
-					
-					ballCtx.scale(dynamicStretchWidth, 0.52);
+                        const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
+                        glassGrad.addColorStop(0, 'rgba(255,255,255,0.30)');
+                        glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+                        ballCtx.fillStyle = glassGrad;
+                        ballCtx.beginPath();
+                        ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
+                        ballCtx.fill();
 
-					const halfH = btn.h / 2;
-					const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
-					if (isNeon) {
-						if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
-						else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(0.4, '#cc0000'); grad.addColorStop(1, '#990000'); }
-						else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(0.4, '#09a3b5'); grad.addColorStop(1, '#077c9c'); }
-						else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(0.4, '#9900dd'); grad.addColorStop(1, '#7700bb'); }
-					} else {
-						if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(0.4, '#3a9e3e'); grad.addColorStop(1, '#288028'); }
-						else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(0.4, '#c84040'); grad.addColorStop(1, '#a02020'); }
-						else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(0.4, '#1a7daa'); grad.addColorStop(1, '#0e5f80'); }
-						else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
-					}
-
-					// Upscaled Pill dimensions (width doubled to 800)
-					ballCtx.fillStyle = grad;
-					ballCtx.beginPath();
-					ballCtx.roundRect(-400, -halfH, 800, btn.h, 24);
-					ballCtx.fill();
-
-					const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
-					glassGrad.addColorStop(0, 'rgba(255,255,255,0.30)');
-					glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
-					ballCtx.fillStyle = glassGrad;
-					ballCtx.beginPath();
-					ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
-					ballCtx.fill();
-
-					// High-density Typography rendering engines (doubled text sizing)
-					ballCtx.fillStyle = '#000000';
-					ballCtx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-					ballCtx.textAlign = 'center';
-					
-					if (btn.subText) {
-						ballCtx.textBaseline = 'bottom';
-						ballCtx.fillText(btn.text, 0, 8);
-						ballCtx.fillStyle = '#000000';
-						ballCtx.font = '22px sans-serif';
-						ballCtx.textBaseline = 'top';
-						ballCtx.fillText(btn.subText, 0, 12);
-					} else {
-						ballCtx.textBaseline = 'middle';
-						ballCtx.fillText(btn.text, 0, 0);
-					}
-					ballCtx.restore();
-				}
-			});
-		}
+                        // High-density Typography rendering engines (doubled text sizing)
+                        ballCtx.fillStyle = '#000000';
+                        ballCtx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ballCtx.textAlign = 'center';
+                        
+                        if (btn.subText) {
+                            ballCtx.textBaseline = 'bottom';
+                            ballCtx.fillText(btn.text, 0, 8);
+                            ballCtx.fillStyle = '#000000';
+                            ballCtx.font = '22px sans-serif';
+                            ballCtx.textBaseline = 'top';
+                            ballCtx.fillText(btn.subText, 0, 12);
+                        } else {
+                            ballCtx.textBaseline = 'middle';
+                            ballCtx.fillText(btn.text, 0, 0);
+                        }
+                        ballCtx.restore();
+                    }
+                });
+            }
 
             drawWarpedButtonGraphics(0);
 
@@ -1560,97 +1539,89 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             const scrubHint = document.getElementById('scrub-hint');
 
-		function applyFrame(frameNum) {
-			activeFrame = Math.max(0, Math.min(20, frameNum));
-			window.activeFrame = activeFrame;
+            function applyFrame(frameNum) {
+                activeFrame = Math.max(0, Math.min(20, frameNum));
+                window.activeFrame = activeFrame;
 
-			const ballLayer = document.getElementById('ball-layer');
-			const card = document.querySelector('.card');
-			const container = document.getElementById('canvas-container');
+                const ballLayer = document.getElementById('ball-layer');
+                const card = document.querySelector('.card');
+                const container = document.getElementById('canvas-container');
 
-			if (!card || !container || !ballLayer) return;
+                if (!card || !container || !ballLayer) return;
 
-			if (activeFrame === 0) {
-				// Frame 0: Original 100% portal page
-				container.style.display = 'none';
-				ballLayer.style.display = 'flex'; 
-				ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-				card.style.transform = 'scale(1) translateY(0px)';
-				container.style.width = '';
-				container.style.left = '';
-				container.style.transform = '';
-				if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-			} else if (activeFrame >= 1 && activeFrame <= 20) {
-				// --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
-				container.style.display = 'block'; 
-				ballLayer.style.display = 'none'; 
+                if (activeFrame === 0) {
+                    // Frame 0: Original 100% portal page
+                    container.style.display = 'none';
+                    ballLayer.style.display = 'flex'; 
+                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
+                    card.style.transform = 'scale(1) translateY(0px)';
+                    container.style.width = '';
+                    container.style.left = '';
+                    container.style.transform = '';
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                } else if (activeFrame >= 1 && activeFrame <= 20) {
+                    // --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
+                    container.style.display = 'block'; 
+                    ballLayer.style.display = 'none'; 
+    
+                    autoSize(); // Synchronize view matrices instantly
+    
+                    const scale = 1.0 - (activeFrame * 0.04);
+                    const yOffset = -(activeFrame * 24);
+                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
+                }
+                
+                // ============================================================
+                // 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
+                // ============================================================
+                // Ensure frame references scale across a full 20-frame count array
+    // ============================================================
+    // 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
+    // ============================================================
+    const targetMaxFrames = 20; 
+    const currentProgress = activeFrame / targetMaxFrames;
 
-				autoSize(); // Synchronize view matrices instantly
+    if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
+        const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
+        
+        // 1. Maintain your uniform sphere scale scaling
+        const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
+        pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-				const scale = 1.0 - (activeFrame * 0.04);
-				const yOffset = -(activeFrame * 24);
-				card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-				if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
-			}
-			
-			// ============================================================
-			// 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
-			// ============================================================
-			const targetMaxFrames = 20; 
-			const currentProgress = activeFrame / targetMaxFrames;
+        // 2. Track camera focal vectors
+        const targetDirection = new THREE.Vector3();
+        camera.getWorldDirection(targetDirection);
 
-			if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
-				const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
-				
-				// 1. Existing sphere scale
-				const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
-				pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
+        // 3. Keep your custom 0.75 distance vector factor profile
+        const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
+        pingPongBallMesh.position.copy(camera.position)
+            .addScaledVector(targetDirection, distanceFactor);
 
-				// 2. Clear out view configurations
-				const staticTiltAngle = 0.18;
-				camera.rotation.set(-staticTiltAngle, 0, 0); 
-				camera.position.set(0, TABLE_H + 0.58, -TABLE_LEN / 2 - 1.12); 
+        // 4. Keep your smooth depth squashing calculation transition
+        const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
+        pingPongBallMesh.scale.z *= depthFactor;
 
-				// 3. Track camera focal vectors 
-				const targetDirection = new THREE.Vector3();
-				camera.getWorldDirection(targetDirection);
+        // ◄--- THE ALL-IN-ONE SHIFT & WIDTH CORRECTION ---
+        // Setting repeat.x to 2.0 squeezes the canvas horizontally to counteract 
+        // the sphere's stretching. Setting offset.x to exactly 0.50 rotates the texture 
+        // around the ball's equator to bring the left side fully back onto the screen!
+        ballButtonTexture.repeat.set(1.0, 1.0);
+        ballButtonTexture.offset.x = 0.0; 
+        ballButtonTexture.offset.y = 0.0;
 
-				// 4. Move the ball cleanly along the camera line of sight
-				const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
-				pingPongBallMesh.position.copy(camera.position)
-					.addScaledVector(targetDirection, distanceFactor);
+    } else {
+        pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+    }
 
-				// ◄--- THE STABLE COURT TRANSLATION SHIFT ---
-				// Read the global window hook. This forces every leg, net string, 
-				// and custom line boundary mesh to slide left simultaneously by -0.42!
-				if (window.tableGroup) {
-					window.tableGroup.position.x = -0.42;
-				}
+                // Global Top-Spin Texture Offsets
+                logoTexture.offset.y = currentProgress;
+                drawWarpedButtonGraphics(currentProgress);
+                ballButtonTexture.needsUpdate = true;
 
-				// 5. Smoothly shift sphere depth thickness matrix
-				const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
-				pingPongBallMesh.scale.z *= depthFactor;
+                render();
 
-				// 6. Standard flat texture mappings
-				ballButtonTexture.repeat.set(1.0, 1.0);
-				ballButtonTexture.offset.set(0.0, 0.0);
-				pingPongBallMesh.rotation.set(0, 0, 0); 
-			} else {
-				pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
-				if (window.tableGroup) {
-					window.tableGroup.position.x = 0;
-				}
-			}
-
-			// Global Top-Spin Texture Offsets
-			drawWarpedButtonGraphics(currentProgress);
-			ballButtonTexture.needsUpdate = true;
-
-			// High vibrancy color matching on initial frames
-			ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, currentProgress);
-
-			render();
-		}
+            }
 
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
             if (copyPreviewBtn) {
