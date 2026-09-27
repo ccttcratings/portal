@@ -1100,9 +1100,9 @@
                     ballCtx.save();
                     ballCtx.translate(384, titleY);
                     
-                    // Gentle Title Edge Pinching
+                    // Gentle Title Edge Boost
                     let distTitle = Math.abs(titleY - 512) / 512;
-                    let dynamicTitleWidth = 0.142 - (distTitle * distTitle * 0.038);
+                    let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.045);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
@@ -1132,12 +1132,11 @@
                         // Measures distance from equator midpoint (pixel 512)
                         let distFromEquator = Math.abs(currentY - 512) / 512;
                         
-                        // ◄--- THE SLIGHT HORIZONTAL PINCH ENGINE ---
-                        // Starts at a comfortable 0.142 width at the equator midpoint.
-                        // By changing the operator to a minus (-) and using a tiny 0.038 multiplier,
-                        // the buttons will gently narrow down to 0.104 at the absolute edge.
-                        // This yields a subtle, controlled squish that looks completely natural!
-                        let dynamicStretchWidth = 0.142 - (distFromEquator * distFromEquator * 0.038);
+                        // ◄--- THE PERFECTLY BALANCED EDGE STRETCH ---
+                        // Starts at your standard 0.142 width at the center.
+                        // By using a plus (+) and a tiny 0.045 multiplier, it flares open just 
+                        // enough to fight the sphere's pinching effect without looking cartoonish.
+                        let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.045);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
 
