@@ -1121,7 +1121,7 @@
 
 			if (titleY >= 0 && titleY <= 2048) {
 				ballCtx.save();
-				// Shift horizontal center anchor from 384 to 768 to match 1024 width midpoint
+				// Shift horizontal center anchor to 384 (768 on doubled resolution map)
 				ballCtx.translate(768, titleY);
 				
 				let distTitle = Math.abs(titleY - 1024) / 1024;
@@ -1151,7 +1151,6 @@
 
 				if (currentY >= 0 && currentY <= 2048) {
 					ballCtx.save();
-					// Flat tracking alignment layout
 					ballCtx.translate(768, currentY);
 
 					let distFromEquator = Math.abs(currentY - 1024) / 1024;
