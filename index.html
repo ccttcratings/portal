@@ -1089,6 +1089,9 @@
                 const isNeon = document.documentElement.classList.contains('neon');
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
                 ballCtx.fillRect(0, 0, 512, 1024);
+
+ballCtx.fillStyle = '#ff0000'; // Bright Red
+ballCtx.fillRect(0, 480, 512, 64); // Full horizontal stripe across the canvas m
                 
                 // Tighten the button grouping inside the middle of the texture space
                 const buttons = [
