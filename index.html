@@ -1079,60 +1079,62 @@
 
             // Keep the dimensions identical to your working code to avoid breaking Three.js
             const ballCanvas = document.createElement('canvas');
-            ballCanvas.width = 512;
-            ballCanvas.height = 1024;
+            ballCanvas.width = 1024;
+            ballCanvas.height = 2048;
             const ballCtx = ballCanvas.getContext('2d');
 
             function drawWarpedButtonGraphics(offsetY = 0) {
-                ballCtx.clearRect(0, 0, 512, 1024);
+                // Wipe the high-res 1024x2048 canvas grid completely clean
+                ballCtx.clearRect(0, 0, 1024, 2048);
                 
                 const isNeon = document.documentElement.classList.contains('neon');
                 ballCtx.fillStyle = isNeon ? '#4e2a05' : '#fce5cd'; 
-                ballCtx.fillRect(0, 0, 512, 1024);
+                ballCtx.fillRect(0, 0, 1024, 2048);
                 
-                // Realistic 3D spin loop boundaries
-                const totalScrollDomain = 1424;
+                // Realistic 3D spin loop boundaries (scaled up for high-res map)
+                const totalScrollDomain = 2848; // 1424 * 2
 
-                let titleY = (370 - offsetY * totalScrollDomain) % totalScrollDomain;
+                // Title coordinates upscaled
+                let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
                 if (titleY < 0) titleY += totalScrollDomain;
 
-                if (titleY >= 0 && titleY <= 1024) {
+                if (titleY >= 0 && titleY <= 2048) {
                     ballCtx.save();
-                    ballCtx.translate(384, titleY);
+                    // Shift horizontal center anchor from 384 to 768 to match 1024 width midpoint
+                    ballCtx.translate(768, titleY);
                     
-                    // Synced Title Tracking using your 0.3 choice
-                    let distTitle = Math.abs(titleY - 512) / 512;
+                    // High-res Synced Title Tracking
+                    let distTitle = Math.abs(titleY - 1024) / 1024;
                     let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
-                    ballCtx.font = '800 30px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    // Doubled font size from 30px to 60px for extreme crispness
+                    ballCtx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
                     ballCtx.textBaseline = 'middle';
                     ballCtx.fillText('View Mode Portal', 0, 0);
                     ballCtx.restore();
                 }
                 
-                // ◄--- BALANCED 50% PADDING MATRIX ---
-                // Re-indexed y positions of copy buttons to 465 and 555.
-                // This keeps them clean and separated without feeling spaced too far apart.
+                // Upscaled Button Tracking coordinates (all multiplied by 2)
                 const buttons = [
-                    { text: 'Preview Mode', bg: 'preview', y: 425, subText: '(works on most devices)', h: 80 },
-                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 465, subText: '', h: 48 },
-                    { text: 'Edit Mode', bg: 'edit', y: 515, subText: '(annoying banner at top)', h: 80 },
-                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 555, subText: '', h: 48 },
-                    { text: 'Portal Hub of Portals', bg: 'hub', y: 630, subText: '(hub of redundant portals)', h: 80 }
+                    { text: 'Preview Mode', bg: 'preview', y: 850, subText: '(works on most devices)', h: 160 },
+                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 930, subText: '', h: 96 },
+                    { text: 'Edit Mode', bg: 'edit', y: 1030, subText: '(annoying banner at top)', h: 160 },
+                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 1110, subText: '', h: 96 },
+                    { text: 'Portal Hub of Portals', bg: 'hub', y: 1260, subText: '(hub of redundant portals)', h: 160 }
                 ];
 
                 buttons.forEach(btn => {
                     let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
                     if (currentY < 0) currentY += totalScrollDomain;
 
-                    if (currentY >= 0 && currentY <= 1024) {
+                    if (currentY >= 0 && currentY <= 2048) {
                         ballCtx.save();
-                        ballCtx.translate(384, currentY);
+                        ballCtx.translate(768, currentY);
 
-                        let distFromEquator = Math.abs(currentY - 512) / 512;
+                        let distFromEquator = Math.abs(currentY - 1024) / 1024;
                         let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
@@ -1151,9 +1153,10 @@
                             else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
                         }
 
+                        // Upscaled Pill dimensions (width doubled to 800)
                         ballCtx.fillStyle = grad;
                         ballCtx.beginPath();
-                        ballCtx.roundRect(-200, -halfH, 400, btn.h, 12);
+                        ballCtx.roundRect(-400, -halfH, 800, btn.h, 24);
                         ballCtx.fill();
 
                         const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
@@ -1161,20 +1164,21 @@
                         glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
                         ballCtx.fillStyle = glassGrad;
                         ballCtx.beginPath();
-                        ballCtx.roundRect(-200, -halfH, 400, btn.h * 0.45, 8);
+                        ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
                         ballCtx.fill();
 
+                        // High-density Typography rendering engines (doubled text sizing)
                         ballCtx.fillStyle = '#000000';
-                        ballCtx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                        ballCtx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                         ballCtx.textAlign = 'center';
                         
                         if (btn.subText) {
                             ballCtx.textBaseline = 'bottom';
-                            ballCtx.fillText(btn.text, 0, 4);
+                            ballCtx.fillText(btn.text, 0, 8);
                             ballCtx.fillStyle = '#000000';
-                            ballCtx.font = '11px sans-serif';
+                            ballCtx.font = '22px sans-serif';
                             ballCtx.textBaseline = 'top';
-                            ballCtx.fillText(btn.subText, 0, 6);
+                            ballCtx.fillText(btn.subText, 0, 12);
                         } else {
                             ballCtx.textBaseline = 'middle';
                             ballCtx.fillText(btn.text, 0, 0);
