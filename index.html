@@ -1585,14 +1585,14 @@ ballButtonTexture.offset.set(0.0, 0.0);
 				const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
 				pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-				// ◄--- THE DYNAMIC CAMERA TILT ENGINE ---
-				// Tilts the camera view angle up by roughly 12 degrees (0.21 radians) on Frame 1.
-				// This leaves camera height static, while shifting the background table scene down.
-				// It gradually returns to a neutral 0.0 tilt by Frame 20 as perspective normalizes.
-				const dynamicTiltAngle = THREE.MathUtils.lerp(0.21, 0.0, progressFactor);
-				camera.rotation.x += dynamicTiltAngle;
+				// ◄--- THE LOCKED VIEW AXIS PIVOT ENGINE ---
+				// Subtracting (-) tilts the camera line of sight straight UP.
+				// By locking this at a steady 0.18, the table environment is forced down 
+				// to its lowest point on Frame 1, and stays suspended there across all 20 frames.
+				const staticTiltAngle = 0.18;
+				camera.rotation.x -= staticTiltAngle;
 
-				// 2. Track camera focal vectors (now pointing slightly upward due to the tilt)
+				// 2. Track camera focal vectors (now uniformly pointing upward due to the locked pitch)
 				const targetDirection = new THREE.Vector3();
 				camera.getWorldDirection(targetDirection);
 
