@@ -1097,9 +1097,9 @@
                     // ◄--- ADJUSTED TO PURE #ff8000 BRIGHT ORANGE TRACK ---
                     // Starting dark orange: #4e2a05 (RGB: 78, 42, 5)
                     // Target bright orange: #ff8000 (RGB: 255, 128, 0)
-                    const r = Math.round(78 + (255 - 78) * morphProgress);
-                    const g = Math.round(42 + (128 - 42) * morphProgress);
-                    const b = Math.round(5 + (0 - 5) * morphProgress);
+    const r = 255; // Put your Red value here
+    const g = 64;  // Put your Green value here (Lower green = deeper red-orange)
+    const b = 0;   // Put your Blue value here
 
                     ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
                 } else {
