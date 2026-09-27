@@ -1100,9 +1100,9 @@
                     ballCtx.save();
                     ballCtx.translate(384, titleY);
                     
-                    // Calibrated Title Width Tracking
+                    // Gentle Title Edge Pinching
                     let distTitle = Math.abs(titleY - 512) / 512;
-                    let dynamicTitleWidth = 0.14 + (distTitle * distTitle * 0.11);
+                    let dynamicTitleWidth = 0.142 - (distTitle * distTitle * 0.038);
                     
                     ballCtx.scale(dynamicTitleWidth, 0.52);
                     ballCtx.fillStyle = '#000000';
@@ -1132,12 +1132,12 @@
                         // Measures distance from equator midpoint (pixel 512)
                         let distFromEquator = Math.abs(currentY - 512) / 512;
                         
-                        // ◄--- THE BALANCED EDGE RETENTION MATRIX ---
-                        // Replaced the extreme 4th power with a standard squaring (dist * dist).
-                        // Dialed the multiplier way down to 0.13. This gives you a slight, stable 
-                        // horizontal expansion that perfectly locks the perceived width on screen 
-                        // as the buttons move toward the top and bottom edges.
-                        let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.13);
+                        // ◄--- THE SLIGHT HORIZONTAL PINCH ENGINE ---
+                        // Starts at a comfortable 0.142 width at the equator midpoint.
+                        // By changing the operator to a minus (-) and using a tiny 0.038 multiplier,
+                        // the buttons will gently narrow down to 0.104 at the absolute edge.
+                        // This yields a subtle, controlled squish that looks completely natural!
+                        let dynamicStretchWidth = 0.142 - (distFromEquator * distFromEquator * 0.038);
                         
                         ballCtx.scale(dynamicStretchWidth, 0.52);
 
