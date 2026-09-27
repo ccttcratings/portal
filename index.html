@@ -1083,29 +1083,31 @@
             ballCanvas.height = 2048;
             const ballCtx = ballCanvas.getContext('2d');
 
-        function drawWarpedButtonGraphics(offsetY = 0) {
-            // Wipe the high-res 1024x2048 canvas grid completely clean
-            ballCtx.clearRect(0, 0, 1024, 2048);
-    
-            const isNeon = document.documentElement.classList.contains('neon');
-    
-            // ◄--- NEON BALL COLOR MORPHING ENGINE ---
-            if (isNeon) {
-                // Normalize scroll progress specifically through the early step vector.
-                // Frame 1 starts at 0.05, and color morphing reaches its destination at Frame 5 (0.25).
-                const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
+		function drawWarpedButtonGraphics(offsetY = 0) {
+			// Wipe the high-res 1024x2048 canvas grid completely clean
+			ballCtx.clearRect(0, 0, 1024, 2048);
+			
+			const isNeon = document.documentElement.classList.contains('neon');
+			
+			// ◄--- TRANSITIONAL NEON BALL COLOR LIFECYCLE ---
+			if (isNeon) {
+				// Normalize scroll progress across the first 5 frames
+				const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
 
-                // Smoothly blend channels between your custom starting dark brown-orange
-                // and your refined deep table tennis orange milestone
-                const r = Math.round(78 + (255 - 78) * morphProgress);
-                const g = Math.round(42 + (90 - 42) * morphProgress); // Calibrated mid-point green vector
-                const b = Math.round(5 + (0 - 5) * morphProgress);
+				// 🎯 FIXED WITH YOUR EXACT VERIFIED TARGET VALUES (255, 64, 0)
+				// Starts at dark brown-orange (78, 42, 5) on Frame 1 and smoothly scales
+				// up to your precise deep table tennis orange milestone by Frame 5!
+				const r = Math.round(78 + (255 - 78) * morphProgress);
+				const g = Math.round(42 + (64 - 42) * morphProgress); 
+				const b = Math.round(5 + (0 - 5) * morphProgress);
 
-                ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                } else {
-                    // Standard theme retains its original base layout color profile
-                    ballCtx.fillStyle = '#fce5cd';
-                }
+				ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+			} else {
+				ballCtx.fillStyle = '#fce5cd';
+			}
+			
+			// Paint the background color across the upgraded high-res texture bounds
+			ballCtx.fillRect(0, 0, 1024, 2048);
     
                 // Paint the background color across the upgraded high-res texture bounds
                 ballCtx.fillRect(0, 0, 1024, 2048);
@@ -1537,89 +1539,91 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             const scrubHint = document.getElementById('scrub-hint');
 
-            function applyFrame(frameNum) {
-                activeFrame = Math.max(0, Math.min(20, frameNum));
-                window.activeFrame = activeFrame;
+		function applyFrame(frameNum) {
+			activeFrame = Math.max(0, Math.min(20, frameNum));
+			window.activeFrame = activeFrame;
 
-                const ballLayer = document.getElementById('ball-layer');
-                const card = document.querySelector('.card');
-                const container = document.getElementById('canvas-container');
+			const ballLayer = document.getElementById('ball-layer');
+			const card = document.querySelector('.card');
+			const container = document.getElementById('canvas-container');
 
-                if (!card || !container || !ballLayer) return;
+			if (!card || !container || !ballLayer) return;
 
-                if (activeFrame === 0) {
-                    // Frame 0: Original 100% portal page
-                    container.style.display = 'none';
-                    ballLayer.style.display = 'flex'; 
-                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-                    card.style.transform = 'scale(1) translateY(0px)';
-                    container.style.width = '';
-                    container.style.left = '';
-                    container.style.transform = '';
-                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-                } else if (activeFrame >= 1 && activeFrame <= 20) {
-                    // --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
-                    container.style.display = 'block'; 
-                    ballLayer.style.display = 'none'; 
-    
-                    autoSize(); // Synchronize view matrices instantly
-    
-                    const scale = 1.0 - (activeFrame * 0.04);
-                    const yOffset = -(activeFrame * 24);
-                    card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-                    if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
-                }
-                
-                // ============================================================
-                // 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
-                // ============================================================
-                // Ensure frame references scale across a full 20-frame count array
-    // ============================================================
-    // 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
-    // ============================================================
-    const targetMaxFrames = 20; 
-    const currentProgress = activeFrame / targetMaxFrames;
+			if (activeFrame === 0) {
+				// Frame 0: Original 100% portal page
+				container.style.display = 'none';
+				ballLayer.style.display = 'flex'; 
+				ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
+				card.style.transform = 'scale(1) translateY(0px)';
+				container.style.width = '';
+				container.style.left = '';
+				container.style.transform = '';
+				if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+			} else if (activeFrame >= 1 && activeFrame <= 20) {
+				// --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
+				container.style.display = 'block'; 
+				ballLayer.style.display = 'none'; 
 
-    if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
-        const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
-        
-        // 1. Maintain your uniform sphere scale scaling
-        const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
-        pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
+				autoSize(); // Synchronize view matrices instantly
 
-        // 2. Track camera focal vectors
-        const targetDirection = new THREE.Vector3();
-        camera.getWorldDirection(targetDirection);
+				const scale = 1.0 - (activeFrame * 0.04);
+				const yOffset = -(activeFrame * 24);
+				card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+				if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
+			}
+			
+			// ============================================================
+			// 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
+			// ============================================================
+			const targetMaxFrames = 20; 
+			const currentProgress = activeFrame / targetMaxFrames;
 
-        // 3. Keep your custom 0.75 distance vector factor profile
-        const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
-        pingPongBallMesh.position.copy(camera.position)
-            .addScaledVector(targetDirection, distanceFactor);
+			if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
+				const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
+				
+				// 1. Existing sphere footprint geometry scale
+				const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
+				pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
 
-        // 4. Keep your smooth depth squashing calculation transition
-        const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
-        pingPongBallMesh.scale.z *= depthFactor;
+				// ◄--- THE SCENE BACKGROUND TRAJECTORY TRAJECTORY PIECES SINK ENGINE ---
+				// Lowers the entire background asset group by -0.75 meters on Frame 1,
+				// and gradually lifts it back up to its normal 0.0 height profile by Frame 20.
+				if (typeof backgroundGroup !== 'undefined') {
+					backgroundGroup.position.y = THREE.MathUtils.lerp(-0.75, 0.0, progressFactor);
+				}
 
-        // ◄--- THE ALL-IN-ONE SHIFT & WIDTH CORRECTION ---
-        // Setting repeat.x to 2.0 squeezes the canvas horizontally to counteract 
-        // the sphere's stretching. Setting offset.x to exactly 0.50 rotates the texture 
-        // around the ball's equator to bring the left side fully back onto the screen!
-        ballButtonTexture.repeat.set(1.0, 1.0);
-        ballButtonTexture.offset.x = 0.0; 
-        ballButtonTexture.offset.y = 0.0;
+				// 2. Track camera focal vectors
+				const targetDirection = new THREE.Vector3();
+				camera.getWorldDirection(targetDirection);
 
-    } else {
-        pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
-    }
+				// 3. Position the ball perfectly stable along the ideal lens vector path
+				const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
+				pingPongBallMesh.position.copy(camera.position)
+					.addScaledVector(targetDirection, distanceFactor);
 
-                // Global Top-Spin Texture Offsets
-                logoTexture.offset.y = currentProgress;
-                drawWarpedButtonGraphics(currentProgress);
-                ballButtonTexture.needsUpdate = true;
+				// 4. Smoothly shift sphere depth thickness matrix
+				const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
+				pingPongBallMesh.scale.z *= depthFactor;
 
-                render();
+				// 5. Balance layout repeat mappings to standard 1:1 default scaling states
+				ballButtonTexture.repeat.set(1.0, 1.0);
+				ballButtonTexture.offset.set(0.0, 0.0);
+			} else {
+				pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
+				if (typeof backgroundGroup !== 'undefined') {
+					backgroundGroup.position.y = 0;
+				}
+			}
 
-            }
+			// Global Top-Spin Texture Offsets
+			drawWarpedButtonGraphics(currentProgress);
+			ballButtonTexture.needsUpdate = true;
+
+			// High vibrancy color matching on initial frames
+			ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, currentProgress);
+
+			render();
+		}
 
             const copyPreviewBtn = document.getElementById('copy-preview-btn');
             if (copyPreviewBtn) {
