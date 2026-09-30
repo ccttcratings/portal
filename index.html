@@ -1649,6 +1649,9 @@ const curveControl = new THREE.Vector3(
                 // ============================================================
                 // 🎯 RE-CALIBRATED APEX SIZING ENGINE
                 // ============================================================
+                // ============================================================
+                // 🎯 RE-CALIBRATED APEX SIZING ENGINE (CALIBRATED DOWN FOR HEIGHT PEAK)
+                // ============================================================
                 let dynamicScale;
                 
                 // Peak Apex threshold is at 18% of the flight path (Frame 15)
@@ -1657,16 +1660,16 @@ const curveControl = new THREE.Vector3(
                     const apexProgress = currentProgress / 0.18;
                     const rapidShrinkEase = Math.pow(apexProgress, 0.4); // Rapid ease-out drop
                     
-                    // Drops rapidly from giant 4.8x down to your specific Frame 32 target size (0.50)
-                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.50, rapidShrinkEase);
+                    // TARGET FIXED: Drops from giant 4.8x down to a tight, compact 0.32x at the apex!
+                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.32, rapidShrinkEase);
                 } else {
-                    // From Frame 15 down to Frame 82, it stabilizes and glides smoothly
+                    // From Frame 15 down to Frame 82, it glides from its compact apex size to final drop
                     const remainingProgress = (currentProgress - 0.18) / (1.0 - 0.18);
-                    dynamicScale = THREE.MathUtils.lerp(0.50, 0.15, remainingProgress);
+                    dynamicScale = THREE.MathUtils.lerp(0.32, 0.15, remainingProgress);
                 }
                 
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
-
+				
                 // ============================================================
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, currentProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
