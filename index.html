@@ -1597,7 +1597,7 @@ const curveControl = new THREE.Vector3(
             const scrubHint = document.getElementById('scrub-hint');
 
             function applyFrame(frameNum) {
-                // 1. ADDED 50 FRAMES: Timeline expanded cleanly to a super smooth 82-frame sequence!
+                // 1. TIMELINE BOUNDS: Configured cleanly for a super-smooth 82-frame sequence
                 const targetMaxFrames = 82; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
@@ -1635,9 +1635,10 @@ const curveControl = new THREE.Vector3(
                 const currentProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 FIXED CENTERING TRAJECTORY LINE LOGISTICS
+                // 🚀 CONTINUOUS CUBIC POSITIONING & SIZING ENGINE (BUMP REPAIRED)
                 // ============================================================
-                const motionProgress = Math.pow(currentProgress, 1.1);
+                // A gentle exponential modifier locks the center axis precisely onto your red line
+                const motionProgress = Math.pow(currentProgress, 1.15);
                 const positionVector = new THREE.Vector3();
                 ballServeCurve.getPointAt(motionProgress, positionVector);
                 
@@ -1646,30 +1647,11 @@ const curveControl = new THREE.Vector3(
                 }
                 pingPongBallMesh.position.copy(positionVector);
 
-                // ============================================================
-                // 🎯 RE-CALIBRATED APEX SIZING ENGINE
-                // ============================================================
-                // ============================================================
-                // 🎯 RE-CALIBRATED APEX SIZING ENGINE (CALIBRATED DOWN FOR HEIGHT PEAK)
-                // ============================================================
-                let dynamicScale;
-                
-                // Peak Apex threshold is at 18% of the flight path (Frame 15)
-                if (currentProgress <= 0.18) {
-                    // Normalize progress from Frame 1 to Frame 15 (0.0 to 1.0)
-                    const apexProgress = currentProgress / 0.18;
-                    const rapidShrinkEase = Math.pow(apexProgress, 0.4); // Rapid ease-out drop
-                    
-                    // TARGET FIXED: Drops from giant 4.8x down to a tight, compact 0.32x at the apex!
-                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.32, rapidShrinkEase);
-                } else {
-                    // From Frame 15 down to Frame 82, it glides from its compact apex size to final drop
-                    const remainingProgress = (currentProgress - 0.18) / (1.0 - 0.18);
-                    dynamicScale = THREE.MathUtils.lerp(0.32, 0.15, remainingProgress);
-                }
-                
+                // A tight fractional ease-out (0.18) forces the ball tiny early without mid-air gears breaking
+                const rapidEaseOut = Math.pow(currentProgress, 0.18);
+                const dynamicScale = THREE.MathUtils.lerp(4.8, 0.15, rapidEaseOut);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
-				
+
                 // ============================================================
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, currentProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
