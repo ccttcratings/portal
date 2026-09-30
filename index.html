@@ -1597,7 +1597,8 @@ const curveControl = new THREE.Vector3(
             const scrubHint = document.getElementById('scrub-hint');
 
             function applyFrame(frameNum) {
-                const targetMaxFrames = 32; 
+                // 1. ADDED 50 FRAMES: Timeline expanded cleanly to a super smooth 82-frame sequence!
+                const targetMaxFrames = 82; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
 
@@ -1623,42 +1624,50 @@ const curveControl = new THREE.Vector3(
                 ballLayer.style.display = 'none'; 
                 autoSize(); 
 
+                // Pin the background overlay layout menu animations at frame 20
                 const cardScaleFactor = Math.min(activeFrame, 20); 
                 const scale = 1.0 - (cardScaleFactor * 0.04);
                 const yOffset = -(cardScaleFactor * 24);
                 card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
                 if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 3D Ball Active`;
 
-                // ============================================================
-                // 🎯 THE SYNCHRONIZED TRAJECTORY & MASSIVE SCALE ENGINE
-                // ============================================================
+                // Normalize flight tracking progress over the full 82 frames (0.0 to 1.0)
                 const currentProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
-                // Smooths out forward travel steps to match the rapid early shrink perspective
-                const motionProgress = Math.pow(currentProgress, 1.3);
-
-                // 2. Extract and pin the center axis directly to your red trajectory line!
+                // ============================================================
+                // 🚀 FIXED CENTERING TRAJECTORY LINE LOGISTICS
+                // ============================================================
+                const motionProgress = Math.pow(currentProgress, 1.1);
                 const positionVector = new THREE.Vector3();
                 ballServeCurve.getPointAt(motionProgress, positionVector);
                 
-                // Adjust Z depth offset on frame 1 to compensate for perspective lens distortion
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
                 }
                 pingPongBallMesh.position.copy(positionVector);
 
                 // ============================================================
-                // 🎯 RAPID EASE-OUT SIZE ENGINE: FAST EARLY DROP, SLOW FINISH
+                // 🎯 RE-CALIBRATED APEX SIZING ENGINE
                 // ============================================================
-                // A fractional exponent (0.4) creates a sharp ease-out curve.
-                // The ball drops size instantly at first, then slows its shrink rate!
-                const shrinkProgress = Math.pow(currentProgress, 0.4);
-
-                // Keeps Frame 1 locked at your massive 4.8x button-matching scale,
-                // collapses rapidly across Frames 2-6, then gently lands at 0.15x.
-                const dynamicScale = THREE.MathUtils.lerp(4.8, 0.15, shrinkProgress);
+                let dynamicScale;
+                
+                // Peak Apex threshold is at 18% of the flight path (Frame 15)
+                if (currentProgress <= 0.18) {
+                    // Normalize progress from Frame 1 to Frame 15 (0.0 to 1.0)
+                    const apexProgress = currentProgress / 0.18;
+                    const rapidShrinkEase = Math.pow(apexProgress, 0.4); // Rapid ease-out drop
+                    
+                    // Drops rapidly from giant 4.8x down to your specific Frame 32 target size (0.50)
+                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.50, rapidShrinkEase);
+                } else {
+                    // From Frame 15 down to Frame 82, it stabilizes and glides smoothly
+                    const remainingProgress = (currentProgress - 0.18) / (1.0 - 0.18);
+                    dynamicScale = THREE.MathUtils.lerp(0.50, 0.15, remainingProgress);
+                }
+                
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
+                // ============================================================
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, currentProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
