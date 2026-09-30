@@ -1634,8 +1634,8 @@ const curveControl = new THREE.Vector3(
                 // ============================================================
                 const currentProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
-                // 1. Math matching curve for spacing step increments smoothly
-                const motionProgress = Math.pow(currentProgress, 2.2);
+                // Smooths out forward travel steps to match the rapid early shrink perspective
+                const motionProgress = Math.pow(currentProgress, 1.3);
 
                 // 2. Extract and pin the center axis directly to your red trajectory line!
                 const positionVector = new THREE.Vector3();
@@ -1647,8 +1647,15 @@ const curveControl = new THREE.Vector3(
                 }
                 pingPongBallMesh.position.copy(positionVector);
 
-                // 3. Exponential shrink math: Sets ball giant at 4.8x to match frame 0 button sizing
-                const shrinkProgress = Math.pow(currentProgress, 2.5);
+                // ============================================================
+                // 🎯 RAPID EASE-OUT SIZE ENGINE: FAST EARLY DROP, SLOW FINISH
+                // ============================================================
+                // A fractional exponent (0.4) creates a sharp ease-out curve.
+                // The ball drops size instantly at first, then slows its shrink rate!
+                const shrinkProgress = Math.pow(currentProgress, 0.4);
+
+                // Keeps Frame 1 locked at your massive 4.8x button-matching scale,
+                // collapses rapidly across Frames 2-6, then gently lands at 0.15x.
                 const dynamicScale = THREE.MathUtils.lerp(4.8, 0.15, shrinkProgress);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
