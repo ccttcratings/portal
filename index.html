@@ -1240,8 +1240,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
             ballMaterial.depthTest = false;
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
-            // Physically inject it into your active 3D universe
-            scene.add(pingPongBallMesh);
+            camera.add(pingPongBallMesh);
+            scene.add(camera);
             // -------------------------------------------------------------
             // =========================================================================
             // 🔴 DEVELOPMENT GEOMETRY: COURT-ALIGNED X-RAY TRAJECTORY CURVE
@@ -1623,6 +1623,33 @@ const curveControl = new THREE.Vector3(
                 ballLayer.style.display = 'none'; 
                 autoSize(); 
 
+                const cardScaleFactor = Ma            function applyFrame(frameNum) {
+                const targetMaxFrames = 107; 
+                activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
+                window.activeFrame = activeFrame;
+
+                const ballLayer = document.getElementById('ball-layer');
+                const card = document.querySelector('.card');
+                const container = document.getElementById('canvas-container');
+
+                if (!card || !container || !ballLayer) return;
+
+                if (activeFrame === 0) {
+                    container.style.display = 'none';
+                    ballLayer.style.display = 'flex'; 
+                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
+                    card.style.transform = 'scale(1) translateY(0px)';
+                    container.style.width = '';
+                    container.style.left = '';
+                    container.style.transform = '';
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                    return;
+                } 
+                
+                container.style.display = 'block'; 
+                ballLayer.style.display = 'none'; 
+                autoSize(); 
+
                 const cardScaleFactor = Math.min(activeFrame, 20); 
                 const scale = 1.0 - (cardScaleFactor * 0.04);
                 const yOffset = -(cardScaleFactor * 24);
@@ -1651,7 +1678,7 @@ const curveControl = new THREE.Vector3(
                     dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
                 } 
                 else if (activeFrame > 25 && activeFrame <= 50) {
-                    trajectoryProgress = 0.33; // Position coordinates frozen at apex
+                    trajectoryProgress = 0.33; 
                     const leg2Normalized = (activeFrame - 25) / 25;
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.38, leg2Normalized);
                 } 
@@ -1662,7 +1689,7 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // ============================================================
-                // 🎥 DYNAMIC CAM TILT CHASSIS PARSER (REVERSED FOR UPWARD MOVE)
+                // 🎥 CAMERA TILT INTERCEPT ROTATOR (UPWARD ENVIRONMENT SHIFT)
                 // ============================================================
                 let currentCameraTilt = 0.18;
                 let tiltShiftOffset = 0.00;
@@ -1678,34 +1705,31 @@ const curveControl = new THREE.Vector3(
                     currentCameraTilt = 0.18 - tiltShiftOffset;
                 }
 
+                // Apply the dynamically generated pitch rotation pass to the active camera lens
+                camera.rotation.x -= currentCameraTilt;
+
+                // ============================================================
+                // 🎯 VIEWPORT-LOCKED RELATIVE POSITIONING PIPELINE
+                // ============================================================
                 // Extract trajectory tracking point from your arced curve
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
-                const positionVector = new THREE.Vector3();
+                const worldPositionVector = new THREE.Vector3();
                 ballServeCurve.getPointAt(motionProgress, positionVector);
                 
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
                 }
 
-                // 🎯 THE CRITICAL FIXED OVERRIDE: 3D BALL COUNTER-ROTATION CORRECTION
-                // Rotates the ball's coordinates around the camera's local X-axis 
-                // to completely cancel out the lens shift, locking the ball rock-solid on screen!
-                if (tiltShiftOffset > 0) {
-                    const localCamXAxis = new THREE.Vector3(1, 0, 0);
-                    positionVector.sub(camera.position);
-                    positionVector.applyAxisAngle(localCamXAxis, -tiltShiftOffset);
-                    positionVector.add(camera.position);
-                }
-
-                // Inject calibrated coordinates and scales safely onto mesh properties
-                pingPongBallMesh.position.copy(positionVector);
+                // Convert global 3D room coordinates into a direct viewport-relative vector 
+                // locked to the camera lens. This strips camera rotations away from the ball completely!
+                const localCamVector = positionVector.clone().applyMatrix4(camera.matrixWorldInverse);
+                
+                // Pin the local camera-space coordinates cleanly to the decoupled ball mesh
+                pingPongBallMesh.position.copy(localCamVector);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
-
-                // Apply the dynamically generated pitch rotation pass to the active camera lens
-                camera.rotation.x -= currentCameraTilt;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
                 ballButtonTexture.offset.set(0.0, 0.0);
