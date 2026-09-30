@@ -1629,22 +1629,27 @@ const curveControl = new THREE.Vector3(
                 card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
                 if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 3D Ball Active`;
 
+                // ============================================================
+                // 🎯 THE SYNCHRONIZED TRAJECTORY & MASSIVE SCALE ENGINE
+                // ============================================================
                 const currentProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
+                // 1. Math matching curve for spacing step increments smoothly
+                const motionProgress = Math.pow(currentProgress, 2.2);
+
+                // 2. Extract and pin the center axis directly to your red trajectory line!
                 const positionVector = new THREE.Vector3();
-                ballServeCurve.getPointAt(currentProgress, positionVector);
+                ballServeCurve.getPointAt(motionProgress, positionVector);
+                
+                // Adjust Z depth offset on frame 1 to compensate for perspective lens distortion
+                if (activeFrame === 1) {
+                    positionVector.z = -0.58; 
+                }
                 pingPongBallMesh.position.copy(positionVector);
 
-                // ============================================================
-                // 🎯 SCREEN-MAXIMIZING SIZE PIPELINE (FLAWLESS FRAME 1 & 2)
-                // ============================================================
-                // Using an intentional cubic curve holds the ball at maximum scale 
-                // early on, preventing it from shrinking prematurely on Frame 2.
-                const shrinkProgress = Math.pow(currentProgress, 3);
-
-                // Starts at a massive 3.3x viewport-filling scale on Frame 1, 
-                // stays huge on Frame 2, then drops quickly to a crisp 0.15x landing size.
-                const dynamicScale = THREE.MathUtils.lerp(3.3, 0.15, shrinkProgress);
+                // 3. Exponential shrink math: Sets ball giant at 4.8x to match frame 0 button sizing
+                const shrinkProgress = Math.pow(currentProgress, 2.5);
+                const dynamicScale = THREE.MathUtils.lerp(4.8, 0.15, shrinkProgress);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, currentProgress);
