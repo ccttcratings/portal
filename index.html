@@ -1243,16 +1243,31 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // Physically inject it into your active 3D universe
             scene.add(pingPongBallMesh);
             // -------------------------------------------------------------
+            // Physically inject it into your active 3D universe
+            scene.add(pingPongBallMesh);
+            // -------------------------------------------------------------
+            
             // =========================================================================
-// 🔴 DEVELOPMENT GEOMETRY: BASELINE TRAJECTORY GUIDE LINE
-// =========================================================================
-// 1. Define the exact start anchor (top of the ball on Frame 2)
-// Since progress factor is 1/19 on Frame 2, the ball moves slightly away.
-const lineStart = new THREE.Vector3(0, TABLE_H + 1.25, -0.25);
-			
-trajectoryGuideLine.geometry.dispose();
-trajectoryGuideLine.geometry = new THREE.BufferGeometry().setFromPoints([lineStart, lineEnd]);
-			
+            // 🔴 CALIBRATED TRAJECTORY GUIDE LINE (VIEWPORT-ALIGNED SETUP)
+            // =========================================================================
+            // Start point shifted up/forward to match the top center viewport on Frame 2
+            const lineStart = new THREE.Vector3(0, TABLE_H + 1.25, -0.25);
+
+            // End point lowered down slightly below the far baseline for depth drop
+            const lineEnd = new THREE.Vector3(0.15, TABLE_H - 0.15, (2.74 / 2) + 0.10);
+
+            const guideLineGeo = new THREE.BufferGeometry().setFromPoints([lineStart, lineEnd]);
+            const guideLineMat = new THREE.LineBasicMaterial({ 
+                color: 0xff0000, 
+                linewidth: 3, 
+                depthTest: true
+            });
+
+            const trajectoryGuideLine = new THREE.Line(guideLineGeo, guideLineMat);
+            scene.add(trajectoryGuideLine);
+            
+
+// -------------------------------------------------------------------------------			
 // 2. Define the exact target landing anchor (dead center on the opposite table baseline)
 const lineEnd = new THREE.Vector3(0.15, TABLE_H - 0.15, 2.74 / 2 + 0.10);
 
