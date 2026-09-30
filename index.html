@@ -1635,7 +1635,16 @@ const curveControl = new THREE.Vector3(
                 ballServeCurve.getPointAt(currentProgress, positionVector);
                 pingPongBallMesh.position.copy(positionVector);
 
-                const dynamicScale = THREE.MathUtils.lerp(1.6, 0.15, currentProgress);
+                // ============================================================
+                // 🎯 DELAYED-SHRINK SIZE PIPELINE: FIXED FOR GIANT EARLY FRAMES
+                // ============================================================
+                // Squaring the progress creates an exponential curve—holding the ball 
+                // giant early on, then accelerating the shrink closer to the finish!
+                const shrinkProgress = currentProgress * currentProgress;
+
+                // Starts at a massive 1.6x scale on Frame 1, drops smoothly across Frame 2,
+                // and finishes at a crisp, realistic 0.15x landing size.
+                const dynamicScale = THREE.MathUtils.lerp(1.6, 0.15, shrinkProgress);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, currentProgress);
