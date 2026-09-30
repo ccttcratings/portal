@@ -1638,7 +1638,7 @@ const curveControl = new THREE.Vector3(
                 // 🚀 CONTINUOUS CUBIC POSITIONING & SIZING ENGINE (BUMP REPAIRED)
                 // ============================================================
                 // A gentle exponential modifier locks the center axis precisely onto your red line
-                const motionProgress = Math.pow(currentProgress, 1.25);
+                const motionProgress = Math.pow(currentProgress, 1.2);
                 const positionVector = new THREE.Vector3();
                 ballServeCurve.getPointAt(motionProgress, positionVector);
                 
@@ -1648,7 +1648,7 @@ const curveControl = new THREE.Vector3(
                 pingPongBallMesh.position.copy(positionVector);
 
                 // A tight fractional ease-out (0.18) forces the ball tiny early without mid-air gears breaking
-                const rapidEaseOut = Math.pow(currentProgress, 0.05);
+                const rapidEaseOut = Math.pow(currentProgress, 0.1);
                 const dynamicScale = THREE.MathUtils.lerp(4.8, 0.15, rapidEaseOut);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
