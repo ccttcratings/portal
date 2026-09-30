@@ -1243,17 +1243,16 @@ ballButtonTexture.offset.set(0.0, 0.0);
             scene.add(pingPongBallMesh);
             // -------------------------------------------------------------
             // =========================================================================
-            // 🔴 DEVELOPMENT GEOMETRY: UPWARD ARCED TRAJECTORY CURVE
+            // 🔴 DEVELOPMENT GEOMETRY: COURT-ALIGNED TRAJECTORY CURVE
             // =========================================================================
             // 1. Core start anchor locked exactly into the ball's center axis on Frame 2
             const curveStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
 
-            // 2. Landing anchor shifted to your visual right and down below the table
-            const curveEnd = new THREE.Vector3(-0.38, TABLE_H - 0.28, (2.74 / 2) + 0.45);
+            // 2. Landing anchor adjusted INWARD (-0.18) and CLOSER (+0.15) away from the edge
+            const curveEnd = new THREE.Vector3(-0.18, TABLE_H - 0.28, (2.74 / 2) + 0.15);
 
-            // 3. THE APEX CONTROL POINT: Lifted up and pushed forward to keep the line high early
-            // Shifting Z to -0.20 pulls the peak toward the lens, keeping the path high on screen.
-            const curveControl = new THREE.Vector3(-0.08, TABLE_H + 0.95, -0.20);
+            // 3. THE APEX CONTROL POINT: Pushed slightly inward to match the safe landing vector
+            const curveControl = new THREE.Vector3(-0.05, TABLE_H + 0.95, -0.20);
 
             // 4. Construct the non-uniform quadratic curve geometry
             const quadraticCurve = new THREE.QuadraticBezierCurve3(curveStart, curveControl, curveEnd);
