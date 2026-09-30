@@ -1251,7 +1251,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             // 2. Landing anchor adjusted to hit right before the absolute back edge of the table
             // Changing the Z offset to +0.04 forces the arc down onto the surface just inside the line.
-            const curveEnd = new THREE.Vector3(-0.18, TABLE_H - 0.28, (2.74 / 2) + 0.98);
+            const curveEnd = new THREE.Vector3(-0.18, TABLE_H - 0.28, (2.74 / 2) + 0.999);
 
             // 3. THE APEX CONTROL POINT: Pushed slightly inward to match the safe landing vector
             const curveControl = new THREE.Vector3(-0.05, TABLE_H + 0.95, -0.20);
