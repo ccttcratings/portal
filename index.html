@@ -1253,7 +1253,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 const curveEnd = new THREE.Vector3(
     -0.18,          // Left/Right alignment on the table
     TABLE_H - 0.28, // Height depth anchor below the table plane
-    2.74 - 0.05     // ◄--- [C] BACK-EDGE CORRECTION (Lands exactly 5cm INSIDE the table)
+    2.74 - 0.5     // ◄--- [C] BACK-EDGE CORRECTION (Lands exactly 5cm INSIDE the table)
 );
 
 // 2. THE APEX CONTROL POINT (Lifts the path over the net)
