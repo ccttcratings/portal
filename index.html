@@ -1687,7 +1687,7 @@ const curveControl = new THREE.Vector3(
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
-                const staticTiltAngle = 0.18;
+                const maxCameraTiltShift = 0.08;
                 camera.rotation.x -= staticTiltAngle;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
