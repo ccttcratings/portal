@@ -1241,7 +1241,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
             // Physically inject it into your active 3D universe
-			scene.add(pingPongBallMesh);
+            scene.add(pingPongBallMesh);
             // -------------------------------------------------------------
             // =========================================================================
             // 🔴 DEVELOPMENT GEOMETRY: COURT-ALIGNED X-RAY TRAJECTORY CURVE
@@ -1249,8 +1249,9 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // 1. Core start anchor locked exactly into the ball's center axis on Frame 2
             const curveStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
 
-            // 2. Landing anchor adjusted INWARD (-0.18) and DEEP (+0.38) right at the back of the table
-            const curveEnd = new THREE.Vector3(-0.18, TABLE_H - 0.28, (2.74 / 2) + 0.38);
+            // 2. Landing anchor adjusted to hit right before the absolute back edge of the table
+            // Changing the Z offset to +0.04 forces the arc down onto the surface just inside the line.
+            const curveEnd = new THREE.Vector3(-0.18, TABLE_H - 0.28, (2.74 / 2) + 0.04);
 
             // 3. THE APEX CONTROL POINT: Pushed slightly inward to match the safe landing vector
             const curveControl = new THREE.Vector3(-0.05, TABLE_H + 0.95, -0.20);
