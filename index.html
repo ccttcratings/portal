@@ -1240,10 +1240,11 @@ ballButtonTexture.offset.set(0.0, 0.0);
             ballMaterial.depthTest = false;
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
+            // Physically inject it into your active 3D universe
             scene.add(pingPongBallMesh);
             // -------------------------------------------------------------
             // =========================================================================
-            // 🔴 DEVELOPMENT GEOMETRY: COURT-ALIGNED TRAJECTORY CURVE
+            // 🔴 DEVELOPMENT GEOMETRY: COURT-ALIGNED X-RAY TRAJECTORY CURVE
             // =========================================================================
             // 1. Core start anchor locked exactly into the ball's center axis on Frame 2
             const curveStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
@@ -1261,14 +1262,20 @@ ballButtonTexture.offset.set(0.0, 0.0);
             const curvePoints = quadraticCurve.getPoints(32);
             const guideLineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
             
+            // 5. THE X-RAY OVERLAY MATERIAL LAYER CONFIGURATION
             const guideLineMat = new THREE.LineBasicMaterial({ 
                 color: 0xff0000, 
                 linewidth: 3, 
-                depthTest: true,
-                transparent: false
+                depthTest: false,    // ◄--- TURNS OFF 3D BLIND SPOT BLOCKING
+                depthWrite: false,   // ◄--- PREVENTS CLIPPING DISTORTIONS
+                transparent: true    // ◄--- ALLOWS ADVANCED ALPHA MIXING LAYER PASSES
             });
 
             const trajectoryGuideLine = new THREE.Line(guideLineGeo, guideLineMat);
+            
+            // 6. FORCE TOP EXECUTION PRIORITY: Forces it to compile on top of cards & panels
+            trajectoryGuideLine.renderOrder = 99999; 
+            
             scene.add(trajectoryGuideLine);
             // -------------------------------------------------------------
 
