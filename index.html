@@ -1597,8 +1597,7 @@ const curveControl = new THREE.Vector3(
             const scrubHint = document.getElementById('scrub-hint');
 
             function applyFrame(frameNum) {
-                // 1. TIMELINE BOUNDS: Configured cleanly for a super-smooth 82-frame sequence
-                const targetMaxFrames = 82; 
+                const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
 
@@ -1624,21 +1623,55 @@ const curveControl = new THREE.Vector3(
                 ballLayer.style.display = 'none'; 
                 autoSize(); 
 
-                // Pin the background overlay layout menu animations at frame 20
                 const cardScaleFactor = Math.min(activeFrame, 20); 
                 const scale = 1.0 - (cardScaleFactor * 0.04);
                 const yOffset = -(cardScaleFactor * 24);
                 card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-                if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 3D Ball Active`;
 
-                // Normalize flight tracking progress over the full 82 frames (0.0 to 1.0)
-                const currentProgress = (activeFrame - 1) / (targetMaxFrames - 1);
+                if (scrubHint) {
+                    if (activeFrame >= 25 && activeFrame <= 50) {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Size Hold Active`;
+                    } else {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
+                    }
+                }
+
+                const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 CONTINUOUS CUBIC POSITIONING & SIZING ENGINE (BUMP REPAIRED)
+                // 🚀 STAGE-ROUTED GEOMETRY & SIZING ENGINE
                 // ============================================================
-                // A gentle exponential modifier locks the center axis precisely onto your red line
-                const motionProgress = Math.pow(currentProgress, 1.2);
+                let trajectoryProgress;
+                let dynamicScale;
+
+                if (activeFrame <= 25) {
+                    // --- STAGE 1: THE CLIMB (Frames 1-25) ---
+                    const leg1Normalized = (activeFrame - 1) / 24; 
+                    trajectoryProgress = leg1Normalized * 0.33; // Trajectory reaches 33% of curve
+
+                    // Shrinks from giant 4.8x down to 0.45x using a clean ease-out curve
+                    const shrinkEase = Math.pow(leg1Normalized, 0.4);
+                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
+                } 
+                else if (activeFrame > 25 && activeFrame <= 50) {
+                    // --- STAGE 2: THE FREEZE HOLD (Frames 26-50) ---
+                    trajectoryProgress = 0.33; // Position remains completely frozen at apex
+
+                    // 🎯 FIXED MINUSCULE SHRINK: Drops only 0.07 scale points over 25 frames!
+                    const leg2Normalized = (activeFrame - 25) / 25;
+                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.38, leg2Normalized);
+                } 
+                else {
+                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
+                    const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
+                    trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); // Resumes path to 100%
+
+                    // Glides from its 0.38x apex size down to its final 0.15x landing scale
+                    dynamicScale = THREE.MathUtils.lerp(0.38, 0.15, leg3Normalized);
+                }
+
+                // Apply trajectory tracking vector coordinates to ball center axis
+                const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
                 ballServeCurve.getPointAt(motionProgress, positionVector);
                 
@@ -1647,13 +1680,11 @@ const curveControl = new THREE.Vector3(
                 }
                 pingPongBallMesh.position.copy(positionVector);
 
-                // A tight fractional ease-out (0.18) forces the ball tiny early without mid-air gears breaking
-                const rapidEaseOut = Math.pow(currentProgress, 0.1);
-                const dynamicScale = THREE.MathUtils.lerp(4.8, 0.15, rapidEaseOut);
+                // Apply the precision stage-calibrated scale factor safely
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 // ============================================================
-                const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, currentProgress);
+                const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
                 const staticTiltAngle = 0.18;
@@ -1661,10 +1692,10 @@ const curveControl = new THREE.Vector3(
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
                 ballButtonTexture.offset.set(0.0, 0.0);
-                drawWarpedButtonGraphics(currentProgress);
+                drawWarpedButtonGraphics(globalProgress);
                 ballButtonTexture.needsUpdate = true;
 
-                ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, currentProgress);
+                ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, globalProgress);
 
                 render();
             }
