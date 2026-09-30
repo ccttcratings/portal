@@ -1630,7 +1630,7 @@ const curveControl = new THREE.Vector3(
 
                 if (scrubHint) {
                     if (activeFrame >= 25 && activeFrame <= 50) {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Size Hold Active`;
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Cam Tilt Active`;
                     } else {
                         scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
                     }
@@ -1645,28 +1645,19 @@ const curveControl = new THREE.Vector3(
                 let dynamicScale;
 
                 if (activeFrame <= 25) {
-                    // --- STAGE 1: THE CLIMB (Frames 1-25) ---
                     const leg1Normalized = (activeFrame - 1) / 24; 
-                    trajectoryProgress = leg1Normalized * 0.33; // Trajectory reaches 33% of curve
-
-                    // Shrinks from giant 4.8x down to 0.45x using a clean ease-out curve
+                    trajectoryProgress = leg1Normalized * 0.33; 
                     const shrinkEase = Math.pow(leg1Normalized, 0.4);
                     dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
                 } 
                 else if (activeFrame > 25 && activeFrame <= 50) {
-                    // --- STAGE 2: THE FREEZE HOLD (Frames 26-50) ---
-                    trajectoryProgress = 0.33; // Position remains completely frozen at apex
-
-                    // 🎯 FIXED MINUSCULE SHRINK: Drops only 0.07 scale points over 25 frames!
+                    trajectoryProgress = 0.33; // Position frozen at apex
                     const leg2Normalized = (activeFrame - 25) / 25;
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.38, leg2Normalized);
                 } 
                 else {
-                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
-                    trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); // Resumes path to 100%
-
-                    // Glides from its 0.38x apex size down to its final 0.15x landing scale
+                    trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     dynamicScale = THREE.MathUtils.lerp(0.38, 0.15, leg3Normalized);
                 }
 
@@ -1679,16 +1670,30 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
                 pingPongBallMesh.position.copy(positionVector);
-
-                // Apply the precision stage-calibrated scale factor safely
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 // ============================================================
+                // 🎥 DYNAMIC CAM TILT MOTOR: INTERCEPT PASS FOR STAGE 2
+                // ============================================================
+                let currentCameraTilt = 0.18;
+
+                if (activeFrame <= 25) {
+                    currentCameraTilt = 0.18;
+                } 
+                else if (activeFrame > 25 && activeFrame <= 50) {
+                    const holdProgress = (activeFrame - 25) / 25;
+                    // TWEAK THIS: Increase 0.08 to force the background to sink FURTHER down the screen
+                    currentCameraTilt = 0.18 + (0.08 * holdProgress);
+                } 
+                else {
+                    currentCameraTilt = 0.18 + 0.08;
+                }
+
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
-                const maxCameraTiltShift = 0.08;
-                camera.rotation.x -= staticTiltAngle;
+                // Apply the dynamically generated camera pitch rotation pass
+                camera.rotation.x -= currentCameraTilt;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
                 ballButtonTexture.offset.set(0.0, 0.0);
