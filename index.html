@@ -474,17 +474,29 @@
             <h2>View Mode Portal</h2>
 
             <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false&chrome=false" class="btn preview">
-                Published Mode <span class="subtext">(works on most devices)</span>
+                Published Mode
             </a>
 
-            <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-published-btn">
+            <button class="copy-btn" data-label="Copy Published Mode URL" id="copy-published-btn">
                 Copy Published Mode URL
             </button>
 
             <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn edit">
-                Preview Mode <span class="subtext">(annoying banner at top)</span>
+                Preview Mode
             </a>
 
+            <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
+                Copy Preview Mode URL
+            </button>
+
+            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+                Portal Hub of Portals
+            </a>
+        </div>
+    </div>
+
+    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames</div>
+	
             <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-preview-btn">
                 Copy Preview Mode URL
             </button>
@@ -501,6 +513,16 @@
         const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
         const publishedUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false&chrome=false";
 
+
+
+
+
+
+
+
+
+
+		
         function copyUrl(btn, url) {
             navigator.clipboard.writeText(url).then(() => {
                 btn.textContent = "Copied!";
