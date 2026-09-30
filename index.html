@@ -1595,7 +1595,11 @@ const curveControl = new THREE.Vector3(
 
             const scrubHint = document.getElementById('scrub-hint');
 
+            // 🎯 NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
+            const BASELINE_CAM_TILT = camera.rotation.x;
+
             function applyFrame(frameNum) {
+                // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
                 const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
@@ -1620,33 +1624,9 @@ const curveControl = new THREE.Vector3(
                 
                 container.style.display = 'block'; 
                 ballLayer.style.display = 'none'; 
-                autoSize(); 
-
-                const cardScaleFactor = Ma            function applyFrame(frameNum) {
-                const targetMaxFrames = 107; 
-                activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
-                window.activeFrame = activeFrame;
-
-                const ballLayer = document.getElementById('ball-layer');
-                const card = document.querySelector('.card');
-                const container = document.getElementById('canvas-container');
-
-                if (!card || !container || !ballLayer) return;
-
-                if (activeFrame === 0) {
-                    container.style.display = 'none';
-                    ballLayer.style.display = 'flex'; 
-                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-                    card.style.transform = 'scale(1) translateY(0px)';
-                    container.style.width = '';
-                    container.style.left = '';
-                    container.style.transform = '';
-                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-                    return;
-                } 
                 
-                container.style.display = 'block'; 
-                ballLayer.style.display = 'none'; 
+                // Reset baseline camera matrices before updating layout transformations
+                camera.rotation.x = BASELINE_CAM_TILT;
                 autoSize(); 
 
                 const cardScaleFactor = Math.min(activeFrame, 20); 
@@ -1665,106 +1645,50 @@ const curveControl = new THREE.Vector3(
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 STAGE-ROUTED GEOMETRY & SIZING ENGINE
+                // 🚀 2. STAGE-ROUTED GEOMETRY & SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
 
                 if (activeFrame <= 25) {
+                    // --- STAGE 1: THE CLIMB (Frames 1-25) ---
                     const leg1Normalized = (activeFrame - 1) / 24; 
                     trajectoryProgress = leg1Normalized * 0.33; 
                     const shrinkEase = Math.pow(leg1Normalized, 0.4);
                     dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
                 } 
                 else if (activeFrame > 25 && activeFrame <= 50) {
-                    trajectoryProgress = 0.33; 
-                    const leg2Normalized =            function applyFrame(frameNum) {
-                const targetMaxFrames = 107; 
-                activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
-                window.activeFrame = activeFrame;
-
-                const ballLayer = document.getElementById('ball-layer');
-                const card = document.querySelector('.card');
-                const container = document.getElementById('canvas-container');
-
-                if (!card || !container || !ballLayer) return;
-
-                if (activeFrame === 0) {
-                    container.style.display = 'none';
-                    ballLayer.style.display = 'flex'; 
-                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-                    card.style.transform = 'scale(1) translateY(0px)';
-                    container.style.width = '';
-                    container.style.left = '';
-                    container.style.transform = '';
-                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-                    return;
-                } 
-                
-                container.style.display = 'block'; 
-                ballLayer.style.display = 'none'; 
-                autoSize(); 
-
-                const cardScaleFactor = Math.min(activeFrame, 20); 
-                const scale = 1.0 - (cardScaleFactor * 0.04);
-                const yOffset = -(cardScaleFactor * 24);
-                card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-
-                if (scrubHint) {
-                    if (activeFrame >= 25 && activeFrame <= 50) {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Background Tilt Active`;
-                    } else {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
-                    }
-                }
-
-                const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
-
-                // ============================================================
-                // 🚀 1. TRAJECTORY LOGISTICS & SIZING CALCULATOR
-                // ============================================================
-                let trajectoryProgress;
-                let dynamicScale;
-
-                if (activeFrame <= 25) {
-                    const leg1Normalized = (activeFrame - 1) / 24; 
-                    trajectoryProgress = leg1Normalized * 0.33; 
-                    const shrinkEase = Math.pow(leg1Normalized, 0.4);
-                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
-                } 
-                else if (activeFrame > 25 && activeFrame <= 50) {
-                    trajectoryProgress = 0.33; 
+                    // --- STAGE 2: THE FREEZE HOLD (Frames 26-50) ---
+                    trajectoryProgress = 0.33; // Position coordinates frozen at apex
                     const leg2Normalized = (activeFrame - 25) / 25;
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.38, leg2Normalized);
                 } 
                 else {
+                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     dynamicScale = THREE.MathUtils.lerp(0.38, 0.15, leg3Normalized);
                 }
 
                 // ============================================================
-                // 🎥 2. CRASH-PROOF MOTOR FIRST: TILT LENS PRIOR TO BALL PLACEMENT
+                // 🎥 3. DYNAMIC CAM PAN ENGINE (ABSOLUTE ORIENTATION OVERWRITE)
                 // ============================================================
-                let currentCameraTilt = 0.18;
                 let tiltShiftOffset = 0.00;
 
                 if (activeFrame > 25 && activeFrame <= 50) {
                     const holdProgress = (activeFrame - 25) / 25;
-                    // TWEAK THIS: Increase 0.06 to force the background to slide further UP the screen
-                    tiltShiftOffset = 0.06 * holdProgress;
-                    currentCameraTilt = 0.18 - tiltShiftOffset;
+                    // TWEAK THIS: Increase 0.12 to force the table to slide even FURTHER up the screen!
+                    tiltShiftOffset = 0.12 * holdProgress;
                 } 
                 else if (activeFrame > 50) {
-                    tiltShiftOffset = 0.06;
-                    currentCameraTilt = 0.18 - tiltShiftOffset;
+                    tiltShiftOffset = 0.12;
                 }
 
-                // Modify camera rotation angle first
-                camera.rotation.x -= currentCameraTilt;
+                // Overwrite orientation absolutely to prevent compound feedback distortion loops
+                camera.rotation.x = BASELINE_CAM_TILT - tiltShiftOffset;
 
                 // ============================================================
-                // 🎯 3. SCREEN-SPACE GEOMETRY PARSER (BALL LOCK ENGINE)
+                // 🎯 4. VIEWPORT DEPTH DECOUPLER (BALL LOCK MOTOR)
                 // ============================================================
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
@@ -1774,15 +1698,14 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
 
-                // 🎯 COUNTER-OFFSET SHIFT MATH:
-                // If the camera tilts downward by an offset value, we mathematically adjust the 
-                // ball's vertical Y component to match that shift in world space perfectly.
-                // This keeps the ball locked dead center in screen coordinates!
+                // LENS COUNTER PAN CORRECTION:
+                // Tracks the forward direction vector of the camera eye array, forcing the 
+                // ball's position to lock dead-center relative to screen dimensions during the pan.
                 if (tiltShiftOffset > 0) {
-                    const distanceToCamera = positionVector.distanceTo(camera.position);
-                    // Calculates vertical adjustment needed based on tilt offset angle
-                    const verticalCorrection = Math.sin(tiltShiftOffset) * distanceToCamera;
-                    positionVector.y += verticalCorrection; 
+                    const targetDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+                    const baseDistance = new THREE.Vector3(0, TABLE_H + 0.45, 2.74 / 2).distanceTo(camera.position);
+                    
+                    positionVector.copy(camera.position).addScaledVector(targetDirection, baseDistance);
                 }
 
                 // Apply corrected positioning variables directly to the global active mesh canvas
