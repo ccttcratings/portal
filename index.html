@@ -1245,36 +1245,26 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // -------------------------------------------------------------
             
             // =========================================================================
-            // 🔴 BULLETPROOF 3D TUBE GEOMETRY GUIDE TRACK
+            // 🔴 CALIBRATED TRAJECTORY GUIDE LINE (VIEWPORT-ALIGNED SETUP)
             // =========================================================================
-            // Calibrated screen-space path markers (Top of view window to deep far table drop)
-            const tubeStart = new THREE.Vector3(0, TABLE_H + 1.25, -0.25);
-            const tubeEnd = new THREE.Vector3(0.15, TABLE_H - 0.15, (2.74 / 2) + 0.10);
+            // Start point shifted up/forward to match the top center viewport on Frame 2
+            const lineStart = new THREE.Vector3(0, TABLE_H + 1.25, -0.25);
 
-            // Compute distance and vector path directions natively in 3D space
-            const tubeDistance = tubeStart.distanceTo(tubeEnd);
-            const guideTubeGeo = new THREE.CylinderGeometry(0.006, 0.006, tubeDistance, 8);
-            const guideTubeMat = new THREE.MeshStandardMaterial({ 
+            // End point lowered down slightly below the far baseline for depth drop
+            const lineEnd = new THREE.Vector3(0.15, TABLE_H - 0.15, (2.74 / 2) + 0.10);
+
+            const guideLineGeo = new THREE.BufferGeometry().setFromPoints([lineStart, lineEnd]);
+            const guideLineMat = new THREE.LineBasicMaterial({ 
                 color: 0xff0000, 
-                roughness: 0.5,
-                emissive: 0xff0000,
-                emissiveIntensity: 0.5
+                linewidth: 3, 
+                depthTest: true
             });
 
-            const trajectoryGuideTube = new THREE.Mesh(guideTubeGeo, guideTubeMat);
-
-            // Position and rotate the solid 3D tube directly inline along the trajectory ray
-            trajectoryGuideTube.position.copy(tubeStart).add(tubeEnd).multiplyScalar(0.5);
+            const trajectoryGuideLine = new THREE.Line(guideLineGeo, guideLineMat);
+            scene.add(trajectoryGuideLine);
             
-            const directionVector = new THREE.Vector3().subVectors(tubeEnd, tubeStart).normalize();
-            const upVector = new THREE.Vector3(0, 1, 0);
-            trajectoryGuideTube.quaternion.setFromUnitVectors(upVector, directionVector);
-            
-            // Inject cleanly into the universe without crashing browser window assets
-            scene.add(trajectoryGuideTube);
             // -------------------------------------------------------------
 
-            
 
 // -------------------------------------------------------------------------------			
 // 2. Define the exact target landing anchor (dead center on the opposite table baseline)
