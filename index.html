@@ -1248,10 +1248,10 @@ ballButtonTexture.offset.set(0.0, 0.0);
 // =========================================================================
 // 1. Define the exact start anchor (top of the ball on Frame 2)
 // Since progress factor is 1/19 on Frame 2, the ball moves slightly away.
-const lineStart = new THREE.Vector3(0, TABLE_H + 0.65, 0.12);
+const lineStart = new THREE.Vector3(0, TABLE_H + 1.25, -0.25);
 
 // 2. Define the exact target landing anchor (dead center on the opposite table baseline)
-const lineEnd = new THREE.Vector3(0.15, TABLE_H, 2.74 / 2);
+const lineEnd = new THREE.Vector3(0.15, TABLE_H - 0.15, (2.74 / 2);
 
 // 3. Construct and append the straight red line mesh grid
 const guideLineGeo = new THREE.BufferGeometry().setFromPoints([lineStart, lineEnd]);
@@ -1264,6 +1264,8 @@ const guideLineMat = new THREE.LineBasicMaterial({
 
 const trajectoryGuideLine = new THREE.Line(guideLineGeo, guideLineMat);
 scene.add(trajectoryGuideLine);
+
+			//__________________________
 
             const logoCanvas = document.createElement('canvas');
             logoCanvas.width = 512;
