@@ -1630,7 +1630,7 @@ const curveControl = new THREE.Vector3(
 
                 if (scrubHint) {
                     if (activeFrame >= 25 && activeFrame <= 50) {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Cam Tilt Active`;
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Background Tilt Active`;
                     } else {
                         scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
                     }
@@ -1651,7 +1651,7 @@ const curveControl = new THREE.Vector3(
                     dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
                 } 
                 else if (activeFrame > 25 && activeFrame <= 50) {
-                    trajectoryProgress = 0.33; // Position frozen at apex
+                    trajectoryProgress = 0.33; // Position coordinates frozen at apex
                     const leg2Normalized = (activeFrame - 25) / 25;
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.38, leg2Normalized);
                 } 
@@ -1661,7 +1661,24 @@ const curveControl = new THREE.Vector3(
                     dynamicScale = THREE.MathUtils.lerp(0.38, 0.15, leg3Normalized);
                 }
 
-                // Apply trajectory tracking vector coordinates to ball center axis
+                // ============================================================
+                // 🎥 DYNAMIC CAM TILT CHASSIS PARSER (REVERSED FOR UPWARD MOVE)
+                // ============================================================
+                let currentCameraTilt = 0.18;
+                let tiltShiftOffset = 0.00;
+
+                if (activeFrame > 25 && activeFrame <= 50) {
+                    const holdProgress = (activeFrame - 25) / 25;
+                    // TWEAK THIS: Increase 0.06 to force the background to slide further UP the screen
+                    tiltShiftOffset = 0.06 * holdProgress;
+                    currentCameraTilt = 0.18 - tiltShiftOffset;
+                } 
+                else if (activeFrame > 50) {
+                    tiltShiftOffset = 0.06;
+                    currentCameraTilt = 0.18 - tiltShiftOffset;
+                }
+
+                // Extract trajectory tracking point from your arced curve
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
                 ballServeCurve.getPointAt(motionProgress, positionVector);
@@ -1669,30 +1686,25 @@ const curveControl = new THREE.Vector3(
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
                 }
+
+                // 🎯 THE CRITICAL FIXED OVERRIDE: 3D BALL COUNTER-ROTATION CORRECTION
+                // Rotates the ball's coordinates around the camera's local X-axis 
+                // to completely cancel out the lens shift, locking the ball rock-solid on screen!
+                if (tiltShiftOffset > 0) {
+                    const localCamXAxis = new THREE.Vector3(1, 0, 0);
+                    positionVector.sub(camera.position);
+                    positionVector.applyAxisAngle(localCamXAxis, -tiltShiftOffset);
+                    positionVector.add(camera.position);
+                }
+
+                // Inject calibrated coordinates and scales safely onto mesh properties
                 pingPongBallMesh.position.copy(positionVector);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
-
-                // ============================================================
-                // 🎥 DYNAMIC CAM TILT MOTOR: INTERCEPT PASS FOR STAGE 2
-                // ============================================================
-                let currentCameraTilt = 0.18;
-
-                if (activeFrame <= 25) {
-                    currentCameraTilt = 0.18;
-                } 
-                else if (activeFrame > 25 && activeFrame <= 50) {
-                    const holdProgress = (activeFrame - 25) / 25;
-                    // TWEAK THIS: Increase 0.08 to force the background to sink FURTHER down the screen
-                    currentCameraTilt = 0.18 + (0.08 * holdProgress);
-                } 
-                else {
-                    currentCameraTilt = 0.18 + 0.08;
-                }
 
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
-                // Apply the dynamically generated camera pitch rotation pass
+                // Apply the dynamically generated pitch rotation pass to the active camera lens
                 camera.rotation.x -= currentCameraTilt;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
