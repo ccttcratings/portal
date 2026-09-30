@@ -1639,14 +1639,18 @@ ballButtonTexture.offset.set(0.0, 0.0);
 			render();
 		}
 
-            const copyPreviewBtn = document.getElementById('copy-preview-btn');
-            if (copyPreviewBtn) {
-                copyPreviewBtn.addEventListener('click', () => {
+            // =========================================================================
+            // 🎯 FIXED ENGINE LINK: Maps to your newly renamed copy button ID seamlessly
+            // =========================================================================
+            const copyPublishedBtn = document.getElementById('copy-published-btn');
+            if (copyPublishedBtn) {
+                copyPublishedBtn.addEventListener('click', () => {
                     applyFrame(1);
                     if (scrubHint) scrubHint.style.display = 'block';
                 });
             }
 
+            // Mousewheel Scrolling Event Intercept Loops
             window.addEventListener('wheel', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
@@ -1658,6 +1662,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
             }, { passive: false });
 
+            // Keyboard Arrow Key Scrubber Listeners
             window.addEventListener('keydown', (e) => {
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
@@ -1684,6 +1689,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             window.addEventListener('touchend', (e) => {
                 if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
+                    // FIXED: Restored explicit array coordinate referencing to block mobile halts
                     let dy = e.changedTouches[0].clientY - scrubStartY;
                     if (dy > 30) applyFrame(activeFrame - 1); // Swipe down = reverse
                     else if (dy < -30) applyFrame(activeFrame + 1); // Swipe up = forward
@@ -1695,181 +1701,178 @@ ballButtonTexture.offset.set(0.0, 0.0);
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
-    (function(){
-    var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
-    var friction = 0.999;
-    var ptr = document.getElementById('ptr');
-    var ptrSvg = document.getElementById('ptr-svg');
-    var g1 = document.querySelector('#g1');
-    const ingunSound = new Audio('./IngunChant.m4a'); 
+        (function(){
+            var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
+            var friction = 0.999;
+            var ptr = document.getElementById('ptr');
+            var ptrSvg = document.getElementById('ptr-svg');
+            var g1 = document.querySelector('#g1');
+            const ingunSound = new Audio('./IngunChant.m4a'); 
 
-    function startPull(clientY) {
-        if (window.scrollY > 10 || drag.animating) return;
-        drag.active = true;
-        drag.startY = clientY;
-        drag.startScroll = window.scrollY;
-        drag.history = [{ y: clientY, t: Date.now() }];
-        drag.ptrActive = false;
+            function startPull(clientY) {
+                if (window.scrollY > 10 || drag.animating) return;
+                drag.active = true;
+                drag.startY = clientY;
+                drag.startScroll = window.scrollY;
+                drag.history = [{ y: clientY, t: Date.now() }];
+                drag.ptrActive = false;
 
-        if (ptr) {
-            ptr.classList.remove("ptr-fixed");
-            ptr.className = '';
-            ptr.style.marginTop = '-68px';
-        }
-        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-        if (g1) g1.style.transform = 'rotate(0deg)';
-    }
-
-    function movePull(clientY) {
-        if (!drag.active) return;
-        var dy = drag.startY - clientY;
-        
-        if (window.scrollY <= 10 && dy < 0 && !drag.animating) {
-            drag.ptrActive = true;
-            if (ptr) ptr.classList.add("ptr-fixed");
-
-            var dist = Math.min(-dy, 90);
-            var rawDist = -dy;
-            var pct = Math.min(dist / 70, 1);
-
-            if (ptr) {
-                ptr.style.marginTop = (dist - 55) + 'px';
-                ptr.style.opacity = pct;
-                ptr.classList.add('swiping');
-            }
-            if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-
-            var angle = rawDist * 1.25;
-            if (g1) g1.style.transform = 'rotate(' + angle + 'deg)';
-        } else {
-            drag.ptrActive = false;
-            if (ptr) {
-                ptr.classList.remove("ptr-fixed");
-                ptr.classList.remove('swiping');
-                ptr.className = '';
-                ptr.style.marginTop = '-68px';
-                ptr.style.opacity = '0';
-            }
-            if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-            if (g1) g1.style.transform = 'rotate(0deg)';
-        }
-
-        var now = Date.now();
-        drag.history.push({ y: clientY, t: now });
-        if (drag.history.length > 8) drag.history.shift();
-    }
-
-    function endPull() {
-        if (!drag.active) return;
-        drag.active = false;
-
-        if (ptr) ptr.classList.remove("ptr-fixed");
-
-        if (drag.ptrActive) {
-            if (ptr && parseFloat(ptr.style.opacity) >= 1) {
-                if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-                if (ptr) ptr.classList.add('spin');
-                if (g1) g1.style.transform = ''; 
-
-                // --- AUDIO INTERFACE ---
-                try {
-                    ingunSound.play().catch(err => console.log("Audio deferred: ", err));
-                } catch(audioError) {
-                    console.log("Audio skipped: ", audioError);
-                }
-
-                // 1750ms timeout to allow the full audio chant to complete prior to reloading
-                setTimeout(function(){
-                    location.reload(true);
-                }, 2875);
-
-            } else {
                 if (ptr) {
-                    ptr.style.marginTop = '-68px';
-                    ptr.style.opacity = '0';
+                    ptr.classList.remove("ptr-fixed");
                     ptr.className = '';
+                    ptr.style.marginTop = '-68px';
                 }
                 if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
                 if (g1) g1.style.transform = 'rotate(0deg)';
             }
-            return;
-        }
 
-        var h = drag.history;
-        if (h.length < 2) return;
-        var last = h[h.length - 1], first = h[0];
-        var dt = last.t - first.t;
-        if (dt <= 0) return;
-        var velocity = (first.y - last.y) / dt;
-        if (Math.abs(velocity) < 0.3) return;
+            function movePull(clientY) {
+                if (!drag.active) return;
+                var dy = drag.startY - clientY;
+                
+                if (window.scrollY <= 10 && dy < 0 && !drag.animating) {
+                    drag.ptrActive = true;
+                    if (ptr) ptr.classList.add("ptr-fixed");
 
-        startScrollMomentum(velocity);
-    }
+                    var dist = Math.min(-dy, 90);
+                    var rawDist = -dy;
+                    var pct = Math.min(dist / 70, 1);
 
-    function startScrollMomentum(v){
-        drag.animating = true;
-        var lastTime = Date.now();
-        var vy = v;
+                    if (ptr) {
+                        ptr.style.marginTop = (dist - 55) + 'px';
+                        ptr.style.opacity = pct;
+                        ptr.classList.add('swiping');
+                    }
+                    if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
 
-        function step(){
-            if (!drag.animating) return;
-            var now = Date.now();
-            var elapsed = now - lastTime;
-            lastTime = now;
+                    var angle = rawDist * 1.25;
+                    if (g1) g1.style.transform = 'rotate(' + angle + 'deg)';
+                } else {
+                    drag.ptrActive=false;
+                    if (ptr) {
+                        ptr.classList.remove("ptr-fixed");
+                        ptr.classList.remove('swiping');
+                        ptr.className = '';
+                        ptr.style.marginTop = '-68px';
+                        ptr.style.opacity = '0';
+                    }
+                    if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                    if (g1) g1.style.transform = 'rotate(0deg)';
+                }
 
-            vy *= Math.pow(friction, elapsed / 16);
-            if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
-
-            var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-            var scroll = window.scrollY;
-            var next = scroll + vy * elapsed;
-
-            if (next < 0) {
-                next = 0;
-                drag.animating = false;
-                window.scrollTo(0, next);
-                return;
-            } else if (next > maxScroll) {
-                next = maxScroll;
-                drag.animating = false;
-                window.scrollTo(0, next);
-                return;
+                var now = Date.now();
+                drag.history.push({ y: clientY, t: now });
+                if (drag.history.length > 8) drag.history.shift();
             }
 
-            window.scrollTo(0, next);
-            requestAnimationFrame(step);
-        }
+            function endPull() {
+                if (!drag.active) return;
+                drag.active = false;
 
-        requestAnimationFrame(step);
-    }
+                if (ptr) ptr.classList.remove("ptr-fixed");
 
-    // Touch & Mouse Event Bindings
-    document.addEventListener('touchstart', function(e){
-        if(e.touches.length !== 1) return;
-        startPull(e.touches[0].clientY);
-    }, {passive: true});
+                if (drag.ptrActive) {
+                    if (ptr && parseFloat(ptr.style.opacity) >= 1) {
+                        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                        if (ptr) ptr.classList.add('spin');
+                        if (g1) g1.style.transform = ''; 
 
-    document.addEventListener('touchmove', function(e){
-        if(!drag.active || e.touches.length !== 1) return;
-        movePull(e.touches[0].clientY);
-    }, {passive: true});
+                        try {
+                            ingunSound.play().catch(err => console.log("Audio deferred: ", err));
+                        } catch(audioError) {
+                            console.log("Audio skipped: ", audioError);
+                        }
 
-    document.addEventListener('touchend', function(){
-        endPull();
-    }, {passive: true});
+                        setTimeout(function(){
+                            location.reload(true);
+                        }, 2875);
 
-    document.addEventListener('mousedown', function(e){
-        startPull(e.clientY);
-    });
+                    } else {
+                        if (ptr) {
+                            ptr.style.marginTop = '-68px';
+                            ptr.style.opacity = '0';
+                            ptr.className = '';
+                        }
+                        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                        if (g1) g1.style.transform = 'rotate(0deg)';
+                    }
+                    return;
+                }
 
-    document.addEventListener('mousemove', function(e){
-        if(!drag.active) return;
-        movePull(e.clientY);
-    });
+                var h = drag.history;
+                if (h.length < 2) return;
+                var last = h[h.length - 1], first = h[0];
+                var dt = last.t - first.t;
+                if (dt <= 0) return;
+                var velocity = (first.y - last.y) / dt;
+                if (Math.abs(velocity) < 0.3) return;
 
-    document.addEventListener('mouseup', function(){
-        endPull();
-    });
+                startScrollMomentum(velocity);
+            }
+
+            function startScrollMomentum(v){
+                drag.animating = true;
+                var lastTime = Date.now();
+                var vy = v;
+
+                function step(){
+                    if (!drag.animating) return;
+                    var now = Date.now();
+                    var elapsed = now - lastTime;
+                    lastTime = now;
+
+                    vy *= Math.pow(friction, elapsed / 16);
+                    if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
+
+                    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                    var scroll = window.scrollY;
+                    var next = scroll + vy * elapsed;
+
+                    if (next < 0) {
+                        next = 0;
+                        drag.animating = false;
+                        window.scrollTo(0, next);
+                        return;
+                    } else if (next > maxScroll) {
+                        next = maxScroll;
+                        drag.animating = false;
+                        window.scrollTo(0, next);
+                        return;
+                    }
+
+                    window.scrollTo(0, next);
+                    requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+
+            // Touch & Mouse Event Bindings
+            document.addEventListener('touchstart', function(e){
+                if(e.touches.length !== 1) return;
+                startPull(e.touches[0].clientY);
+            }, {passive: true});
+
+            document.addEventListener('touchmove', function(e){
+                if(!drag.active || e.touches.length !== 1) return;
+                movePull(e.touches[0].clientY);
+            }, {passive: true});
+
+            document.addEventListener('touchend', function(){
+                endPull();
+            }, {passive: true});
+
+            document.addEventListener('mousedown', function(e){
+                startPull(e.clientY);
+            });
+
+            document.addEventListener('mousemove', function(e){
+                if(!drag.active) return;
+                movePull(e.clientY);
+            });
+
+            document.addEventListener('mouseup', function(){
+                endPull();
+            });
 
 })();
     </script>
