@@ -1731,34 +1731,62 @@ ballButtonTexture.offset.set(0.0, 0.0);
             });
 
             // =========================================================================
-            // 🛠️ ACTIVE MANUAL DEBUG OVERRIDE TRIGGER BINDINGS (FAILURE-SAFE)
+            // 🛠️ ACTIVE MANUAL DEBUG OVERRIDE TRIGGER BINDINGS
             // =========================================================================
             const copyPublishedBtn = document.getElementById('copy-published-btn');
             const copyPreviewBtn   = document.getElementById('copy-preview-btn');
 
-            // 🏓 BUTTON 1 SAFETY CORRIDOR
             if (copyPublishedBtn) {
                 copyPublishedBtn.addEventListener('click', (e) => {
                     e.preventDefault(); 
-                    console.log("Published Button Intercepted Successfully!");
                     applyFrame(1);
                     if (scrubHint) scrubHint.style.display = 'block';
                 });
-            } else {
-                console.warn("Warning: '#copy-published-btn' was not found in your HTML markup.");
             }
 
-            // 🏓 BUTTON 2 SAFETY CORRIDOR (Blocks null errors from crashing the page!)
             if (copyPreviewBtn) {
                 copyPreviewBtn.addEventListener('click', (e) => {
                     e.preventDefault(); 
-                    console.log("Preview Button Intercepted Successfully!");
                     applyFrame(1);
                     if (scrubHint) scrubHint.style.display = 'block';
                 });
-            } else {
-                console.warn("Warning: '#copy-preview-btn' was not found. Script crash prevented safely.");
             }
+
+            // =========================================================================
+            // 🎬 DISABLED BUT PRESERVED: DUAL-BUTTON AUTOMATED PLAYBACK ENGINE
+            // =========================================================================
+            // All lines below are commented out individually to guarantee zero syntax breaks.
+            //
+            // function initiateServePlayback(targetURL) {
+            //     if (navigator.clipboard && navigator.clipboard.writeText) {
+            //         navigator.clipboard.writeText(targetURL);
+            //     }
+            //     applyFrame(1);
+            //     if (scrubHint) {
+            //         scrubHint.style.display = 'block';
+            //         scrubHint.textContent = "URL Copied! Playing Serve...";
+            //     }
+            //     isAutoAnimating = true;
+            //     let currentAnimFrame = 1;
+            //     const maxPlaybackFrame = 94; 
+            //     const frameSpeedMs = 16;     
+            //     let lastFrameTime = Date.now();
+            //     function playTimelineStep() {
+            //         const now = Date.now();
+            //         if (now - lastFrameTime >= frameSpeedMs) {
+            //             currentAnimFrame++;
+            //             applyFrame(currentAnimFrame);
+            //             lastFrameTime = now;
+            //         }
+            //         if (currentAnimFrame < maxPlaybackFrame) {
+            //             requestAnimationFrame(playTimelineStep);
+            //         } else {
+            //             if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
+            //             setTimeout(() => { window.location.href = targetURL; }, 2000); 
+            //         }
+            //     }
+            //     requestAnimationFrame(playTimelineStep);
+            // }
 
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
