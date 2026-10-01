@@ -1670,13 +1670,18 @@ const curveControl = new THREE.Vector3(
                     // instantly over frames 26-32 instead of scaling down uniformly!
                     const acceleratedShrinkEase = Math.pow(leg2Normalized, 0.4);
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.14, acceleratedShrinkEase);
-                } 
+					
                 else {
                     // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
-                    trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     
-                    // Stabilizes out from its tight micro-apex size down to final layout bounds
+                    // 🎯 RESPONSIVE CROSS-OVER ALIGNMENT FIXED:
+                    // If window width is larger than height (desktop), apply a perspective 
+                    // compression weight factor to accelerate the depth path forward onto the table!
+                    const isDesktop = window.innerWidth > window.innerHeight;
+                    const responsivePathCurve = isDesktop ? Math.pow(leg3Normalized, 0.72) : leg3Normalized;
+
+                    trajectoryProgress = 0.33 + (responsivePathCurve * (1.0 - 0.33)); 
                     dynamicScale = THREE.MathUtils.lerp(0.14, 0.10, leg3Normalized);
                 }
 
