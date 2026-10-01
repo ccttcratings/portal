@@ -1701,91 +1701,6 @@ ballButtonTexture.offset.set(0.0, 0.0);
             }
 			
             // =========================================================================
-            // 🎬 UNIFIED AUTOMATED TIMELINE PLAYBACK ENGINE (DUAL-BUTTON ALLOCATION)
-            // =========================================================================
-            // 1. Gather both link hooks from your layout markup sheets
-            const copyPublishedBtn = document.getElementById('copy-published-btn');
-            const copyPreviewBtn   = document.getElementById('copy-preview-btn');
-
-            function initiateServePlayback(targetURL) {
-                // A. ORIGINAL CLIPBOARD FUNCTION: Copies the matching URL string immediately on click
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(targetURL)
-                        .then(() => console.log("Target link written to system clipboard!"))
-                        .catch(err => console.error("System clipboard failure: ", err));
-                }
-
-                // B. Activate the 3D canvas structural overlays
-                applyFrame(1);
-                if (scrubHint) {
-                    scrubHint.style.display = 'block';
-                    scrubHint.textContent = "URL Copied! Playing Serve...";
-                }
-                
-                // C. Turn on the animation flag to lock manual input gates
-                isAutoAnimating = true;
-                
-                let currentAnimFrame = 1;
-                const maxPlaybackFrame = 94; // Your target clipped frame ceiling limit!
-                const frameSpeedMs = 16;     // Controls speed (16ms = ~60 frames per second)
-                let lastFrameTime = Date.now();
-
-                function playTimelineStep() {
-                    const now = Date.now();
-                    if (now - lastFrameTime >= frameSpeedMs) {
-                        currentAnimFrame++;
-                        applyFrame(currentAnimFrame);
-                        lastFrameTime = now;
-                    }
-
-                    // Continue running the engine until the ball hits its terminal mark
-                    if (currentAnimFrame < maxPlaybackFrame) {
-                        requestAnimationFrame(playTimelineStep);
-                    } else {
-                        if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
-                        
-                        // D. DYNAMIC PORTAL REDIRECT MOTOR
-                        // Holds the ball frozen on Frame 94 for 2 seconds, then launches forward
-                        setTimeout(() => {
-                            window.location.href = targetURL;
-                        }, 2000); 
-                    }
-                }
-
-                // Kickstart the automated server cycle loop
-                requestAnimationFrame(playTimelineStep);
-            }
-
-            // 🏓 BIND BUTTON 1: Published Mode URL Trigger
-            if (copyPublishedBtn) {
-                copyPublishedBtn.addEventListener('click', () => {
-                    // Replace with your real Published website link string
-                    const publishedURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false'; 
-                    initiateServePlayback(publishedURL);
-                });
-            }
-
-            // 🏓 BIND BUTTON 2: Preview Mode URL Trigger
-            if (copyPreviewBtn) {
-                copyPreviewBtn.addEventListener('click', () => {
-                    // Replace with your real Preview website link string
-                    const previewURL = 'https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview'; 
-                    initiateServePlayback(previewURL);
-                });
-            }
-			
-            // =========================================================================
-            // 🎯 FIXED MANUAL DEBUG INITIALIZER: AUTOMATICALLY PRIMES TRACKING ON LOAD
-            // =========================================================================
-            // Automatically forces the canvas onto Frame 1 and reveals the scroller block
-            // so your mousewheel intercepts can work instantly on page refresh!
-            setTimeout(() => {
-                applyFrame(1);
-                const debugHint = document.getElementById('scrub-hint');
-                if (debugHint) debugHint.style.display = 'block';
-            }, 200);
-
-            // =========================================================================
             // 🛑 MANUAL FRAME SCROLLER RE-ACTIVATED
             // =========================================================================
             let isAutoAnimating = false;
@@ -1815,68 +1730,27 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
             });
 
-
-            /* =========================================================================
-               🎬 DISABLED BUT PRESERVED: DUAL-BUTTON AUTOMATED PLAYBACK ENGINE
-               =========================================================================
-               This complete engine structure is commented out safely so it does not interfere 
-               with manual scrubbing, but remains fully intact for future deployment.
-
+            // =========================================================================
+            // 🛠️ ACTIVE MANUAL DEBUG OVERRIDE TRIGGER BINDINGS
+            // =========================================================================
+            // These listeners catch the button click events, open the debug display overlays, 
+            // and activate your scroll wheel seamlessly without firing the animation motor!
             const copyPublishedBtn = document.getElementById('copy-published-btn');
             const copyPreviewBtn   = document.getElementById('copy-preview-btn');
 
-            function initiateServePlayback(targetURL) {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(targetURL)
-                        .then(() => console.log("Target link written to system clipboard!"))
-                        .catch(err => console.error("System clipboard failure: ", err));
-                }
-
-                applyFrame(1);
-                if (scrubHint) {
-                    scrubHint.style.display = 'block';
-                    scrubHint.textContent = "URL Copied! Playing Serve...";
-                }
-                
-                isAutoAnimating = true;
-                
-                let currentAnimFrame = 1;
-                const maxPlaybackFrame = 94; 
-                const frameSpeedMs = 16;     
-                let lastFrameTime = Date.now();
-
-                function playTimelineStep() {
-                    const now = Date.now();
-                    if (now - lastFrameTime >= frameSpeedMs) {
-                        currentAnimFrame++;
-                        applyFrame(currentAnimFrame);
-                        lastFrameTime = now;
-                    }
-
-                    if (currentAnimFrame < maxPlaybackFrame) {
-                        requestAnimationFrame(playTimelineStep);
-                    } else {
-                        if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
-                        setTimeout(() => {
-                            window.location.href = targetURL;
-                        }, 2000); 
-                    }
-                }
-
-                requestAnimationFrame(playTimelineStep);
-            }
-
             if (copyPublishedBtn) {
-                copyPublishedBtn.addEventListener('click', () => {
-                    const publishedURL = 'https://your-published-url.com'; 
-                    initiateServePlayback(publishedURL);
+                copyPublishedBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Block default button actions or link jumps
+                    applyFrame(1);
+                    if (scrubHint) scrubHint.style.display = 'block';
                 });
             }
 
             if (copyPreviewBtn) {
-                copyPreviewBtn.addEventListener('click', () => {
-                    const previewURL = 'https://your-preview-url.com'; 
-                    initiateServePlayback(previewURL);
+                copyPreviewBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); // Block default button actions or link jumps
+                    applyFrame(1);
+                    if (scrubHint) scrubHint.style.display = 'block';
                 });
             }
 
