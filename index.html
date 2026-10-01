@@ -1593,9 +1593,12 @@ const curveControl = new THREE.Vector3(
             let activeFrame = 0;
             window.activeFrame = 0; 
 
+            // =========================================================================
+            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Trajectory Curve Path Engine)
+            // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
-            // 🎯 NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
+            // NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
             const BASELINE_CAM_TILT = camera.rotation.x;
 
             function applyFrame(frameNum) {
@@ -1645,7 +1648,7 @@ const curveControl = new THREE.Vector3(
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 2. STAGE-ROUTED GEOMETRY & SIZING ENGINE
+                // 🚀 1. STAGE-ROUTED GEOMETRY & SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
@@ -1671,7 +1674,7 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // ============================================================
-                // 🎥 3. DYNAMIC CAM PAN ENGINE (ABSOLUTE ORIENTATION OVERWRITE)
+                // 🎥 2. DYNAMIC CAM PAN ENGINE (ABSOLUTE ORIENTATION OVERWRITE)
                 // ============================================================
                 let tiltShiftOffset = 0.00;
 
@@ -1688,7 +1691,7 @@ const curveControl = new THREE.Vector3(
                 camera.rotation.x = BASELINE_CAM_TILT - tiltShiftOffset;
 
                 // ============================================================
-                // 🎯 4. VIEWPORT DEPTH DECOUPLER (BALL LOCK MOTOR)
+                // 🎯 3. VIEWPORT POSITIONING AND SEAMLESS TRACKING LOCK
                 // ============================================================
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
@@ -1698,14 +1701,31 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
 
-                // LENS COUNTER PAN CORRECTION:
-                // Tracks the forward direction vector of the camera eye array, forcing the 
-                // ball's position to lock dead-center relative to screen dimensions during the pan.
-                if (tiltShiftOffset > 0) {
+                // A. CALCULATE TRUE APEX SPATIAL POSITION (Frame 25 Baseline)
+                const apexProgress = Math.pow(0.33, 1.20);
+                const trueApexPosition = new THREE.Vector3();
+                ballServeCurve.getPointAt(apexProgress, trueApexPosition);
+
+                // B. SEAMLESS FREEZE ZONE COUNTER PASSTHROUGH (Frames 26-50)
+                if (activeFrame > 25 && activeFrame <= 50) {
+                    // Cast forward ray along the moving camera's optical centerline axis
                     const targetDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-                    const baseDistance = new THREE.Vector3(0, TABLE_H + 0.45, 2.74 / 2).distanceTo(camera.position);
                     
-                    positionVector.copy(camera.position).addScaledVector(targetDirection, baseDistance);
+                    // Pin the distance measurement to the exact spatial coordinate of Frame 25 apex!
+                    const exactApexDistance = trueApexPosition.distanceTo(camera.position);
+                    
+                    // Overwrite the positionVector to maintain a 100% stable screen location with zero frame jump
+                    positionVector.copy(camera.position).addScaledVector(targetDirection, exactApexDistance);
+                }
+                // C. SECOND-LEG TRAJECTORY PATH ALIGNMENT FOR TRANSITION (Frames 51-107)
+                else if (activeFrame > 50) {
+                    // Because the camera is locked into its final tilt, the physical room elements 
+                    // are shifted. We apply a matching spatial transformation tracking vector 
+                    // to Leg 3 so the ball tracks beautifully onto your 5mm baseline marker.
+                    const localCamXAxis = new THREE.Vector3(1, 0, 0);
+                    positionVector.sub(camera.position);
+                    positionVector.applyAxisAngle(localCamXAxis, -tiltShiftOffset);
+                    positionVector.add(camera.position);
                 }
 
                 // Apply corrected positioning variables directly to the global active mesh canvas
@@ -1724,7 +1744,6 @@ const curveControl = new THREE.Vector3(
 
                 render();
             }
-
             // =========================================================================
             // 🎯 FIXED ENGINE LINK: Maps to your newly renamed copy button ID seamlessly
             // =========================================================================
