@@ -1598,21 +1598,11 @@ const curveControl = new THREE.Vector3(
             // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
-            // =========================================================================
-            // 🚀 STABLE CAMERA RIG CAPTURE
-            // =========================================================================
+            // NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
             const BASELINE_CAM_TILT = camera.rotation.x;
 
-            // TRAJECTORY HIGWAY HEADERS (RE-BALANCED TO PREVENT LOW LEG-3 DIVES)
-            const curveStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-            
-            // 🎯 FIXED LANDING HEIGHT: Shifted Y from -0.28 up to -0.08 so it doesn't go so low!
-            const curveEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
-            
-            const curveControl = new THREE.Vector3(-0.05, TABLE_H + 1.25, 2.74 / 2);
-            const ballServeCurve = new THREE.QuadraticBezierCurve3(curveStart, curveControl, curveEnd);
-
             function applyFrame(frameNum) {
+                // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
                 const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
@@ -1638,6 +1628,7 @@ const curveControl = new THREE.Vector3(
                 container.style.display = 'block'; 
                 ballLayer.style.display = 'none'; 
                 
+                // Reset baseline camera matrices before updating layout transformations
                 camera.rotation.x = BASELINE_CAM_TILT;
                 autoSize(); 
 
@@ -1657,7 +1648,7 @@ const curveControl = new THREE.Vector3(
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
+                // 🚀 1. STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
@@ -1674,35 +1665,42 @@ const curveControl = new THREE.Vector3(
                     trajectoryProgress = 0.33; 
                     const leg2Normalized = (activeFrame - 25) / 25;
                     
-                    // 🎯 CALIBRATION CRUNCH: Shrinks aggressively from 0.45 down to 0.22!
-                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.22, leg2Normalized);
+                    // 🎯 CALIBRATION CRUNCH: Shrinks aggressively from 0.45 down to a tiny 0.18!
+                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.18, leg2Normalized);
                 } 
                 else {
                     // --- STAGE 3: THE HIGH-DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     
-                    // Picks up perfectly at 0.22 and settles gently down to 0.15 landing size
-                    dynamicScale = THREE.MathUtils.lerp(0.22, 0.15, leg3Normalized);
+                    // Picks up perfectly at 0.18 and settles gently down to 0.12 landing size
+                    dynamicScale = THREE.MathUtils.lerp(0.18, 0.12, leg3Normalized);
                 }
 
                 // ============================================================
-                // 🎯 SCREEN-SPACE GEOMETRY PARSER (BALL LOCK ENGINE)
+                // 🎯 2. DYNAMIC PATH CALCULATION HEADERS
                 // ============================================================
+                // Recalculated dynamically inside the loop to avoid external variable name collisions
+                const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // High clearance landing
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 1.25, 2.74 / 2);
+                const activeCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
+
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
-                ballServeCurve.getPointAt(motionProgress, positionVector);
+                activeCurveEngine.getPointAt(motionProgress, positionVector);
                 
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
                 }
 
+                // Capture exact static Frame 25 coordinate marker
                 const apexProgress = Math.pow(0.33, 1.20);
                 const trueApexPosition = new THREE.Vector3();
-                ballServeCurve.getPointAt(apexProgress, trueApexPosition);
+                activeCurveEngine.getPointAt(apexProgress, trueApexPosition);
 
                 // ============================================================
-                // 🎥 CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
+                // 🎥 3. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
                 // ============================================================
                 let tiltShiftOffset = 0.00;
 
@@ -1731,7 +1729,7 @@ const curveControl = new THREE.Vector3(
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
-                // Lock camera orientation securely at the bottom
+                // Lock camera orientation securely at the absolute bottom
                 camera.rotation.x = BASELINE_CAM_TILT + tiltShiftOffset;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
