@@ -1687,7 +1687,7 @@ const curveControl = new THREE.Vector3(
                 // 🎯 THE SURGICAL CLIPPING MOTOR:
                 // Caps progress at 0.88 (88% down your perfect line). 
                 // To cut off MORE of the line, decrease this number (e.g., 0.80).
-                const clippedProgress = Math.min(0.88, motionProgress);
+                const clippedProgress = Math.min(0.75, motionProgress);
                 
                 const positionVector = new THREE.Vector3();
                 innerCurveEngine.getPointAt(clippedProgress, positionVector);
