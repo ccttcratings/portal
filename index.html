@@ -1701,44 +1701,13 @@ ballButtonTexture.offset.set(0.0, 0.0);
             }
 			
             // =========================================================================
-            // 🎬 AUTOMATED TIMELINE PLAYBACK ENGINE (STEPS 2 & 3)
+            // 🎯 FIXED ENGINE LINK: Maps to your newly renamed copy button ID seamlessly
             // =========================================================================
             const copyPublishedBtn = document.getElementById('copy-published-btn');
-            
             if (copyPublishedBtn) {
                 copyPublishedBtn.addEventListener('click', () => {
-                    // 1. Activate the structural overlays
                     applyFrame(1);
                     if (scrubHint) scrubHint.style.display = 'block';
-                    
-                    // 2. Turn on the animation flag to lock manual input gates
-                    isAutoAnimating = true;
-                    
-                    let currentAnimFrame = 1;
-                    const maxPlaybackFrame = 94; // Your target clipped frame ceiling limit!
-                    const frameSpeedMs = 16;     // Controls speed (16ms = ~60 frames per second)
-                    let lastFrameTime = Date.now();
-
-                    function playTimelineStep() {
-                        const now = Date.now();
-                        if (now - lastFrameTime >= frameSpeedMs) {
-                            currentAnimFrame++;
-                            applyFrame(currentAnimFrame);
-                            lastFrameTime = now;
-                        }
-
-                        // Continue running the engine until the ball hits its terminal mark
-                        if (currentAnimFrame < maxPlaybackFrame) {
-                            requestAnimationFrame(playTimelineStep);
-                        } else {
-                            // Optional: Release the lock if you want scroll active at the very end
-                            // isAutoAnimating = false; 
-                            if (scrubHint) scrubHint.textContent = "Playback Complete.";
-                        }
-                    }
-
-                    // Kickstart the automated server cycle loop
-                    requestAnimationFrame(playTimelineStep);
                 });
             }
 
