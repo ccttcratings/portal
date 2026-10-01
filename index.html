@@ -535,109 +535,12 @@
             });
         }
 
-        // =========================================================================
-        // 🎛️ THE MASTER SYSTEM SWITCH (THE ONLY LINE YOU EVER NEED TO EDIT!)
-        // =========================================================================
-        // Set to true for automated production play. Set to false for manual frame scroller debugging!
-        const USE_AUTOMATION = true; 
-
-        // Internal runtime block flag (leave this as is)
-        let isAutoAnimating = false;
-
-        // =========================================================================
-        // 🛑 SYNCHRONIZED INTERCEPT LISTENERS (SELF-MANAGING VIA MASTER SWITCH)
-        // =========================================================================
-        // Mousewheel Scrolling Event Intercept Loops
-        window.addEventListener('wheel', (e) => {
-            if (USE_AUTOMATION || isAutoAnimating) return; // Unlocked only when master switch is FALSE
-            if (scrubHint && scrubHint.style.display === 'block') {
-                e.preventDefault();
-                if (e.deltaY > 0) applyFrame(activeFrame + 1);
-                else applyFrame(activeFrame - 1);
-            }
-        }, { passive: false });
-
-        // Keyboard Arrow Key Scrubber Listeners
-        window.addEventListener('keydown', (e) => {
-            if (USE_AUTOMATION || isAutoAnimating) return; // Unlocked only when master switch is FALSE
-            if (scrubHint && scrubHint.style.display === 'block') {
-                if (e.code === 'ArrowDown' || e.code === 'ArrowRight') applyFrame(activeFrame + 1);
-                else if (e.code === 'ArrowUp' || e.code === 'ArrowLeft') applyFrame(activeFrame - 1);
-            }
-        });
-
-        // =========================================================================
-        // 🎬 UNIFIED MULTI-ROUTING CLICK ENGINE
-        // =========================================================================
-        function executeDynamicPortalPipeline(btnElement, fallbackUrlString, isPublishedFlag) {
-            // 1. Run your native text-copying and style animation script safely
-            if (typeof copyUrl === 'function') {
-                copyUrl(btnElement, fallbackUrlString, isPublishedFlag);
-            } else if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(fallbackUrlString);
-            }
-
-            // 2. Snap the 3D viewport canvas directly into Frame 1
-            applyFrame(1);
-            if (scrubHint) {
-                scrubHint.style.display = 'block';
-                scrubHint.textContent = USE_AUTOMATION ? "URL Copied! Playing Serve..." : "Debug Active. Use Scroll Wheel!";
-            }
-
-            // 3. IF MANUAL DEBUGGING: Stop here! Leave scroll inputs unlocked and cancel redirects.
-            if (!USE_AUTOMATION) {
-                isAutoAnimating = false;
-                return;
-            }
-
-            // 4. IF AUTOMATED PRODUCTION: Lock inputs and fire the 60fps automated motor.
-            isAutoAnimating = true;
-            let currentAnimFrame = 1;
-            const maxPlaybackFrame = 94; // Your target clipped landing frame
-            const frameSpeedMs = 16;     // 60 frames per second pacing
-            let lastFrameTime = Date.now();
-
-            function playTimelineStep() {
-                const now = Date.now();
-                if (now - lastFrameTime >= frameSpeedMs) {
-                    currentAnimFrame++;
-                    applyFrame(currentAnimFrame);
-                    lastFrameTime = now;
-                }
-
-                if (currentAnimFrame < maxPlaybackFrame) {
-                    requestAnimationFrame(playTimelineStep);
-                } else {
-                    if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
-                    
-                    // Dynamic Redirect Trigger Pause
-                    setTimeout(() => {
-                        window.location.href = fallbackUrlString;
-                    }, 2000); 
-                }
-            }
-
-            requestAnimationFrame(playTimelineStep);
-        }
-
-        // 🏓 BIND BUTTON 1: Published Mode URL Handler
-        const copyPublishedBtn = document.getElementById('copy-published-btn');
-        if (copyPublishedBtn) {
-            copyPublishedBtn.onclick = function (e) {
-                e.preventDefault();
-                executeDynamicPortalPipeline(this, publishedUrl, true);
-            };
-        }
-
-        // 🏓 BIND BUTTON 2: Preview Mode URL Handler
-        const copyPreviewBtn = document.getElementById('copy-preview-btn');
-        if (copyPreviewBtn) {
-            copyPreviewBtn.onclick = function (e) {
-                e.preventDefault();
-                executeDynamicPortalPipeline(this, previewUrl, false);
-            };
-        }
-
+        document.getElementById('copy-preview-btn').onclick = function () {
+            copyUrl(this, previewUrl);
+        };
+        document.getElementById('copy-published-btn').onclick = function () {
+            copyUrl(this, publishedUrl);
+        };
     </script>
 
     <script>
@@ -1798,87 +1701,13 @@ ballButtonTexture.offset.set(0.0, 0.0);
             }
 			
             // =========================================================================
-            // 🎬 UNIFIED AUTOMATED TIMELINE PLAYBACK ENGINE (DUAL-BUTTON ALLOCATION)
-            // =========================================================================
-            // 1. Gather both link hooks from your layout markup sheets
-            const copyPublishedBtn = document.getElementById('copy-published-btn');
-            const copyPreviewBtn   = document.getElementById('copy-preview-btn');
-
-            function initiateServePlayback(targetURL) {
-                // A. ORIGINAL CLIPBOARD FUNCTION: Copies the matching URL string immediately on click
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(targetURL)
-                        .then(() => console.log("Target link written to system clipboard!"))
-                        .catch(err => console.error("System clipboard failure: ", err));
-                }
-
-                // B. Activate the 3D canvas structural overlays
-                applyFrame(1);
-                if (scrubHint) {
-                    scrubHint.style.display = 'block';
-                    scrubHint.textContent = "URL Copied! Playing Serve...";
-                }
-                
-                // C. Turn on the animation flag to lock manual input gates
-                isAutoAnimating = true;
-                
-                let currentAnimFrame = 1;
-                const maxPlaybackFrame = 94; // Your target clipped frame ceiling limit!
-                const frameSpeedMs = 16;     // Controls speed (16ms = ~60 frames per second)
-                let lastFrameTime = Date.now();
-
-                function playTimelineStep() {
-                    const now = Date.now();
-                    if (now - lastFrameTime >= frameSpeedMs) {
-                        currentAnimFrame++;
-                        applyFrame(currentAnimFrame);
-                        lastFrameTime = now;
-                    }
-
-                    // Continue running the engine until the ball hits its terminal mark
-                    if (currentAnimFrame < maxPlaybackFrame) {
-                        requestAnimationFrame(playTimelineStep);
-                    } else {
-                        if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
-                        
-                        // D. DYNAMIC PORTAL REDIRECT MOTOR
-                        // Holds the ball frozen on Frame 94 for 2 seconds, then launches forward
-                        setTimeout(() => {
-                            window.location.href = targetURL;
-                        }, 2000); 
-                    }
-                }
-
-                // Kickstart the automated server cycle loop
-                requestAnimationFrame(playTimelineStep);
-            }
-
-            // 🏓 BIND BUTTON 1: Published Mode URL Trigger
-            if (copyPublishedBtn) {
-                copyPublishedBtn.addEventListener('click', () => {
-                    // Replace with your real Published website link string
-                    const publishedURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false'; 
-                    initiateServePlayback(publishedURL);
-                });
-            }
-
-            // 🏓 BIND BUTTON 2: Preview Mode URL Trigger
-            if (copyPreviewBtn) {
-                copyPreviewBtn.addEventListener('click', () => {
-                    // Replace with your real Preview website link string
-                    const previewURL = 'https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview'; 
-                    initiateServePlayback(previewURL);
-                });
-            }
-			
-            // =========================================================================
-            // 🛑 GLOBAL BYPASS ENGINE: LOCKS MANUAL SCRUBBING DURING PLAYBACK
+            // 🛑 MANUAL FRAME SCROLLER RE-ACTIVATED
             // =========================================================================
             let isAutoAnimating = false;
 
             // Mousewheel Scrolling Event Intercept Loops
             window.addEventListener('wheel', (e) => {
-                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
+                if (isAutoAnimating) return; 
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
                     if (e.deltaY > 0) {
@@ -1891,7 +1720,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             // Keyboard Arrow Key Scrubber Listeners
             window.addEventListener('keydown', (e) => {
-                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
+                if (isAutoAnimating) return; 
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
                         applyFrame(activeFrame + 1);
@@ -1901,30 +1730,35 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
             });
 
-            // Touch Swipe Scrubbing (Only active when exploring frames)
-            let scrubStartY = 0;
-            window.addEventListener('touchstart', (e) => {
-                if (activeFrame > 0 && e.touches.length === 1) {
-                    scrubStartY = e.touches[0].clientY;
-                }
-            }, {passive: false});
+            // =========================================================================
+            // 🛠️ ACTIVE MANUAL DEBUG OVERRIDE TRIGGER BINDINGS (FAILURE-SAFE)
+            // =========================================================================
+            const copyPublishedBtn = document.getElementById('copy-published-btn');
+            const copyPreviewBtn   = document.getElementById('copy-preview-btn');
 
-            window.addEventListener('touchmove', (e) => {
-                if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
-                    e.preventDefault(); // Lock normal page scroll during animation inspection
-                }
-            }, {passive: false});
+            // 🏓 BUTTON 1 SAFETY CORRIDOR
+            if (copyPublishedBtn) {
+                copyPublishedBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    console.log("Published Button Intercepted Successfully!");
+                    applyFrame(1);
+                    if (scrubHint) scrubHint.style.display = 'block';
+                });
+            } else {
+                console.warn("Warning: '#copy-published-btn' was not found in your HTML markup.");
+            }
 
-            window.addEventListener('touchend', (e) => {
-                if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
-                    // FIXED: Restored explicit array coordinate referencing to block mobile halts
-                    let dy = e.changedTouches[0].clientY - scrubStartY;
-                    if (dy > 30) applyFrame(activeFrame - 1); // Swipe down = reverse
-                    else if (dy < -30) applyFrame(activeFrame + 1); // Swipe up = forward
-                }
-            });
-
-        })();
+            // 🏓 BUTTON 2 SAFETY CORRIDOR (Blocks null errors from crashing the page!)
+            if (copyPreviewBtn) {
+                copyPreviewBtn.addEventListener('click', (e) => {
+                    e.preventDefault(); 
+                    console.log("Preview Button Intercepted Successfully!");
+                    applyFrame(1);
+                    if (scrubHint) scrubHint.style.display = 'block';
+                });
+            } else {
+                console.warn("Warning: '#copy-preview-btn' was not found. Script crash prevented safely.");
+            }
 
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
