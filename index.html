@@ -538,7 +538,7 @@
         // =========================================================================
         // 🎛️ THE MASTER SYSTEM SWITCH (THE ONLY LINE YOU EVER NEED TO EDIT!)
         // =========================================================================
-        // Set to true for automated production play. Set to false for manual frame scroller debugging!
+        // Set true to play. Set false to frame scroll!
         const USE_AUTOMATION = true; 
 
         // Core tracking reference element identifiers
@@ -602,59 +602,85 @@
         });
 
         // =========================================================================
-        // 🎬 UNIFIED MULTI-ROUTING CLICK ENGINE
+        // 🎬 UNIFIED MULTI-ROUTING CLICK ENGINE (CLIPBOARD SECURED)
         // =========================================================================
         function executeDynamicPortalPipeline(btnElement, targetUrlString, isPublishedFlag) {
-            // Run your native text-copying and style animation script safely
-            if (typeof copyUrl === 'function') {
-                copyUrl(btnElement, targetUrlString, isPublishedFlag);
-            }
+            // 🎯 FIXED SEQUENCE CORRIDOR: We use a native browser navigator write process 
+            // here to guarantee the promise resolves before triggering any 3D physics steps!
+            navigator.clipboard.writeText(targetUrlString).then(() => {
+                
+                // 1. Run your original green "Copied!" button styling layout transitions
+                btnElement.textContent = "Copied!";
+                btnElement.classList.add("copied");
+                setTimeout(() => {
+                    btnElement.textContent = btnElement.getAttribute("data-label");
+                    btnElement.classList.remove("copied");
+                }, 2000);
 
-            // Snap the 3D viewport canvas directly into Frame 1
-            applyFrame(1);
-            
-            // CORE BRANCH ROUTER
-            if (!USE_AUTOMATION) {
+                const card = document.getElementById('portal-card');
+                if (card) {
+                    card.classList.add('decorative');
+                    card.setAttribute('inert', '');
+                    card.querySelectorAll('a, button').forEach((el) => {
+                        el.setAttribute('tabindex', '-1');
+                        el.setAttribute('aria-disabled', 'true');
+                    });
+                    btnElement.blur();
+                }
+
+                // 2. Snap the 3D viewport canvas directly into Frame 1
+                applyFrame(1);
+                
+                // 3. CORE BRANCH ROUTER
+                if (!USE_AUTOMATION) {
+                    if (scrubHint) {
+                        scrubHint.style.display = 'block';
+                        scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
+                    }
+                    isAutoAnimating = false;
+                    return; // Exits safely without triggering the animation loop below
+                }
+
+                // 🚀 AUTOMATION MODE ACTIVE: Lock input gates and spin up animation playback motors
                 if (scrubHint) {
                     scrubHint.style.display = 'block';
-                    scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
+                    scrubHint.textContent = "URL Copied! Playing Serve...";
                 }
-                isAutoAnimating = false;
-                return; // Exits safely without triggering the animation loop below
-            }
+                
+                isAutoAnimating = true;
+                let currentAnimFrame = 1;
+                const maxPlaybackFrame = 94; 
+                const frameSpeedMs = 16;     
+                let lastFrameTime = Date.now();
 
-            // AUTOMATION MODE ACTIVE: Lock input gates and spin up animation playback motors
-            if (scrubHint) {
-                scrubHint.style.display = 'block';
-                scrubHint.textContent = "URL Copied! Playing Serve...";
-            }
-            
-            isAutoAnimating = true;
-            let currentAnimFrame = 1;
-            const maxPlaybackFrame = 94; 
-            const frameSpeedMs = 16;     
-            let lastFrameTime = Date.now();
+                function playTimelineStep() {
+                    const now = Date.now();
+                    if (now - lastFrameTime >= frameSpeedMs) {
+                        currentAnimFrame++;
+                        applyFrame(currentAnimFrame);
+                        lastFrameTime = now;
+                    }
 
-            function playTimelineStep() {
-                const now = Date.now();
-                if (now - lastFrameTime >= frameSpeedMs) {
-                    currentAnimFrame++;
-                    applyFrame(currentAnimFrame);
-                    lastFrameTime = now;
+                    if (currentAnimFrame < maxPlaybackFrame) {
+                        requestAnimationFrame(playTimelineStep);
+                    } else {
+                        if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
+                        
+                        // Dynamic Redirect Trigger Pause
+                        setTimeout(() => {
+                            window.location.href = targetUrlString;
+                        }, 2000); 
+                    }
                 }
 
-                if (currentAnimFrame < maxPlaybackFrame) {
-                    requestAnimationFrame(playTimelineStep);
-                } else {
-                    if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
-                    
-                    setTimeout(() => {
-                        window.location.href = targetUrlString;
-                    }, 2000); 
-                }
-            }
-
-            requestAnimationFrame(playTimelineStep);
+                // Kickstart the automated playback motor ONLY if USE_AUTOMATION is true!
+                requestAnimationFrame(playTimelineStep);
+                
+            }).catch(err => {
+                console.error("Clipboard security lock hit: ", err);
+                // Fallback: If clipboard fails, fire the target url forward directly
+                window.location.href = targetUrlString;
+            });
         }
 
         // =========================================================================
