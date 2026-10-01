@@ -1594,7 +1594,7 @@ const curveControl = new THREE.Vector3(
             window.activeFrame = 0; 
 
             // =========================================================================
-            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Mobile-Optimized Trajectory Engine)
+            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Seamless Bounce & Slow-Shrink Engine)
             // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
@@ -1602,7 +1602,7 @@ const curveControl = new THREE.Vector3(
             const BASELINE_CAM_TILT = camera.rotation.x;
 
             function applyFrame(frameNum) {
-                // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
+                // Keep total duration locked at 107 frames
                 const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
@@ -1640,6 +1640,8 @@ const curveControl = new THREE.Vector3(
                 if (scrubHint) {
                     if (activeFrame >= 25 && activeFrame <= 50) {
                         scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Zoom Hold Active`;
+                    } else if (activeFrame >= 95) {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🏓 Ball Bounce Upward Leg Active`;
                     } else {
                         scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
                     }
@@ -1648,10 +1650,12 @@ const curveControl = new THREE.Vector3(
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 1. STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
+                // 🚀 1. STAGE-ROUTED GEOMETRY & MINISCULE BOUNCE SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
+                let leg4Active = false;
+                let leg4Normalized = 0.0;
 
                 if (activeFrame <= 25) {
                     // --- STAGE 1: THE CLIMB (Frames 1-25) ---
@@ -1667,19 +1671,32 @@ const curveControl = new THREE.Vector3(
                     const acceleratedShrinkEase = Math.pow(leg2Normalized, 0.4);
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.14, acceleratedShrinkEase);
                 } 
-                else {
-                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
-                    const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
+                else if (activeFrame > 50 && activeFrame <= 94) {
+                    // --- STAGE 3: THE FINAL DIVE (Frames 51-94) ---
+                    // Re-mapped smoothly from 0.0 to 1.0 across the active flight segment
+                    const leg3Normalized = (activeFrame - 51) / (94 - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
-                    dynamicScale = THREE.MathUtils.lerp(0.14, 0.10, leg3Normalized);
+                    dynamicScale = THREE.MathUtils.lerp(0.14, 0.106, leg3Normalized);
+                }
+                else {
+                    // --- 🎯 STAGE 4: THE BOUNCE UPWARD REVERSAL (Frames 95-107) ---
+                    leg4Active = true;
+                    leg4Normalized = (activeFrame - 95) / (targetMaxFrames - 95);
+                    
+                    // Freeze trajectory progress at maximum extension so downward curve finishes
+                    trajectoryProgress = 1.0; 
+                    
+                    // 🎯 SLOW-SHRINK LOCK: Drastically reduces the rate of shrinkage.
+                    // The ball only loses a minuscule 0.006 points of scale over all 13 frames!
+                    dynamicScale = THREE.MathUtils.lerp(0.106, 0.100, leg4Normalized);
                 }
 
                 // ============================================================
-                // 🎯 2. DEDICATED STATIC TRAJECTORY GENERATION ENGINE
+                // 🎯 2. PRIMARY SERVE TRACKING HIGHWAY
                 // ============================================================
                 const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // Razor-thin safety gap
-                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); // Half-height curve pivot
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2);
                 const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
 
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
@@ -1690,13 +1707,36 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
 
-                // Capture exact static Frame 25 coordinate marker for freeze reference
+                // Capture exact static Frame 25 reference coordinate
                 const apexProgress = Math.pow(0.33, 1.20);
                 const trueApexPosition = new THREE.Vector3();
                 innerCurveEngine.getPointAt(apexProgress, trueApexPosition);
 
                 // ============================================================
-                // 🎥 3. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
+                // 🏓 3. SECONDARY BOUNCE REVERSAL HIGHWAY (LEG 4 ENGINE)
+                // ============================================================
+                if (leg4Active) {
+                    // Start exactly where frame 94 landed
+                    const bounceStart = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
+                    
+                    // Define where the ball arcs UP into the air post-impact
+                    // Adjust Y (+0.24) to control bounce height, push Z forward past the table
+                    const bounceEnd = new THREE.Vector3(-0.24, TABLE_H + 0.24, 2.74 + 0.38);
+                    
+                    // High control anchor to shape a crisp upward table tennis bounce arc
+                    const bounceCtrl = new THREE.Vector3(-0.20, TABLE_H + 0.48, 2.74 + 0.12);
+                    const bounceCurveEngine = new THREE.QuadraticBezierCurve3(bounceStart, bounceCtrl, bounceEnd);
+                    
+                    // Extract the bounce coordinates frame-by-frame
+                    const localBounceVector = new THREE.Vector3();
+                    bounceCurveEngine.getPointAt(leg4Normalized, localBounceVector);
+                    
+                    // Overwrite position vector with the new upward bounce vector track
+                    positionVector.copy(localBounceVector);
+                }
+
+                // ============================================================
+                // 🎥 4. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
                 // ============================================================
                 let tiltShiftOffset = 0.00;
 
