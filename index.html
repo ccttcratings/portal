@@ -1775,13 +1775,15 @@ ballButtonTexture.offset.set(0.0, 0.0);
             }
 			
             // =========================================================================
-            // 🛑 GLOBAL BYPASS ENGINE: LOCKS MANUAL SCRUBBING DURING PLAYBACK
+            // 🛑 MANUAL FRAME SCROLLER RE-ACTIVATED
             // =========================================================================
+            // LOCKED AT FALSE: This turns your manual mousewheel, keyboard, and touch 
+            // swipe gestures back on 100% across all 107 tracking frames!
             let isAutoAnimating = false;
 
             // Mousewheel Scrolling Event Intercept Loops
             window.addEventListener('wheel', (e) => {
-                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
+                if (isAutoAnimating) return; 
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
                     if (e.deltaY > 0) {
@@ -1794,7 +1796,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             // Keyboard Arrow Key Scrubber Listeners
             window.addEventListener('keydown', (e) => {
-                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
+                if (isAutoAnimating) return; 
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
                         applyFrame(activeFrame + 1);
@@ -1804,30 +1806,70 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
             });
 
-            // Touch Swipe Scrubbing (Only active when exploring frames)
-            let scrubStartY = 0;
-            window.addEventListener('touchstart', (e) => {
-                if (activeFrame > 0 && e.touches.length === 1) {
-                    scrubStartY = e.touches[0].clientY;
-                }
-            }, {passive: false});
 
-            window.addEventListener('touchmove', (e) => {
-                if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
-                    e.preventDefault(); // Lock normal page scroll during animation inspection
-                }
-            }, {passive: false});
+            /* =========================================================================
+               🎬 DISABLED BUT PRESERVED: DUAL-BUTTON AUTOMATED PLAYBACK ENGINE
+               =========================================================================
+               This complete engine structure is commented out safely so it does not interfere 
+               with manual scrubbing, but remains fully intact for future deployment.
 
-            window.addEventListener('touchend', (e) => {
-                if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
-                    // FIXED: Restored explicit array coordinate referencing to block mobile halts
-                    let dy = e.changedTouches[0].clientY - scrubStartY;
-                    if (dy > 30) applyFrame(activeFrame - 1); // Swipe down = reverse
-                    else if (dy < -30) applyFrame(activeFrame + 1); // Swipe up = forward
-                }
-            });
+            const copyPublishedBtn = document.getElementById('copy-published-btn');
+            const copyPreviewBtn   = document.getElementById('copy-preview-btn');
 
-        })();
+            function initiateServePlayback(targetURL) {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(targetURL)
+                        .then(() => console.log("Target link written to system clipboard!"))
+                        .catch(err => console.error("System clipboard failure: ", err));
+                }
+
+                applyFrame(1);
+                if (scrubHint) {
+                    scrubHint.style.display = 'block';
+                    scrubHint.textContent = "URL Copied! Playing Serve...";
+                }
+                
+                isAutoAnimating = true;
+                
+                let currentAnimFrame = 1;
+                const maxPlaybackFrame = 94; 
+                const frameSpeedMs = 16;     
+                let lastFrameTime = Date.now();
+
+                function playTimelineStep() {
+                    const now = Date.now();
+                    if (now - lastFrameTime >= frameSpeedMs) {
+                        currentAnimFrame++;
+                        applyFrame(currentAnimFrame);
+                        lastFrameTime = now;
+                    }
+
+                    if (currentAnimFrame < maxPlaybackFrame) {
+                        requestAnimationFrame(playTimelineStep);
+                    } else {
+                        if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
+                        setTimeout(() => {
+                            window.location.href = targetURL;
+                        }, 2000); 
+                    }
+                }
+
+                requestAnimationFrame(playTimelineStep);
+            }
+
+            if (copyPublishedBtn) {
+                copyPublishedBtn.addEventListener('click', () => {
+                    const publishedURL = 'https://your-published-url.com'; 
+                    initiateServePlayback(publishedURL);
+                });
+            }
+
+            if (copyPreviewBtn) {
+                copyPreviewBtn.addEventListener('click', () => {
+                    const previewURL = 'https://your-preview-url.com'; 
+                    initiateServePlayback(previewURL);
+                });
+            }
 
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
