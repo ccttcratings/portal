@@ -1594,7 +1594,7 @@ const curveControl = new THREE.Vector3(
             window.activeFrame = 0; 
 
             // =========================================================================
-            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Trajectory Curve Path Engine)
+            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Mobile-Optimized Trajectory Engine)
             // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
@@ -1675,22 +1675,14 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // ============================================================
-                // 🎯 2. PERFORMANCE-STABILIZED RESPONSIVE MOTION PATHWAY
+                // 🎯 2. DEDICATED STATIC TRAJECTORY GENERATION ENGINE
                 // ============================================================
-                // Use a local curve lookup calculation inside the block to shield variables safely
                 const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
-                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2);
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // Razor-thin safety gap
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); // Half-height curve pivot
                 const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
 
-                // 🌟 CROSS-DEVICE STEP MODIFIER:
-                // Instead of rebuilding curves, we simply adjust the step progress exponent.
-                // If it's a computer monitor screen, an exponent of 0.88 drags the ball forward 
-                // faster over the net, making Frame 100 line up perfectly with mobile screens!
-                const isDesktopLayout = window.innerWidth > window.innerHeight;
-                const dynamicMotionExponent = isDesktopLayout ? 0.88 : 1.20;
-                
-                const motionProgress = Math.pow(trajectoryProgress, dynamicMotionExponent); 
+                const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
                 innerCurveEngine.getPointAt(motionProgress, positionVector);
                 
@@ -1699,7 +1691,7 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // Capture exact static Frame 25 coordinate marker for freeze reference
-                const apexProgress = Math.pow(0.33, dynamicMotionExponent);
+                const apexProgress = Math.pow(0.33, 1.20);
                 const trueApexPosition = new THREE.Vector3();
                 innerCurveEngine.getPointAt(apexProgress, trueApexPosition);
 
@@ -1746,7 +1738,7 @@ const curveControl = new THREE.Vector3(
 
                 render();
             }
-
+			
             // =========================================================================
             // 🎯 FIXED ENGINE LINK: Maps to your newly renamed copy button ID seamlessly
             // =========================================================================
