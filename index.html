@@ -1241,51 +1241,6 @@ ballButtonTexture.offset.set(0.0, 0.0);
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
             scene.add(pingPongBallMesh);
-            // -------------------------------------------------------------
-            // =========================================================================
-            // 🔴 DEVELOPMENT GEOMETRY: COURT-ALIGNED X-RAY TRAJECTORY CURVE
-            // =========================================================================
-            // 1. Core start anchor locked exactly into the ball's center axis on Frame 2
-            const curveStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-
-        // 1. THE LANDING TARGET (Directly referenced to the back edge line)
-const curveEnd = new THREE.Vector3(
-    -0.18,          // Left/Right alignment on the table
-    TABLE_H - 0.28, // Height depth anchor below the table plane
-    2.74 - 0.005     // ◄--- [C] BACK-EDGE CORRECTION
-);
-
-// 2. THE APEX CONTROL POINT (Lifts the path over the net)
-const curveControl = new THREE.Vector3(
-    -0.05,          
-    TABLE_H + 1.25, // ◄--- [E] NET CLEARANCE HEIGHT (Lifts the path over the center net)
-    2.74 / 2        // ◄--- Locks the peak of the arch directly above the net line
-);
-
-            // 4. Construct the non-uniform quadratic curve geometry
-            const quadraticCurve = new THREE.QuadraticBezierCurve3(curveStart, curveControl, curveEnd);
-            
-            // Extract 32 smooth plotting coordinates along the arc path
-            const curvePoints = quadraticCurve.getPoints(32);
-            const guideLineGeo = new THREE.BufferGeometry().setFromPoints(curvePoints);
-            
-            // 5. THE X-RAY OVERLAY MATERIAL LAYER CONFIGURATION
-            const guideLineMat = new THREE.LineBasicMaterial({ 
-                color: 0xff0000, 
-                linewidth: 3, 
-                depthTest: false,    // ◄--- TURNS OFF 3D BLIND SPOT BLOCKING
-                depthWrite: false,   // ◄--- PREVENTS CLIPPING DISTORTIONS
-                transparent: true    // ◄--- ALLOWS ADVANCED ALPHA MIXING LAYER PASSES
-            });
-
-            const trajectoryGuideLine = new THREE.Line(guideLineGeo, guideLineMat);
-            
-            // 6. FORCE TOP EXECUTION PRIORITY: Forces it to compile on top of cards & panels
-            trajectoryGuideLine.renderOrder = 99999; 
-            
-            scene.add(trajectoryGuideLine);
-            // -------------------------------------------------------------
-
 
             const logoCanvas = document.createElement('canvas');
             logoCanvas.width = 512;
