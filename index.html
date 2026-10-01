@@ -1594,7 +1594,7 @@ const curveControl = new THREE.Vector3(
             window.activeFrame = 0; 
 
             // =========================================================================
-            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Mobile-Optimized Trajectory Engine)
+            // FRAME CONTROLLER: 0 (100%), 1 to 94 (Capped Flight Path Engine)
             // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
@@ -1602,8 +1602,8 @@ const curveControl = new THREE.Vector3(
             const BASELINE_CAM_TILT = camera.rotation.x;
 
             function applyFrame(frameNum) {
-                // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
-                const targetMaxFrames = 107; 
+                // 🎯 TIMELINE CAPPED: Reduced total frame count down to 94 to strip off trailing frames
+                const targetMaxFrames = 94; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
 
@@ -1668,7 +1668,7 @@ const curveControl = new THREE.Vector3(
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.14, acceleratedShrinkEase);
                 } 
                 else {
-                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
+                    // --- STAGE 3: THE FINAL DIVE (Frames 51-94) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     dynamicScale = THREE.MathUtils.lerp(0.14, 0.10, leg3Normalized);
@@ -1678,8 +1678,8 @@ const curveControl = new THREE.Vector3(
                 // 🎯 2. DEDICATED STATIC TRAJECTORY GENERATION ENGINE
                 // ============================================================
                 const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // Razor-thin safety gap
-                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); // Half-height curve pivot
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); 
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); 
                 const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
 
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
