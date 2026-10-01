@@ -1701,20 +1701,30 @@ ballButtonTexture.offset.set(0.0, 0.0);
             }
 			
             // =========================================================================
-            // 🎬 AUTOMATED TIMELINE PLAYBACK ENGINE WITH AUTOMATIC RESET
+            // 🎬 AUTOMATED TIMELINE PLAYBACK ENGINE (CLIPBOARD COPY & REDIRECT)
             // =========================================================================
             const copyPublishedBtn = document.getElementById('copy-published-btn');
             
             if (copyPublishedBtn) {
                 copyPublishedBtn.addEventListener('click', () => {
-                    // 1. Activate the structural overlays
+                    // 🎯 1. ORIGINAL CLIPBOARD FUNCTION: Copies your URL to clipboard immediately on click!
+                    // Replace 'https://your-published-url.com' with your actual target URL string
+                    const targetURL = 'https://your-published-url.com'; 
+                    
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        navigator.clipboard.writeText(targetURL)
+                            .then(() => console.log("URL copied to clipboard successfully!"))
+                            .catch(err => console.error("Clipboard copy failed: ", err));
+                    }
+
+                    // 2. Activate the 3D canvas structural overlays
                     applyFrame(1);
                     if (scrubHint) {
                         scrubHint.style.display = 'block';
-                        scrubHint.textContent = "Playing Serve...";
+                        scrubHint.textContent = "URL Copied! Playing Serve...";
                     }
                     
-                    // 2. Turn on the animation flag to lock manual input gates
+                    // 3. Turn on the animation flag to lock manual input gates
                     isAutoAnimating = true;
                     
                     let currentAnimFrame = 1;
@@ -1734,26 +1744,16 @@ ballButtonTexture.offset.set(0.0, 0.0);
                         if (currentAnimFrame < maxPlaybackFrame) {
                             requestAnimationFrame(playTimelineStep);
                         } else {
-                            if (scrubHint) scrubHint.textContent = "Impact! Resetting portal...";
+                            if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
                             
                             // ============================================================
-                            // 🔄 3. AUTOMATIC RESET TRIGGER PIPELINE
+                            // 🚀 DYNAMIC PORTAL REDIRECT MOTOR
                             // ============================================================
-                            // Holds the ball frozen on Frame 94 for 2500ms, then clears it away cleanly
+                            // Holds the ball frozen on Frame 94 for 2 seconds, then 
+                            // seamlessly launches the browser forward to your copied URL!
                             setTimeout(() => {
-                                // Reset the frame trackers completely back to the menu state
-                                applyFrame(0);
-                                
-                                // Turn off the UI hint banner
-                                if (scrubHint) {
-                                    scrubHint.style.display = 'none';
-                                    scrubHint.textContent = "";
-                                }
-                                
-                                // Unlock the animation locks completely
-                                isAutoAnimating = false;
-                                
-                            }, 2500); // ◄--- Adjust 2500 (2.5 seconds) to make the pause shorter or longer
+                                window.location.href = targetURL;
+                            }, 2000); // ◄--- Adjust 2000 (2 seconds) to pause shorter or longer
                         }
                     }
 
