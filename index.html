@@ -1675,33 +1675,33 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // ============================================================
-                // 🎯 2. ASPECT-COMPENSATED DYNAMIC PATH ENGINE
+                // 🎯 2. PERFORMANCE-STABILIZED RESPONSIVE MOTION PATHWAY
                 // ============================================================
+                // Use a local curve lookup calculation inside the block to shield variables safely
                 const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-                
-                // 🌟 THE TRUE SOLUTION: Read the active camera aspect ratio to dynamically
-                // shift the 3D endpoint coordinates. If aspect > 1.0 (PC Landscape Monitor),
-                // we stretch the depth target backward (+0.36) to cancel out the visual compression!
-                const isLandscape = camera.aspect > 1.0;
-                const responsiveZTarget = isLandscape ? (2.74 + 0.36) : (2.74 - 0.005);
-                const responsiveYTarget = isLandscape ? (TABLE_H - 0.12) : (TABLE_H - 0.08);
-                
-                const cEnd   = new THREE.Vector3(-0.18, responsiveYTarget, responsiveZTarget);
-                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); 
-                const activeCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2);
+                const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
 
-                const motionProgress = Math.pow(trajectoryProgress, 1.20); 
+                // 🌟 CROSS-DEVICE STEP MODIFIER:
+                // Instead of rebuilding curves, we simply adjust the step progress exponent.
+                // If it's a computer monitor screen, an exponent of 0.88 drags the ball forward 
+                // faster over the net, making Frame 100 line up perfectly with mobile screens!
+                const isDesktopLayout = window.innerWidth > window.innerHeight;
+                const dynamicMotionExponent = isDesktopLayout ? 0.88 : 1.20;
+                
+                const motionProgress = Math.pow(trajectoryProgress, dynamicMotionExponent); 
                 const positionVector = new THREE.Vector3();
-                activeCurveEngine.getPointAt(motionProgress, positionVector);
+                innerCurveEngine.getPointAt(motionProgress, positionVector);
                 
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
                 }
 
                 // Capture exact static Frame 25 coordinate marker for freeze reference
-                const apexProgress = Math.pow(0.33, 1.20);
+                const apexProgress = Math.pow(0.33, dynamicMotionExponent);
                 const trueApexPosition = new THREE.Vector3();
-                activeCurveEngine.getPointAt(apexProgress, trueApexPosition);
+                innerCurveEngine.getPointAt(apexProgress, trueApexPosition);
 
                 // ============================================================
                 // 🎥 3. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
