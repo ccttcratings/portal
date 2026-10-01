@@ -531,9 +531,7 @@
         // Set to true for automated production play. Set to false for manual frame scroller debugging!
         const USE_AUTOMATION = false; 
 
-        // Core tracking reference elements
-        const previewUrl = "https://google.com";
-        const publishedUrl = "https://google.com";
+        // Core tracking reference elements (already defined above, avoiding redeclaration errors)
         const scrubHint = document.getElementById('scrub-hint');
         let isAutoAnimating = false;
 
