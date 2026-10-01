@@ -497,18 +497,6 @@
 
     <div id="scrub-hint">Frame: 0 | Scroll: Step Frames</div>
 	
-            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-preview-btn">
-                Copy Preview Mode URL
-            </button>
-
-            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
-                Portal Hub of Portals<span class="subtext">(hub of redundant portals)</span>
-            </a>
-        </div>
-    </div>
-
-    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames</div>
-
     <script>
         const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
         const publishedUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false&chrome=false";
@@ -535,18 +523,22 @@
             });
         }
 
+    <script>
         // =========================================================================
         // 🎛️ THE MASTER SYSTEM SWITCH (THE ONLY LINE YOU EVER NEED TO EDIT!)
         // =========================================================================
         // Set to true for automated production play. Set to false for manual frame scroller debugging!
         const USE_AUTOMATION = false; 
 
+        // Core tracking reference elements
+        const previewUrl = "https://google.com";
+        const publishedUrl = "https://google.com";
         const scrubHint = document.getElementById('scrub-hint');
         let isAutoAnimating = false;
 
         // 🎯 INSTANT DEBUG FORCE OVERRIDE: 
-        // Automatically turns on your 3D canvas overlay the exact millisecond the page loads 
-        // when debugging so you can use your scroll wheel immediately without hitting any redirects!
+        // Automatically reveals the 3D canvas immediately on page load when debugging
+        // so you can use your scroll wheel right away without clicking any buttons!
         if (!USE_AUTOMATION && scrubHint) { 
             applyFrame(1); 
             scrubHint.style.display = 'block'; 
@@ -598,14 +590,13 @@
         });
 
         // =========================================================================
-        // 🎬 THE PLAYBACK SYSTEM ENGINE
+        // 🎬 THE SECURED TIMELINE AUTOMATION MOTOR
         // =========================================================================
         function launchAutomationSequence(targetUrlString) {
             if (scrubHint) {
                 scrubHint.style.display = 'block';
                 scrubHint.textContent = "URL Copied! Playing Serve...";
             }
-            
             isAutoAnimating = true;
             let currentAnimFrame = 1;
             const maxPlaybackFrame = 94; 
@@ -633,46 +624,55 @@
         }
 
         // =========================================================================
-        // 🏓 INDEPENDENT BUTTON CLICK CORRIDORS
+        // 📋 INTEGRATED CLIPBOARD PROMISE HANDLERS
         // =========================================================================
-		}
+        function copyUrlAndRoutePortal(btnElement, targetUrlString) {
+            navigator.clipboard.writeText(targetUrlString).then(() => {
+                // A. Run your original visual button transitions successfully inside the promise corridor
+                btnElement.textContent = "Copied!";
+                btnElement.classList.add("copied");
+                setTimeout(() => {
+                    btnElement.textContent = btnElement.getAttribute("data-label");
+                    btnElement.classList.remove("copied");
+                }, 2000);
+
+                const card = document.getElementById('portal-card');
+                if (card) {
+                    card.classList.add('decorative');
+                    card.setAttribute('inert', '');
+                    card.querySelectorAll('a, button').forEach((el) => {
+                        el.setAttribute('tabindex', '-1');
+                        el.setAttribute('aria-disabled', 'true');
+                    });
+                    btnElement.blur();
+                }
+
+                // B. Initialize the 3D scene directly on Frame 1
+                applyFrame(1);
+
+                // C. System Switch Evaluation
+                if (USE_AUTOMATION) {
+                    launchAutomationSequence(targetUrlString);
+                } else if (scrubHint) {
+                    scrubHint.style.display = 'block';
+                    scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
+                }
+            }).catch(err => {
+                console.warn("Clipboard access delayed, bypass routing active: ", err);
+                window.location.href = targetUrlString;
+            });
+        }
+
+        // =========================================================================
+        // 🏓 DIRECT BUTTON MARKUP BINDINGS
+        // =========================================================================
         document.getElementById('copy-preview-btn').onclick = function () {
-            // A. Native copy script runs exactly how you originally coded it
-            copyUrl(this, previewUrl, false);
-            
-            // B. 3D view activates immediately
-            applyFrame(1);
-            
-            // C. Branch Check: If automation is turned on, run the motor engine
-            if (USE_AUTOMATION) {
-                launchAutomationSequence(previewUrl);
-            } else if (scrubHint) {
-                scrubHint.style.display = 'block';
-                scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
-            }
+            copyUrlAndRoutePortal(this, previewUrl);
         };
 
         document.getElementById('copy-published-btn').onclick = function () {
-            // A. Native copy script runs exactly how you originally coded it
-            copyUrl(this, publishedUrl, true);
-            
-            // B. 3D view activates immediately
-            applyFrame(1);
-            
-            // C. Branch Check: If automation is turned on, run the motor engine
-            if (USE_AUTOMATION) {
-                launchAutomationSequence(publishedUrl);
-            } else if (scrubHint) {
-                scrubHint.style.display = 'block';
-                scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
-            }
+            copyUrlAndRoutePortal(this, publishedUrl);
         };
-
-        // =========================================================================
-        // 🎯 FIXED CLOSURE: SEALS THE GIANT INITIALIZING IIFE WRAPPER 
-        // =========================================================================
-        })();
-		
     </script>
 
     <script>
