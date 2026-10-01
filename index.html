@@ -1711,8 +1711,14 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 });
             }
 
+            // =========================================================================
+            // 🛑 GLOBAL BYPASS ENGINE: LOCKS MANUAL SCRUBBING DURING PLAYBACK
+            // =========================================================================
+            let isAutoAnimating = false;
+
             // Mousewheel Scrolling Event Intercept Loops
             window.addEventListener('wheel', (e) => {
+                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
                     if (e.deltaY > 0) {
@@ -1725,6 +1731,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             // Keyboard Arrow Key Scrubber Listeners
             window.addEventListener('keydown', (e) => {
+                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
                         applyFrame(activeFrame + 1);
