@@ -538,14 +538,13 @@
         // =========================================================================
         // 🎛️ THE MASTER SYSTEM SWITCH (THE ONLY LINE YOU EVER NEED TO EDIT!)
         // =========================================================================
-        // Set to true for automated production play. Set to false for manual frame scroller debugging!
+        // Set to true to play. Set to false to frame scroll!
         const USE_AUTOMATION = false; 
 
         const scrubHint = document.getElementById('scrub-hint');
-		
-        // Internal runtime block flag (leave this as is)
         let isAutoAnimating = false;
-
+        if (!USE_AUTOMATION && scrubHint) { applyFrame(1); scrubHint.style.display = 'block'; }
+		
         // =========================================================================
         // 🛑 SYNCHRONIZED INTERCEPT LISTENERS (SELF-MANAGING VIA MASTER SWITCH)
         // =========================================================================
