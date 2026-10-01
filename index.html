@@ -1598,65 +1598,7 @@ const curveControl = new THREE.Vector3(
             // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
-            // NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
-            const BASELINE_CAM_TILT = camera.rotation.x;
-
-            function applyFrame(frameNum) {
-                // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
-                const targetMaxFrames = 107; 
-                activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
-                window.activeFrame = activeFrame;
-
-                const ballLayer = document.getElementById('ball-layer');
-                const card = document.querySelector('.card');
-                const container = document.getElementById('canvas-container');
-
-                if (!card || !container || !ballLayer) return;
-
-                if (activeFrame === 0) {
-                    container.style.display = 'none';
-                    ballLayer.style.display = 'flex'; 
-                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-                    card.style.transform = 'scale(1) translateY(0px)';
-                    container.style.width = '';
-                    container.style.left = '';
-                    container.style.transform = '';
-                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-                    return;
-                } 
-                
-                container.style.display = 'block'; 
-                ballLayer.style.display = 'none'; 
-                
-                // Reset baseline camera matrices before updating layout transformations
-                camera.rotation.x = BASELINE_CAM_TILT;
-                autoSize(); 
-
-                const cardScaleFactor = Math.min(activeFrame, 20); 
-                const scale = 1.0 - (cardScaleFactor * 0.04);
-                const yOffset = -(cardScaleFactor * 24);
-                card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-
-                if (scrubHint) {
-                    if (activeFrame >= 25 && activeFrame <= 50) {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Background Tilt Active`;
-                    } else {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
-                    }
-                }
-
-                const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
-
-                // ============================================================
-                // 🚀 1. STAGE-ROUTED GEOMETRY & SIZING ENGINE
-                // ============================================================
-                let trajectoryProgress;
-                let dynamicScale;
-
-                if (activeFrame <= 25) {
-                    // --- STAGE 1: THE CLIMB (Frames 1-25) ---
-                    const leg1Normalized = (activeFrame - 1) / 24; 
-                    trajectoryProgress = leg1No            // =========================================================================
+            // =========================================================================
             // 🚀 STABLE CAMERA RIG CAPTURE
             // =========================================================================
             // Save the exact baseline lens tilt pitch to calculate absolute offsets safely
