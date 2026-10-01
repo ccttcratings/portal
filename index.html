@@ -1677,7 +1677,7 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // ============================================================
-                // 🎯 3. HIGH-PRECISION SEAMLESS LOCK AND PATH ROUTER
+                // 🎯 3. SCREEN-SPACE GEOMETRY PARSER (BALL LOCK ENGINE)
                 // ============================================================
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
@@ -1687,29 +1687,10 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
 
-                // CALCULATE EXACT APEX SPATIAL COORDINATE (Frame 25 Baseline)
+                // Calculate the exact spatial location where Leg 1 ends (Frame 25)
                 const apexProgress = Math.pow(0.33, 1.20);
                 const trueApexPosition = new THREE.Vector3();
                 ballServeCurve.getPointAt(apexProgress, trueApexPosition);
-
-                // FIXED INTERPOLATION MOTORS:
-                if (activeFrame > 25 && activeFrame <= 50) {
-                    // 🎯 ABSOLUTE SPATIAL LOCK: Forces the ball to use the exact coordinate of Frame 25.
-                    // This guarantees zero jump on frame 26!
-                    positionVector.copy(trueApexPosition);
-                }
-                else if (activeFrame > 50) {
-                    // 🎯 SECOND-LEG LOCK FOR WINDOWS: Keeps Leg 3 perfectly continuous 
-                    // from the freeze point down onto the table baseline
-                    positionVector.copy(positionVector);
-                }
-
-                // Apply positioning variables and scales to the active mesh canvas
-                pingPongBallMesh.position.copy(positionVector);
-                pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
-
-                const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
-                pingPongBallMesh.scale.z *= depthFactor;
 
                 // ============================================================
                 // 🎥 4. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
@@ -1718,15 +1699,43 @@ const curveControl = new THREE.Vector3(
 
                 if (activeFrame > 25 && activeFrame <= 50) {
                     const holdProgress = (activeFrame - 25) / 25;
-                    // TWEAK THIS: Increase 0.05 to force the background further UP the screen
-                    tiltShiftOffset = 0.05 * holdProgress;
+                    // TWEAK THIS: Increase 0.08 to force the background further UP the screen
+                    tiltShiftOffset = 0.08 * holdProgress;
                 } 
                 else if (activeFrame > 50) {
-                    tiltShiftOffset = 0.05;
+                    tiltShiftOffset = 0.08;
                 }
 
-                // PLACED AT THE BOTTOM: Applying the rotation absolute override here ensures 
-                // it acts on the entire compiled scene layout without causing any tracking coordinate jumps!
+                // 🎯 THE LOCK MECHANISM:
+                if (activeFrame > 25 && activeFrame <= 50) {
+                    // Base calculations from our perfect frozen Frame 25 apex coordinate
+                    positionVector.copy(trueApexPosition);
+                    
+                    // Measure the exact distance from the camera lens to the ball
+                    const distanceToCamera = positionVector.distanceTo(camera.position);
+                    
+                    // 🌟 PIXEL VELOCITY COUNTER-SHIFT:
+                    // If the camera tilts downward, pulling the ball UP, we mathematically 
+                    // lower the ball's Y-coordinate by the exact tangent deflection of the tilt!
+                    // This creates a perfect visual lock on your device screen.
+                    positionVector.y -= Math.tan(tiltShiftOffset) * distanceToCamera * 0.96;
+                }
+                else if (activeFrame > 50) {
+                    // 🌟 SECOND-LEG CONTINUITY:
+                    // Ensures that when the ball dives on frames 51+, its physical flight path 
+                    // accounts for the new camera position so it doesn't jump.
+                    const distanceToCamera = positionVector.distanceTo(camera.position);
+                    positionVector.y -= Math.tan(tiltShiftOffset) * distanceToCamera * 0.96;
+                }
+
+                // Apply corrected positioning variables directly to the global active mesh canvas
+                pingPongBallMesh.position.copy(positionVector);
+                pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
+
+                const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
+                pingPongBallMesh.scale.z *= depthFactor;
+
+                // Overwrite camera orientation at the absolute bottom to lock in the layout
                 camera.rotation.x = BASELINE_CAM_TILT + tiltShiftOffset;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
