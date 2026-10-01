@@ -1775,10 +1775,19 @@ ballButtonTexture.offset.set(0.0, 0.0);
             }
 			
             // =========================================================================
+            // 🎯 FIXED MANUAL DEBUG INITIALIZER: AUTOMATICALLY PRIMES TRACKING ON LOAD
+            // =========================================================================
+            // Automatically forces the canvas onto Frame 1 and reveals the scroller block
+            // so your mousewheel intercepts can work instantly on page refresh!
+            setTimeout(() => {
+                applyFrame(1);
+                const debugHint = document.getElementById('scrub-hint');
+                if (debugHint) debugHint.style.display = 'block';
+            }, 200);
+
+            // =========================================================================
             // 🛑 MANUAL FRAME SCROLLER RE-ACTIVATED
             // =========================================================================
-            // LOCKED AT FALSE: This turns your manual mousewheel, keyboard, and touch 
-            // swipe gestures back on 100% across all 107 tracking frames!
             let isAutoAnimating = false;
 
             // Mousewheel Scrolling Event Intercept Loops
