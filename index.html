@@ -1656,6 +1656,67 @@ const curveControl = new THREE.Vector3(
                 if (activeFrame <= 25) {
                     // --- STAGE 1: THE CLIMB (Frames 1-25) ---
                     const leg1Normalized = (activeFrame - 1) / 24; 
+                    trajectoryProgress = leg1No            // =========================================================================
+            // 🚀 STABLE CAMERA RIG CAPTURE
+            // =========================================================================
+            // Save the exact baseline lens tilt pitch to calculate absolute offsets safely
+            const BASELINE_CAM_TILT = camera.rotation.x;
+
+            function applyFrame(frameNum) {
+                // 1. TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
+                const targetMaxFrames = 107; 
+                activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
+                window.activeFrame = activeFrame;
+
+                const ballLayer = document.getElementById('ball-layer');
+                const card = document.querySelector('.card');
+                const container = document.getElementById('canvas-container');
+
+                if (!card || !container || !ballLayer) return;
+
+                if (activeFrame === 0) {
+                    container.style.display = 'none';
+                    ballLayer.style.display = 'flex'; 
+                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
+                    card.style.transform = 'scale(1) translateY(0px)';
+                    container.style.width = '';
+                    container.style.left = '';
+                    container.style.transform = '';
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                    return;
+                } 
+                
+                container.style.display = 'block'; 
+                ballLayer.style.display = 'none'; 
+                
+                // Reset baseline camera matrices before updating layout transformations
+                camera.rotation.x = BASELINE_CAM_TILT;
+                autoSize(); 
+
+                const cardScaleFactor = Math.min(activeFrame, 20); 
+                const scale = 1.0 - (cardScaleFactor * 0.04);
+                const yOffset = -(cardScaleFactor * 24);
+                card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+
+                if (scrubHint) {
+                    if (activeFrame >= 25 && activeFrame <= 50) {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Background Tilt Active`;
+                    } else {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
+                    }
+                }
+
+                const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
+
+                // ============================================================
+                // 🚀 2. STAGE-ROUTED GEOMETRY & SIZING ENGINE
+                // ============================================================
+                let trajectoryProgress;
+                let dynamicScale;
+
+                if (activeFrame <= 25) {
+                    // --- STAGE 1: THE CLIMB (Frames 1-25) ---
+                    const leg1Normalized = (activeFrame - 1) / 24; 
                     trajectoryProgress = leg1Normalized * 0.33; 
                     const shrinkEase = Math.pow(leg1Normalized, 0.4);
                     dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
@@ -1674,24 +1735,7 @@ const curveControl = new THREE.Vector3(
                 }
 
                 // ============================================================
-                // 🎥 2. DYNAMIC CAM PAN ENGINE (ABSOLUTE ORIENTATION OVERWRITE)
-                // ============================================================
-                let tiltShiftOffset = 0.00;
-
-                if (activeFrame > 25 && activeFrame <= 50) {
-                    const holdProgress = (activeFrame - 25) / 25;
-                    // TWEAK THIS: Increase 0.12 to force the table to slide even FURTHER up the screen!
-                    tiltShiftOffset = 0.12 * holdProgress;
-                } 
-                else if (activeFrame > 50) {
-                    tiltShiftOffset = 0.12;
-                }
-
-                // Overwrite orientation absolutely to prevent compound feedback distortion loops
-                camera.rotation.x = BASELINE_CAM_TILT - tiltShiftOffset;
-
-                // ============================================================
-                // 🎯 3. VIEWPORT POSITIONING AND SEAMLESS TRACKING LOCK
+                // 🎯 3. HIGH-PRECISION SEAMLESS LOCK AND PATH ROUTER
                 // ============================================================
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
@@ -1701,39 +1745,47 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
 
-                // A. CALCULATE TRUE APEX SPATIAL POSITION (Frame 25 Baseline)
+                // CALCULATE EXACT APEX SPATIAL COORDINATE (Frame 25 Baseline)
                 const apexProgress = Math.pow(0.33, 1.20);
                 const trueApexPosition = new THREE.Vector3();
                 ballServeCurve.getPointAt(apexProgress, trueApexPosition);
 
-                // B. SEAMLESS FREEZE ZONE COUNTER PASSTHROUGH (Frames 26-50)
+                // FIXED INTERPOLATION MOTORS:
                 if (activeFrame > 25 && activeFrame <= 50) {
-                    // Cast forward ray along the moving camera's optical centerline axis
-                    const targetDirection = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
-                    
-                    // Pin the distance measurement to the exact spatial coordinate of Frame 25 apex!
-                    const exactApexDistance = trueApexPosition.distanceTo(camera.position);
-                    
-                    // Overwrite the positionVector to maintain a 100% stable screen location with zero frame jump
-                    positionVector.copy(camera.position).addScaledVector(targetDirection, exactApexDistance);
+                    // 🎯 ABSOLUTE SPATIAL LOCK: Forces the ball to use the exact coordinate of Frame 25.
+                    // This guarantees zero jump on frame 26!
+                    positionVector.copy(trueApexPosition);
                 }
-                // C. SECOND-LEG TRAJECTORY PATH ALIGNMENT FOR TRANSITION (Frames 51-107)
                 else if (activeFrame > 50) {
-                    // Because the camera is locked into its final tilt, the physical room elements 
-                    // are shifted. We apply a matching spatial transformation tracking vector 
-                    // to Leg 3 so the ball tracks beautifully onto your 5mm baseline marker.
-                    const localCamXAxis = new THREE.Vector3(1, 0, 0);
-                    positionVector.sub(camera.position);
-                    positionVector.applyAxisAngle(localCamXAxis, -tiltShiftOffset);
-                    positionVector.add(camera.position);
+                    // 🎯 SECOND-LEG LOCK FOR WINDOWS: Keeps Leg 3 perfectly continuous 
+                    // from the freeze point down onto the table baseline
+                    positionVector.copy(positionVector);
                 }
 
-                // Apply corrected positioning variables directly to the global active mesh canvas
+                // Apply positioning variables and scales to the active mesh canvas
                 pingPongBallMesh.position.copy(positionVector);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
+
+                // ============================================================
+                // 🎥 4. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
+                // ============================================================
+                let tiltShiftOffset = 0.00;
+
+                if (activeFrame > 25 && activeFrame <= 50) {
+                    const holdProgress = (activeFrame - 25) / 25;
+                    // TWEAK THIS: Increase 0.05 to force the background further UP the screen
+                    tiltShiftOffset = 0.05 * holdProgress;
+                } 
+                else if (activeFrame > 50) {
+                    tiltShiftOffset = 0.05;
+                }
+
+                // PLACED AT THE BOTTOM: Applying the rotation absolute override here ensures 
+                // it acts on the entire compiled scene layout without causing any tracking coordinate jumps!
+                camera.rotation.x = BASELINE_CAM_TILT + tiltShiftOffset;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
                 ballButtonTexture.offset.set(0.0, 0.0);
@@ -1744,6 +1796,7 @@ const curveControl = new THREE.Vector3(
 
                 render();
             }
+
             // =========================================================================
             // 🎯 FIXED ENGINE LINK: Maps to your newly renamed copy button ID seamlessly
             // =========================================================================
