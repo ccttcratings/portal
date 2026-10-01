@@ -1665,25 +1665,30 @@ const curveControl = new THREE.Vector3(
                     trajectoryProgress = 0.33; 
                     const leg2Normalized = (activeFrame - 25) / 25;
                     
-                    // 🎯 CALIBRATION CRUNCH: Shrinks aggressively from 0.45 down to a tiny 0.18!
-                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.18, leg2Normalized);
+                    // 🎯 FIXED ACCELERATED SHRINK RATE: 
+                    // Applying an ease-out exponent (0.4) crunches the ball down in size 
+                    // instantly over frames 26-32 instead of scaling down uniformly!
+                    const acceleratedShrinkEase = Math.pow(leg2Normalized, 0.4);
+                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.14, acceleratedShrinkEase);
                 } 
                 else {
-                    // --- STAGE 3: THE HIGH-DIVE (Frames 51-107) ---
+                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     
-                    // Picks up perfectly at 0.18 and settles gently down to 0.12 landing size
-                    dynamicScale = THREE.MathUtils.lerp(0.18, 0.12, leg3Normalized);
+                    // Stabilizes out from its tight micro-apex size down to final layout bounds
+                    dynamicScale = THREE.MathUtils.lerp(0.14, 0.10, leg3Normalized);
                 }
 
                 // ============================================================
                 // 🎯 2. DYNAMIC PATH CALCULATION HEADERS
                 // ============================================================
-                // Recalculated dynamically inside the loop to avoid external variable name collisions
                 const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // High clearance landing
-                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 1.25, 2.74 / 2);
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
+                
+                // 🎯 FIXED HEIGHT PIVOT: Changed vertical elevation from +1.25 down to +0.62 
+                // to cut the early climb trajectory path height exactly in half!
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2);
                 const activeCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
 
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
