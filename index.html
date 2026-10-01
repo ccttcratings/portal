@@ -1683,9 +1683,15 @@ const curveControl = new THREE.Vector3(
                 const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
 
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
-                const positionVector = new THREE.Vector3();
-                innerCurveEngine.getPointAt(motionProgress, positionVector);
                 
+                // 🎯 THE SURGICAL CLIPPING MOTOR:
+                // Caps progress at 0.88 (88% down your perfect line). 
+                // To cut off MORE of the line, decrease this number (e.g., 0.80).
+                const clippedProgress = Math.min(0.88, motionProgress);
+                
+                const positionVector = new THREE.Vector3();
+                innerCurveEngine.getPointAt(clippedProgress, positionVector);
+               
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
                 }
