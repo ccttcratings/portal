@@ -541,18 +541,10 @@
         // Set to true for automated production play. Set to false for manual frame scroller debugging!
         const USE_AUTOMATION = false; 
 
-        // Core tracking reference element identifiers
         const scrubHint = document.getElementById('scrub-hint');
+		
+        // Internal runtime block flag (leave this as is)
         let isAutoAnimating = false;
-
-        // 🎯 INSTANT DEBUG FORCE OVERRIDE: 
-        // Automatically turns on your 3D canvas overlay the exact millisecond the page loads 
-        // when debugging so you can use your scroll wheel immediately without hitting any redirects!
-        if (!USE_AUTOMATION && scrubHint) { 
-            applyFrame(1); 
-            scrubHint.style.display = 'block'; 
-            scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
-        }
 
         // =========================================================================
         // 🛑 SYNCHRONIZED INTERCEPT LISTENERS (SELF-MANAGING VIA MASTER SWITCH)
@@ -593,15 +585,16 @@
             
             // 3. CORE BRANCH ROUTER
             if (!USE_AUTOMATION) {
+                // 🛑 MANUAL MODE: Open the gates, tell the user, and KILL all playback motors instantly!
                 if (scrubHint) {
                     scrubHint.style.display = 'block';
                     scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
                 }
                 isAutoAnimating = false;
-                return; // Exits safely without triggering the animation loop below
+                return; // Exits the function completely before the animation engine can even think about starting
             }
 
-            // 🚀 AUTOMATION MODE ACTIVE: Lock input gates and spin up animation playback motors
+            // 🚀 AUTOMATION MODE: Lock the gates and launch the 60fps automated playback motor
             if (scrubHint) {
                 scrubHint.style.display = 'block';
                 scrubHint.textContent = "URL Copied! Playing Serve...";
@@ -609,8 +602,8 @@
             
             isAutoAnimating = true;
             let currentAnimFrame = 1;
-            const maxPlaybackFrame = 94; 
-            const frameSpeedMs = 16;     
+            const maxPlaybackFrame = 94; // Your target clipped landing frame
+            const frameSpeedMs = 16;     // 60 frames per second pacing
             let lastFrameTime = Date.now();
 
             function playTimelineStep() {
@@ -633,7 +626,7 @@
                 }
             }
 
-            // Kickstart the automated playback motor ONLY if USE_AUTOMATION is true!
+            // Kickstart the playback motor ONLY if USE_AUTOMATION is true!
             requestAnimationFrame(playTimelineStep);
         }
 
@@ -654,7 +647,6 @@
                 executeDynamicPortalPipeline(this, previewUrl, false);
             };
         }
-
 		
     </script>
 
