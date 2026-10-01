@@ -473,20 +473,32 @@
 </div>
             <h2>View Mode Portal</h2>
 
-            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn preview">
-                Preview Mode <span class="subtext">(works on most devices)</span>
+            <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false&chrome=false" class="btn preview">
+                Published Mode
+            </a>
+
+            <button class="copy-btn" data-label="Copy Published Mode URL" id="copy-published-btn">
+                Copy Published Mode URL
+            </button>
+
+            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview" class="btn edit">
+                Preview Mode
             </a>
 
             <button class="copy-btn" data-label="Copy Preview Mode URL" id="copy-preview-btn">
                 Copy Preview Mode URL
             </button>
 
-            <a href="https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=2067557144#gid=2067557144" class="btn edit">
-                Edit Mode <span class="subtext">(annoying banner at top)</span>
+            <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
+                Portal Hub of Portals
             </a>
+        </div>
+    </div>
 
-            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-edit-btn">
-                Copy Edit Mode URL
+    <div id="scrub-hint">Frame: 0 | Scroll: Step Frames</div>
+	
+            <button class="copy-btn" data-label="Copy Edit Mode URL" id="copy-preview-btn">
+                Copy Preview Mode URL
             </button>
 
             <a href="https://ccttcratings.github.io/portalhub/" class="btn hub">
@@ -499,7 +511,7 @@
 
     <script>
         const previewUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview";
-        const editUrl = "https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/edit?gid=196901061#gid=196901061";
+        const publishedUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false&chrome=false";
 
         function copyUrl(btn, url) {
             navigator.clipboard.writeText(url).then(() => {
@@ -526,8 +538,8 @@
         document.getElementById('copy-preview-btn').onclick = function () {
             copyUrl(this, previewUrl);
         };
-        document.getElementById('copy-edit-btn').onclick = function () {
-            copyUrl(this, editUrl);
+        document.getElementById('copy-published-btn').onclick = function () {
+            copyUrl(this, publishedUrl);
         };
     </script>
 
@@ -1085,129 +1097,120 @@
             ballCanvas.height = 2048;
             const ballCtx = ballCanvas.getContext('2d');
 
-		function drawWarpedButtonGraphics(offsetY = 0) {
-			// Wipe the high-res 1024x2048 canvas grid completely clean
-			ballCtx.clearRect(0, 0, 1024, 2048);
-			
-			const isNeon = document.documentElement.classList.contains('neon');
-			
-			// ◄--- TRANSITIONAL NEON BALL COLOR LIFECYCLE ---
-			if (isNeon) {
-				// Normalize scroll progress across the first 5 frames
-				const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
-
-				// 🎯 FIXED WITH YOUR EXACT VERIFIED TARGET VALUES (255, 64, 0)
-				// Starts at dark brown-orange (78, 42, 5) on Frame 1 and smoothly scales
-				// up to your precise deep table tennis orange milestone by Frame 5!
-				const r = Math.round(78 + (255 - 78) * morphProgress);
-				const g = Math.round(42 + (64 - 42) * morphProgress); 
-				const b = Math.round(5 + (0 - 5) * morphProgress);
-
-				ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-			} else {
-				ballCtx.fillStyle = '#fce5cd';
-			}
-			
-			// Paint the background color across the upgraded high-res texture bounds
-			ballCtx.fillRect(0, 0, 1024, 2048);
+        function drawWarpedButtonGraphics(offsetY = 0) {
+            // Wipe the high-res 1024x2048 canvas grid completely clean
+            ballCtx.clearRect(0, 0, 1024, 2048);
+            
+            const isNeon = document.documentElement.classList.contains('neon');
+            
+            // ◄--- TRANSITIONAL NEON BALL COLOR LIFECYCLE ---
+            if (isNeon) {
+                const morphProgress = Math.min(1.0, Math.max(0.0, (offsetY - 0.05) / (0.25 - 0.05)));
+                const r = Math.round(78 + (255 - 78) * morphProgress);
+                const g = Math.round(42 + (64 - 42) * morphProgress); 
+                const b = Math.round(5 + (0 - 5) * morphProgress);
+                ballCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+            } else {
+                ballCtx.fillStyle = '#fce5cd';
+            }
+            
+            // Paint the background color across the upgraded high-res texture bounds
+            ballCtx.fillRect(0, 0, 1024, 2048);
     
-                // Paint the background color across the upgraded high-res texture bounds
-                ballCtx.fillRect(0, 0, 1024, 2048);
-    
-                // ============================================================
-                // 🚀 CONTINUATION OF YOUR LAYOUT ELEMENTS (BUTTON LOOPS CONTINUE BELOW)
-                // ============================================================
-                // Realistic 3D spin loop boundaries (scaled up for high-res map)
-                const totalScrollDomain = 2848; // 1424 * 2
+            // Realistic 3D spin loop boundaries (scaled up for high-res map)
+            const totalScrollDomain = 2848; // 1424 * 2
 
-                // Title coordinates upscaled
-                let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
+            // Title coordinates upscaled
+            let titleY = (740 - offsetY * totalScrollDomain) % totalScrollDomain;
+            if (titleY < 0) titleY += totalScrollDomain;
 
-                if (titleY < 0) titleY += totalScrollDomain;
+            if (titleY >= 0 && titleY <= 2048) {
+                ballCtx.save();
+                ballCtx.translate(768, titleY);
+                
+                let distTitle = Math.abs(titleY - 1024) / 1024;
+                let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
+                
+                ballCtx.scale(dynamicTitleWidth, 0.52);
+                ballCtx.fillStyle = '#000000';
+                ballCtx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                ballCtx.textAlign = 'center';
+                ballCtx.textBaseline = 'middle';
+                ballCtx.fillText('View Mode Portal', 0, 0);
+                ballCtx.restore();
+            }
+            
+            // ============================================================
+            // 🎯 UPDATED: TEXT SYNCED & SUBTEXT STRIPPED FOR PERFECT CENTERING
+            // ============================================================
+            const buttons = [
+                { text: 'Published Mode', bg: 'preview', y: 850, subText: '', h: 160 },
+                { text: 'Copy Published Mode URL', bg: 'copy', y: 930, subText: '', h: 96 },
+                { text: 'Preview Mode', bg: 'edit', y: 1030, subText: '', h: 160 },
+                { text: 'Copy Preview Mode URL', bg: 'copy', y: 1110, subText: '', h: 96 },
+                { text: 'Portal Hub of Portals', bg: 'hub', y: 1260, subText: '', h: 160 }
+            ];
 
-                if (titleY >= 0 && titleY <= 2048) {
+            buttons.forEach(btn => {
+                let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
+                if (currentY < 0) currentY += totalScrollDomain;
+
+                if (currentY >= 0 && currentY <= 2048) {
                     ballCtx.save();
-                    ballCtx.translate(768, titleY);
+                    ballCtx.translate(768, currentY);
+
+                    let distFromEquator = Math.abs(currentY - 1024) / 1024;
+                    let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
                     
-                    let distTitle = Math.abs(titleY - 1024) / 1024;
-                    let dynamicTitleWidth = 0.142 + (distTitle * distTitle * 0.3);
-                    
-                    ballCtx.scale(dynamicTitleWidth, 0.52);
+                    ballCtx.scale(dynamicStretchWidth, 0.52);
+
+                    const halfH = btn.h / 2;
+                    const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
+                    if (isNeon) {
+                        if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
+                        else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(0.4, '#cc0000'); grad.addColorStop(1, '#990000'); }
+                        else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(0.4, '#09a3b5'); grad.addColorStop(1, '#077c9c'); }
+                        else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(0.4, '#9900dd'); grad.addColorStop(1, '#7700bb'); }
+                    } else {
+                        if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(0.4, '#3a9e3e'); grad.addColorStop(1, '#288028'); }
+                        else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(0.4, '#c84040'); grad.addColorStop(1, '#a02020'); }
+                        else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(0.4, '#1a7daa'); grad.addColorStop(1, '#0e5f80'); }
+                        else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
+                    }
+
+                    ballCtx.fillStyle = grad;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-400, -halfH, 800, btn.h, 24);
+                    ballCtx.fill();
+
+                    const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
+                    glassGrad.addColorStop(0, 'rgba(255,255,255,0.30)');
+                    glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
+                    ballCtx.fillStyle = glassGrad;
+                    ballCtx.beginPath();
+                    ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
+                    ballCtx.fill();
+
                     ballCtx.fillStyle = '#000000';
-                    ballCtx.font = '800 60px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+                    ballCtx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
                     ballCtx.textAlign = 'center';
-                    ballCtx.textBaseline = 'middle';
-                    ballCtx.fillText('View Mode Portal', 0, 0);
+                    
+                    // Because btn.subText is now empty, it executes this block and perfectly centers the label up/down
+                    if (btn.subText) {
+                        ballCtx.textBaseline = 'bottom';
+                        ballCtx.fillText(btn.text, 0, 8);
+                        ballCtx.fillStyle = '#000000';
+                        ballCtx.font = '22px sans-serif';
+                        ballCtx.textBaseline = 'top';
+                        ballCtx.fillText(btn.subText, 0, 12);
+                    } else {
+                        ballCtx.textBaseline = 'middle';
+                        ballCtx.fillText(btn.text, 0, 0);
+                    }
                     ballCtx.restore();
                 }
-                
-                const buttons = [
-                    { text: 'Preview Mode', bg: 'preview', y: 850, subText: '(works on most devices)', h: 160 },
-                    { text: 'Copy Preview Mode URL', bg: 'copy', y: 930, subText: '', h: 96 },
-                    { text: 'Edit Mode', bg: 'edit', y: 1030, subText: '(annoying banner at top)', h: 160 },
-                    { text: 'Copy Edit Mode URL', bg: 'copy', y: 1110, subText: '', h: 96 },
-                    { text: 'Portal Hub of Portals', bg: 'hub', y: 1260, subText: '(hub of redundant portals)', h: 160 }
-                ];
-
-                buttons.forEach(btn => {
-                    let currentY = (btn.y - offsetY * totalScrollDomain) % totalScrollDomain;
-                    if (currentY < 0) currentY += totalScrollDomain;
-
-                    if (currentY >= 0 && currentY <= 2048) {
-                        ballCtx.save();
-                        ballCtx.translate(768, currentY);
-
-                        let distFromEquator = Math.abs(currentY - 1024) / 1024;
-                        let dynamicStretchWidth = 0.142 + (distFromEquator * distFromEquator * 0.3);
-                        
-                        ballCtx.scale(dynamicStretchWidth, 0.52);
-
-                        const halfH = btn.h / 2;
-                        const grad = ballCtx.createLinearGradient(0, -halfH, 0, halfH);
-                        if (isNeon) {
-                            if (btn.bg === 'preview') { grad.addColorStop(0, '#00ff00'); grad.addColorStop(0.4, '#00cc00'); grad.addColorStop(1, '#009900'); }
-                            else if (btn.bg === 'edit') { grad.addColorStop(0, '#ff0000'); grad.addColorStop(0.4, '#cc0000'); grad.addColorStop(1, '#990000'); }
-                            else if (btn.bg === 'hub') { grad.addColorStop(0, '#0bcade'); grad.addColorStop(0.4, '#09a3b5'); grad.addColorStop(1, '#077c9c'); }
-                            else { grad.addColorStop(0, '#bf00ff'); grad.addColorStop(0.4, '#9900dd'); grad.addColorStop(1, '#7700bb'); }
-                        } else {
-                            if (btn.bg === 'preview') { grad.addColorStop(0, '#6abf6e'); grad.addColorStop(0.4, '#3a9e3e'); grad.addColorStop(1, '#288028'); }
-                            else if (btn.bg === 'edit') { grad.addColorStop(0, '#e87070'); grad.addColorStop(0.4, '#c84040'); grad.addColorStop(1, '#a02020'); }
-                            else if (btn.bg === 'hub') { grad.addColorStop(0, '#3ba8d6'); grad.addColorStop(0.4, '#1a7daa'); grad.addColorStop(1, '#0e5f80'); }
-                            else { grad.addColorStop(0, '#a048a0'); grad.addColorStop(0.4, '#883088'); grad.addColorStop(1, '#682068'); }
-                        }
-
-                        ballCtx.fillStyle = grad;
-                        ballCtx.beginPath();
-                        ballCtx.roundRect(-400, -halfH, 800, btn.h, 24);
-                        ballCtx.fill();
-
-                        const glassGrad = ballCtx.createLinearGradient(0, -halfH, 0, halfH * 0.45);
-                        glassGrad.addColorStop(0, 'rgba(255,255,255,0.30)');
-                        glassGrad.addColorStop(1, 'rgba(255,255,255,0.05)');
-                        ballCtx.fillStyle = glassGrad;
-                        ballCtx.beginPath();
-                        ballCtx.roundRect(-400, -halfH, 800, btn.h * 0.45, 16);
-                        ballCtx.fill();
-
-                        ballCtx.fillStyle = '#000000';
-                        ballCtx.font = 'bold 32px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-                        ballCtx.textAlign = 'center';
-                        
-                        if (btn.subText) {
-                            ballCtx.textBaseline = 'bottom';
-                            ballCtx.fillText(btn.text, 0, 8);
-                            ballCtx.fillStyle = '#000000';
-                            ballCtx.font = '22px sans-serif';
-                            ballCtx.textBaseline = 'top';
-                            ballCtx.fillText(btn.subText, 0, 12);
-                        } else {
-                            ballCtx.textBaseline = 'middle';
-                            ballCtx.fillText(btn.text, 0, 0);
-                        }
-                        ballCtx.restore();
-                    }
-                });
-            }
+            });
+        }
 
             drawWarpedButtonGraphics(0);
 
@@ -1237,10 +1240,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
             ballMaterial.depthTest = false;
             pingPongBallMesh.position.set(0, TABLE_H + 0.50, 0); 
 
-            // Physically inject it into your active 3D universe
             scene.add(pingPongBallMesh);
-            // -------------------------------------------------------------
-            
+
             const logoCanvas = document.createElement('canvas');
             logoCanvas.width = 512;
             logoCanvas.height = 512;
@@ -1538,104 +1539,249 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // =========================================================================
             // FRAME CONTROLLER: 0 (100%), 1 to 2 (Zero background), 3 to 20 (Background revealed)
             // =========================================================================
-            let activeFrame = 0;
-            window.activeFrame = 0; // Expose globally for PTR logic
+            const curveStartPoint = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
+            const curveEndPoint   = new THREE.Vector3(-0.18, TABLE_H - 0.28, 2.74 - 0.005); // Matches 5mm!
+            const curveControlPoint = new THREE.Vector3(-0.05, TABLE_H + 1.25, 2.74 / 2);
+            
+            const ballServeCurve = new THREE.QuadraticBezierCurve3(curveStartPoint, curveControlPoint, curveEndPoint);
 
+            let activeFrame = 0;
+            window.activeFrame = 0; 
+
+            // =========================================================================
+            // FRAME CONTROLLER: 0 (100%), 1 to 107 (Mobile-Optimized Trajectory Engine)
+            // =========================================================================
             const scrubHint = document.getElementById('scrub-hint');
 
-		function applyFrame(frameNum) {
-			activeFrame = Math.max(0, Math.min(20, frameNum));
-			window.activeFrame = activeFrame;
+            // NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
+            const BASELINE_CAM_TILT = camera.rotation.x;
 
-			const ballLayer = document.getElementById('ball-layer');
-			const card = document.querySelector('.card');
-			const container = document.getElementById('canvas-container');
+            function applyFrame(frameNum) {
+                // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
+                const targetMaxFrames = 107; 
+                activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
+                window.activeFrame = activeFrame;
 
-			if (!card || !container || !ballLayer) return;
+                const ballLayer = document.getElementById('ball-layer');
+                const card = document.querySelector('.card');
+                const container = document.getElementById('canvas-container');
 
-			if (activeFrame === 0) {
-				// Frame 0: Original 100% portal page
-				container.style.display = 'none';
-				ballLayer.style.display = 'flex'; 
-				ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
-				card.style.transform = 'scale(1) translateY(0px)';
-				container.style.width = '';
-				container.style.left = '';
-				container.style.transform = '';
-				if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
-			} else if (activeFrame >= 1 && activeFrame <= 20) {
-				// --- FIXED: ALLOW ALL FRAMES 1-20 TO COMPLY WITH THE 3D BALL CONTAINER ---
-				container.style.display = 'block'; 
-				ballLayer.style.display = 'none'; 
+                if (!card || !container || !ballLayer) return;
 
-				autoSize(); // Synchronize view matrices instantly
+                if (activeFrame === 0) {
+                    container.style.display = 'none';
+                    ballLayer.style.display = 'flex'; 
+                    ballLayer.style.clipPath = 'circle(100vmax at 50% 50%)';
+                    card.style.transform = 'scale(1) translateY(0px)';
+                    container.style.width = '';
+                    container.style.left = '';
+                    container.style.transform = '';
+                    if (scrubHint) scrubHint.textContent = "Frame: 0 (Original 100%) | Scroll Down for Frame 1";
+                    return;
+                } 
+                
+                container.style.display = 'block'; 
+                ballLayer.style.display = 'none'; 
+                
+                // Reset baseline camera matrices before updating layout transformations
+                camera.rotation.x = BASELINE_CAM_TILT;
+                autoSize(); 
 
-				const scale = 1.0 - (activeFrame * 0.04);
-				const yOffset = -(activeFrame * 24);
-				card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
-				if (scrubHint) scrubHint.textContent = `Frame: ${activeFrame} | 3D Ball Active`;
-			}
+                const cardScaleFactor = Math.min(activeFrame, 20); 
+                const scale = 1.0 - (cardScaleFactor * 0.04);
+                const yOffset = -(cardScaleFactor * 24);
+                card.style.transform = `translateX(-50%) scale(${scale.toFixed(2)}) translateY(${yOffset}px)`;
+
+                if (scrubHint) {
+                    if (activeFrame >= 25 && activeFrame <= 50) {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Zoom Hold Active`;
+                    } else {
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
+                    }
+                }
+
+                const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
+
+                // ============================================================
+                // 🚀 1. STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
+                // ============================================================
+                let trajectoryProgress;
+                let dynamicScale;
+
+                if (activeFrame <= 25) {
+                    // --- STAGE 1: THE CLIMB (Frames 1-25) ---
+                    const leg1Normalized = (activeFrame - 1) / 24; 
+                    trajectoryProgress = leg1Normalized * 0.33; 
+                    const shrinkEase = Math.pow(leg1Normalized, 0.4);
+                    dynamicScale = THREE.MathUtils.lerp(4.8, 0.45, shrinkEase);
+                } 
+                else if (activeFrame > 25 && activeFrame <= 50) {
+                    // --- STAGE 2: THE FREEZE HOLD (Frames 26-50) ---
+                    trajectoryProgress = 0.33; 
+                    const leg2Normalized = (activeFrame - 25) / 25;
+                    const acceleratedShrinkEase = Math.pow(leg2Normalized, 0.4);
+                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.14, acceleratedShrinkEase);
+                } 
+                else {
+                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
+                    const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
+                    trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
+                    dynamicScale = THREE.MathUtils.lerp(0.14, 0.10, leg3Normalized);
+                }
+
+                // ============================================================
+                // 🎯 2. DEDICATED STATIC TRAJECTORY GENERATION ENGINE
+                // ============================================================
+                const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // Razor-thin safety gap
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); // Half-height curve pivot
+                const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
+
+                const motionProgress = Math.pow(trajectoryProgress, 1.20); 
+                
+                // 🎯 THE SURGICAL CLIPPING MOTOR:
+                // Caps progress at 0.88 (88% down your perfect line). 
+                // To cut off MORE of the line, decrease this number (e.g., 0.80).
+                const clippedProgress = Math.min(0.75, motionProgress);
+                
+                const positionVector = new THREE.Vector3();
+                innerCurveEngine.getPointAt(clippedProgress, positionVector);
+               
+                if (activeFrame === 1) {
+                    positionVector.z = -0.58; 
+                }
+
+                // Capture exact static Frame 25 coordinate marker for freeze reference
+                const apexProgress = Math.pow(0.33, 1.20);
+                const trueApexPosition = new THREE.Vector3();
+                innerCurveEngine.getPointAt(apexProgress, trueApexPosition);
+
+                // ============================================================
+                // 🎥 3. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
+                // ============================================================
+                let tiltShiftOffset = 0.00;
+
+                if (activeFrame > 25 && activeFrame <= 50) {
+                    const holdProgress = (activeFrame - 25) / 25;
+                    tiltShiftOffset = 0.08 * holdProgress;
+                } 
+                else if (activeFrame > 50) {
+                    tiltShiftOffset = 0.08;
+                }
+
+                // Apply pixel counter-shifts to maintain an absolute screen position
+                if (activeFrame > 25 && activeFrame <= 50) {
+                    positionVector.copy(trueApexPosition);
+                    const distanceToCamera = positionVector.distanceTo(camera.position);
+                    positionVector.y -= Math.tan(tiltShiftOffset) * distanceToCamera * 0.96;
+                }
+                else if (activeFrame > 50) {
+                    const distanceToCamera = positionVector.distanceTo(camera.position);
+                    positionVector.y -= Math.tan(tiltShiftOffset) * distanceToCamera * 0.96;
+                }
+
+                // Inject calibrated coordinates and scales safely onto mesh properties
+                pingPongBallMesh.position.copy(positionVector);
+                pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
+
+                const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
+                pingPongBallMesh.scale.z *= depthFactor;
+
+                // Lock camera orientation securely at the absolute bottom
+                camera.rotation.x = BASELINE_CAM_TILT + tiltShiftOffset;
+
+                ballButtonTexture.repeat.set(1.0, 1.0);
+                ballButtonTexture.offset.set(0.0, 0.0);
+                drawWarpedButtonGraphics(globalProgress);
+                ballButtonTexture.needsUpdate = true;
+
+                ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, globalProgress);
+
+                render();
+            }
 			
-			// ============================================================
-			// 🚀 FULL 20-FRAME POSITIONING & DIMENSION MORPHING PIPELINE
-			// ============================================================
-			const targetMaxFrames = 20; 
-			const currentProgress = activeFrame / targetMaxFrames;
+            // =========================================================================
+            // 🎬 UNIFIED AUTOMATED TIMELINE PLAYBACK ENGINE (DUAL-BUTTON ALLOCATION)
+            // =========================================================================
+            // 1. Gather both link hooks from your layout markup sheets
+            const copyPublishedBtn = document.getElementById('copy-published-btn');
+            const copyPreviewBtn   = document.getElementById('copy-preview-btn');
 
-			if (activeFrame >= 1 && activeFrame <= targetMaxFrames) {
-				const progressFactor = (activeFrame - 1) / (targetMaxFrames - 1); 
-				
-				// 1. Existing sphere footprint geometry scale
-				const currentScale = THREE.MathUtils.lerp(1.6, 0.4, progressFactor);
-				pingPongBallMesh.scale.set(currentScale, currentScale, currentScale);
+            function initiateServePlayback(targetURL) {
+                // A. ORIGINAL CLIPBOARD FUNCTION: Copies the matching URL string immediately on click
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(targetURL)
+                        .then(() => console.log("Target link written to system clipboard!"))
+                        .catch(err => console.error("System clipboard failure: ", err));
+                }
 
-				// ◄--- THE LOCKED VIEW AXIS PIVOT ENGINE ---
-				// Subtracting (-) tilts the camera line of sight straight UP.
-				// By locking this at a steady 0.18, the table environment is forced down 
-				// to its lowest point on Frame 1, and stays suspended there across all 20 frames.
-				const staticTiltAngle = 0.18;
-				camera.rotation.x -= staticTiltAngle;
+                // B. Activate the 3D canvas structural overlays
+                applyFrame(1);
+                if (scrubHint) {
+                    scrubHint.style.display = 'block';
+                    scrubHint.textContent = "URL Copied! Playing Serve...";
+                }
+                
+                // C. Turn on the animation flag to lock manual input gates
+                isAutoAnimating = true;
+                
+                let currentAnimFrame = 1;
+                const maxPlaybackFrame = 94; // Your target clipped frame ceiling limit!
+                const frameSpeedMs = 16;     // Controls speed (16ms = ~60 frames per second)
+                let lastFrameTime = Date.now();
 
-				// 2. Track camera focal vectors (now uniformly pointing upward due to the locked pitch)
-				const targetDirection = new THREE.Vector3();
-				camera.getWorldDirection(targetDirection);
+                function playTimelineStep() {
+                    const now = Date.now();
+                    if (now - lastFrameTime >= frameSpeedMs) {
+                        currentAnimFrame++;
+                        applyFrame(currentAnimFrame);
+                        lastFrameTime = now;
+                    }
 
-				// 3. Move the ball along the tilted camera line of sight
-				// This guarantees the ball stays perfectly centered in front of the lens!
-				const distanceFactor = THREE.MathUtils.lerp(0.75, 3.2, progressFactor);
-				pingPongBallMesh.position.copy(camera.position)
-					.addScaledVector(targetDirection, distanceFactor);
+                    // Continue running the engine until the ball hits its terminal mark
+                    if (currentAnimFrame < maxPlaybackFrame) {
+                        requestAnimationFrame(playTimelineStep);
+                    } else {
+                        if (scrubHint) scrubHint.textContent = "Impact! Redirecting to Portal...";
+                        
+                        // D. DYNAMIC PORTAL REDIRECT MOTOR
+                        // Holds the ball frozen on Frame 94 for 2 seconds, then launches forward
+                        setTimeout(() => {
+                            window.location.href = targetURL;
+                        }, 2000); 
+                    }
+                }
 
-				// 4. Smoothly shift sphere depth thickness matrix
-				const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, progressFactor);
-				pingPongBallMesh.scale.z *= depthFactor;
+                // Kickstart the automated server cycle loop
+                requestAnimationFrame(playTimelineStep);
+            }
 
-				// 5. Balance layout repeat mappings to standard 1:1 default scaling states
-				ballButtonTexture.repeat.set(1.0, 1.0);
-				ballButtonTexture.offset.set(0.0, 0.0);
-			} else {
-				pingPongBallMesh.scale.set(1.0, 1.0, 1.0);
-			}
-
-			// Global Top-Spin Texture Offsets
-			drawWarpedButtonGraphics(currentProgress);
-			ballButtonTexture.needsUpdate = true;
-
-			// High vibrancy color matching on initial frames
-			ballMaterial.emissiveIntensity = THREE.MathUtils.lerp(2.0, 0.0, currentProgress);
-
-			render();
-		}
-
-            const copyPreviewBtn = document.getElementById('copy-preview-btn');
-            if (copyPreviewBtn) {
-                copyPreviewBtn.addEventListener('click', () => {
-                    applyFrame(1);
-                    if (scrubHint) scrubHint.style.display = 'block';
+            // 🏓 BIND BUTTON 1: Published Mode URL Trigger
+            if (copyPublishedBtn) {
+                copyPublishedBtn.addEventListener('click', () => {
+                    // Replace with your real Published website link string
+                    const publishedURL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false'; 
+                    initiateServePlayback(publishedURL);
                 });
             }
 
+            // 🏓 BIND BUTTON 2: Preview Mode URL Trigger
+            if (copyPreviewBtn) {
+                copyPreviewBtn.addEventListener('click', () => {
+                    // Replace with your real Preview website link string
+                    const previewURL = 'https://docs.google.com/spreadsheets/d/1_Ou_wAKDovm5ASpc85cpGGbxKZcJkiEIEgifOE0ClBk/preview'; 
+                    initiateServePlayback(previewURL);
+                });
+            }
+			
+            // =========================================================================
+            // 🛑 GLOBAL BYPASS ENGINE: LOCKS MANUAL SCRUBBING DURING PLAYBACK
+            // =========================================================================
+            let isAutoAnimating = false;
+
+            // Mousewheel Scrolling Event Intercept Loops
             window.addEventListener('wheel', (e) => {
+                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
                 if (scrubHint && scrubHint.style.display === 'block') {
                     e.preventDefault();
                     if (e.deltaY > 0) {
@@ -1646,7 +1792,9 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
             }, { passive: false });
 
+            // Keyboard Arrow Key Scrubber Listeners
             window.addEventListener('keydown', (e) => {
+                if (isAutoAnimating) return; // ◄--- BYPASS TEMPORARILY DURING PLAYBACK
                 if (scrubHint && scrubHint.style.display === 'block') {
                     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
                         applyFrame(activeFrame + 1);
@@ -1672,6 +1820,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             window.addEventListener('touchend', (e) => {
                 if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
+                    // FIXED: Restored explicit array coordinate referencing to block mobile halts
                     let dy = e.changedTouches[0].clientY - scrubStartY;
                     if (dy > 30) applyFrame(activeFrame - 1); // Swipe down = reverse
                     else if (dy < -30) applyFrame(activeFrame + 1); // Swipe up = forward
@@ -1683,181 +1832,178 @@ ballButtonTexture.offset.set(0.0, 0.0);
         // ============================================================================
         // 🔄 INTERACTION INGUN CONTROLLER WITH INGUN AUDIO SYNCHRONIZATION
         // ============================================================================
-    (function(){
-    var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
-    var friction = 0.999;
-    var ptr = document.getElementById('ptr');
-    var ptrSvg = document.getElementById('ptr-svg');
-    var g1 = document.querySelector('#g1');
-    const ingunSound = new Audio('./IngunChant.m4a'); 
+        (function(){
+            var drag = { active: false, startY: 0, startScroll: 0, history: [], animating: false };
+            var friction = 0.999;
+            var ptr = document.getElementById('ptr');
+            var ptrSvg = document.getElementById('ptr-svg');
+            var g1 = document.querySelector('#g1');
+            const ingunSound = new Audio('./IngunChant.m4a'); 
 
-    function startPull(clientY) {
-        if (window.scrollY > 10 || drag.animating) return;
-        drag.active = true;
-        drag.startY = clientY;
-        drag.startScroll = window.scrollY;
-        drag.history = [{ y: clientY, t: Date.now() }];
-        drag.ptrActive = false;
+            function startPull(clientY) {
+                if (window.scrollY > 10 || drag.animating) return;
+                drag.active = true;
+                drag.startY = clientY;
+                drag.startScroll = window.scrollY;
+                drag.history = [{ y: clientY, t: Date.now() }];
+                drag.ptrActive = false;
 
-        if (ptr) {
-            ptr.classList.remove("ptr-fixed");
-            ptr.className = '';
-            ptr.style.marginTop = '-68px';
-        }
-        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-        if (g1) g1.style.transform = 'rotate(0deg)';
-    }
-
-    function movePull(clientY) {
-        if (!drag.active) return;
-        var dy = drag.startY - clientY;
-        
-        if (window.scrollY <= 10 && dy < 0 && !drag.animating) {
-            drag.ptrActive = true;
-            if (ptr) ptr.classList.add("ptr-fixed");
-
-            var dist = Math.min(-dy, 90);
-            var rawDist = -dy;
-            var pct = Math.min(dist / 70, 1);
-
-            if (ptr) {
-                ptr.style.marginTop = (dist - 55) + 'px';
-                ptr.style.opacity = pct;
-                ptr.classList.add('swiping');
-            }
-            if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-
-            var angle = rawDist * 1.25;
-            if (g1) g1.style.transform = 'rotate(' + angle + 'deg)';
-        } else {
-            drag.ptrActive = false;
-            if (ptr) {
-                ptr.classList.remove("ptr-fixed");
-                ptr.classList.remove('swiping');
-                ptr.className = '';
-                ptr.style.marginTop = '-68px';
-                ptr.style.opacity = '0';
-            }
-            if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-            if (g1) g1.style.transform = 'rotate(0deg)';
-        }
-
-        var now = Date.now();
-        drag.history.push({ y: clientY, t: now });
-        if (drag.history.length > 8) drag.history.shift();
-    }
-
-    function endPull() {
-        if (!drag.active) return;
-        drag.active = false;
-
-        if (ptr) ptr.classList.remove("ptr-fixed");
-
-        if (drag.ptrActive) {
-            if (ptr && parseFloat(ptr.style.opacity) >= 1) {
-                if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
-                if (ptr) ptr.classList.add('spin');
-                if (g1) g1.style.transform = ''; 
-
-                // --- AUDIO INTERFACE ---
-                try {
-                    ingunSound.play().catch(err => console.log("Audio deferred: ", err));
-                } catch(audioError) {
-                    console.log("Audio skipped: ", audioError);
-                }
-
-                // 1750ms timeout to allow the full audio chant to complete prior to reloading
-                setTimeout(function(){
-                    location.reload(true);
-                }, 2875);
-
-            } else {
                 if (ptr) {
-                    ptr.style.marginTop = '-68px';
-                    ptr.style.opacity = '0';
+                    ptr.classList.remove("ptr-fixed");
                     ptr.className = '';
+                    ptr.style.marginTop = '-68px';
                 }
                 if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
                 if (g1) g1.style.transform = 'rotate(0deg)';
             }
-            return;
-        }
 
-        var h = drag.history;
-        if (h.length < 2) return;
-        var last = h[h.length - 1], first = h[0];
-        var dt = last.t - first.t;
-        if (dt <= 0) return;
-        var velocity = (first.y - last.y) / dt;
-        if (Math.abs(velocity) < 0.3) return;
+            function movePull(clientY) {
+                if (!drag.active) return;
+                var dy = drag.startY - clientY;
+                
+                if (window.scrollY <= 10 && dy < 0 && !drag.animating) {
+                    drag.ptrActive = true;
+                    if (ptr) ptr.classList.add("ptr-fixed");
 
-        startScrollMomentum(velocity);
-    }
+                    var dist = Math.min(-dy, 90);
+                    var rawDist = -dy;
+                    var pct = Math.min(dist / 70, 1);
 
-    function startScrollMomentum(v){
-        drag.animating = true;
-        var lastTime = Date.now();
-        var vy = v;
+                    if (ptr) {
+                        ptr.style.marginTop = (dist - 55) + 'px';
+                        ptr.style.opacity = pct;
+                        ptr.classList.add('swiping');
+                    }
+                    if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
 
-        function step(){
-            if (!drag.animating) return;
-            var now = Date.now();
-            var elapsed = now - lastTime;
-            lastTime = now;
+                    var angle = rawDist * 1.25;
+                    if (g1) g1.style.transform = 'rotate(' + angle + 'deg)';
+                } else {
+                    drag.ptrActive=false;
+                    if (ptr) {
+                        ptr.classList.remove("ptr-fixed");
+                        ptr.classList.remove('swiping');
+                        ptr.className = '';
+                        ptr.style.marginTop = '-68px';
+                        ptr.style.opacity = '0';
+                    }
+                    if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                    if (g1) g1.style.transform = 'rotate(0deg)';
+                }
 
-            vy *= Math.pow(friction, elapsed / 16);
-            if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
-
-            var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-            var scroll = window.scrollY;
-            var next = scroll + vy * elapsed;
-
-            if (next < 0) {
-                next = 0;
-                drag.animating = false;
-                window.scrollTo(0, next);
-                return;
-            } else if (next > maxScroll) {
-                next = maxScroll;
-                drag.animating = false;
-                window.scrollTo(0, next);
-                return;
+                var now = Date.now();
+                drag.history.push({ y: clientY, t: now });
+                if (drag.history.length > 8) drag.history.shift();
             }
 
-            window.scrollTo(0, next);
-            requestAnimationFrame(step);
-        }
+            function endPull() {
+                if (!drag.active) return;
+                drag.active = false;
 
-        requestAnimationFrame(step);
-    }
+                if (ptr) ptr.classList.remove("ptr-fixed");
 
-    // Touch & Mouse Event Bindings
-    document.addEventListener('touchstart', function(e){
-        if(e.touches.length !== 1) return;
-        startPull(e.touches[0].clientY);
-    }, {passive: true});
+                if (drag.ptrActive) {
+                    if (ptr && parseFloat(ptr.style.opacity) >= 1) {
+                        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                        if (ptr) ptr.classList.add('spin');
+                        if (g1) g1.style.transform = ''; 
 
-    document.addEventListener('touchmove', function(e){
-        if(!drag.active || e.touches.length !== 1) return;
-        movePull(e.touches[0].clientY);
-    }, {passive: true});
+                        try {
+                            ingunSound.play().catch(err => console.log("Audio deferred: ", err));
+                        } catch(audioError) {
+                            console.log("Audio skipped: ", audioError);
+                        }
 
-    document.addEventListener('touchend', function(){
-        endPull();
-    }, {passive: true});
+                        setTimeout(function(){
+                            location.reload(true);
+                        }, 2875);
 
-    document.addEventListener('mousedown', function(e){
-        startPull(e.clientY);
-    });
+                    } else {
+                        if (ptr) {
+                            ptr.style.marginTop = '-68px';
+                            ptr.style.opacity = '0';
+                            ptr.className = '';
+                        }
+                        if (ptrSvg) ptrSvg.style.transform = 'scale(2.4)';
+                        if (g1) g1.style.transform = 'rotate(0deg)';
+                    }
+                    return;
+                }
 
-    document.addEventListener('mousemove', function(e){
-        if(!drag.active) return;
-        movePull(e.clientY);
-    });
+                var h = drag.history;
+                if (h.length < 2) return;
+                var last = h[h.length - 1], first = h[0];
+                var dt = last.t - first.t;
+                if (dt <= 0) return;
+                var velocity = (first.y - last.y) / dt;
+                if (Math.abs(velocity) < 0.3) return;
 
-    document.addEventListener('mouseup', function(){
-        endPull();
-    });
+                startScrollMomentum(velocity);
+            }
+
+            function startScrollMomentum(v){
+                drag.animating = true;
+                var lastTime = Date.now();
+                var vy = v;
+
+                function step(){
+                    if (!drag.animating) return;
+                    var now = Date.now();
+                    var elapsed = now - lastTime;
+                    lastTime = now;
+
+                    vy *= Math.pow(friction, elapsed / 16);
+                    if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
+
+                    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                    var scroll = window.scrollY;
+                    var next = scroll + vy * elapsed;
+
+                    if (next < 0) {
+                        next = 0;
+                        drag.animating = false;
+                        window.scrollTo(0, next);
+                        return;
+                    } else if (next > maxScroll) {
+                        next = maxScroll;
+                        drag.animating = false;
+                        window.scrollTo(0, next);
+                        return;
+                    }
+
+                    window.scrollTo(0, next);
+                    requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+
+            // Touch & Mouse Event Bindings
+            document.addEventListener('touchstart', function(e){
+                if(e.touches.length !== 1) return;
+                startPull(e.touches[0].clientY);
+            }, {passive: true});
+
+            document.addEventListener('touchmove', function(e){
+                if(!drag.active || e.touches.length !== 1) return;
+                movePull(e.touches[0].clientY);
+            }, {passive: true});
+
+            document.addEventListener('touchend', function(){
+                endPull();
+            }, {passive: true});
+
+            document.addEventListener('mousedown', function(e){
+                startPull(e.clientY);
+            });
+
+            document.addEventListener('mousemove', function(e){
+                if(!drag.active) return;
+                movePull(e.clientY);
+            });
+
+            document.addEventListener('mouseup', function(){
+                endPull();
+            });
 
 })();
     </script>
