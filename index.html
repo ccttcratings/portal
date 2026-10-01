@@ -1601,11 +1601,18 @@ const curveControl = new THREE.Vector3(
             // =========================================================================
             // 🚀 STABLE CAMERA RIG CAPTURE
             // =========================================================================
-            // Save the exact baseline lens tilt pitch to calculate absolute offsets safely
             const BASELINE_CAM_TILT = camera.rotation.x;
 
+            // TRAJECTORY HIGWAY HEADERS (RE-BALANCED TO PREVENT LOW LEG-3 DIVES)
+            const curveStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
+            
+            // 🎯 FIXED LANDING HEIGHT: Shifted Y from -0.28 up to -0.08 so it doesn't go so low!
+            const curveEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005);
+            
+            const curveControl = new THREE.Vector3(-0.05, TABLE_H + 1.25, 2.74 / 2);
+            const ballServeCurve = new THREE.QuadraticBezierCurve3(curveStart, curveControl, curveEnd);
+
             function applyFrame(frameNum) {
-                // 1. TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
                 const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
@@ -1631,7 +1638,6 @@ const curveControl = new THREE.Vector3(
                 container.style.display = 'block'; 
                 ballLayer.style.display = 'none'; 
                 
-                // Reset baseline camera matrices before updating layout transformations
                 camera.rotation.x = BASELINE_CAM_TILT;
                 autoSize(); 
 
@@ -1642,7 +1648,7 @@ const curveControl = new THREE.Vector3(
 
                 if (scrubHint) {
                     if (activeFrame >= 25 && activeFrame <= 50) {
-                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Hold & Background Tilt Active`;
+                        scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | 🚀 Apex Zoom Hold Active`;
                     } else {
                         scrubHint.textContent = `Frame: ${activeFrame} / ${targetMaxFrames} | Active Flight Path`;
                     }
@@ -1651,7 +1657,7 @@ const curveControl = new THREE.Vector3(
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 2. STAGE-ROUTED GEOMETRY & SIZING ENGINE
+                // 🚀 STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
@@ -1665,19 +1671,23 @@ const curveControl = new THREE.Vector3(
                 } 
                 else if (activeFrame > 25 && activeFrame <= 50) {
                     // --- STAGE 2: THE FREEZE HOLD (Frames 26-50) ---
-                    trajectoryProgress = 0.33; // Position coordinates frozen at apex
+                    trajectoryProgress = 0.33; 
                     const leg2Normalized = (activeFrame - 25) / 25;
-                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.38, leg2Normalized);
+                    
+                    // 🎯 CALIBRATION CRUNCH: Shrinks aggressively from 0.45 down to 0.22!
+                    dynamicScale = THREE.MathUtils.lerp(0.45, 0.22, leg2Normalized);
                 } 
                 else {
-                    // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
+                    // --- STAGE 3: THE HIGH-DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
-                    dynamicScale = THREE.MathUtils.lerp(0.38, 0.15, leg3Normalized);
+                    
+                    // Picks up perfectly at 0.22 and settles gently down to 0.15 landing size
+                    dynamicScale = THREE.MathUtils.lerp(0.22, 0.15, leg3Normalized);
                 }
 
                 // ============================================================
-                // 🎯 3. SCREEN-SPACE GEOMETRY PARSER (BALL LOCK ENGINE)
+                // 🎯 SCREEN-SPACE GEOMETRY PARSER (BALL LOCK ENGINE)
                 // ============================================================
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 const positionVector = new THREE.Vector3();
@@ -1687,55 +1697,41 @@ const curveControl = new THREE.Vector3(
                     positionVector.z = -0.58; 
                 }
 
-                // Calculate the exact spatial location where Leg 1 ends (Frame 25)
                 const apexProgress = Math.pow(0.33, 1.20);
                 const trueApexPosition = new THREE.Vector3();
                 ballServeCurve.getPointAt(apexProgress, trueApexPosition);
 
                 // ============================================================
-                // 🎥 4. CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
+                // 🎥 CAM TILT MOTOR (FORCES BACKGROUND TO SHIFT UPWARD CLEANLY)
                 // ============================================================
                 let tiltShiftOffset = 0.00;
 
                 if (activeFrame > 25 && activeFrame <= 50) {
                     const holdProgress = (activeFrame - 25) / 25;
-                    // TWEAK THIS: Increase 0.08 to force the background further UP the screen
                     tiltShiftOffset = 0.08 * holdProgress;
                 } 
                 else if (activeFrame > 50) {
                     tiltShiftOffset = 0.08;
                 }
 
-                // 🎯 THE LOCK MECHANISM:
+                // Apply pixel counter-shifts to maintain an absolute screen position
                 if (activeFrame > 25 && activeFrame <= 50) {
-                    // Base calculations from our perfect frozen Frame 25 apex coordinate
                     positionVector.copy(trueApexPosition);
-                    
-                    // Measure the exact distance from the camera lens to the ball
                     const distanceToCamera = positionVector.distanceTo(camera.position);
-                    
-                    // 🌟 PIXEL VELOCITY COUNTER-SHIFT:
-                    // If the camera tilts downward, pulling the ball UP, we mathematically 
-                    // lower the ball's Y-coordinate by the exact tangent deflection of the tilt!
-                    // This creates a perfect visual lock on your device screen.
                     positionVector.y -= Math.tan(tiltShiftOffset) * distanceToCamera * 0.96;
                 }
                 else if (activeFrame > 50) {
-                    // 🌟 SECOND-LEG CONTINUITY:
-                    // Ensures that when the ball dives on frames 51+, its physical flight path 
-                    // accounts for the new camera position so it doesn't jump.
                     const distanceToCamera = positionVector.distanceTo(camera.position);
                     positionVector.y -= Math.tan(tiltShiftOffset) * distanceToCamera * 0.96;
                 }
 
-                // Apply corrected positioning variables directly to the global active mesh canvas
                 pingPongBallMesh.position.copy(positionVector);
                 pingPongBallMesh.scale.set(dynamicScale, dynamicScale, dynamicScale);
 
                 const depthFactor = THREE.MathUtils.lerp(0.001, 1.0, globalProgress);
                 pingPongBallMesh.scale.z *= depthFactor;
 
-                // Overwrite camera orientation at the absolute bottom to lock in the layout
+                // Lock camera orientation securely at the bottom
                 camera.rotation.x = BASELINE_CAM_TILT + tiltShiftOffset;
 
                 ballButtonTexture.repeat.set(1.0, 1.0);
