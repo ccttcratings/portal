@@ -1731,27 +1731,33 @@ ballButtonTexture.offset.set(0.0, 0.0);
             });
 
             // =========================================================================
-            // 🛠️ ACTIVE MANUAL DEBUG OVERRIDE TRIGGER BINDINGS
+            // 🛠️ ACTIVE MANUAL DEBUG OVERRIDE TRIGGER BINDINGS (FAILURE-SAFE)
             // =========================================================================
-            // These listeners catch the button click events, open the debug display overlays, 
-            // and activate your scroll wheel seamlessly without firing the animation motor!
             const copyPublishedBtn = document.getElementById('copy-published-btn');
             const copyPreviewBtn   = document.getElementById('copy-preview-btn');
 
+            // 🏓 BUTTON 1 SAFETY CORRIDOR
             if (copyPublishedBtn) {
                 copyPublishedBtn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Block default button actions or link jumps
+                    e.preventDefault(); 
+                    console.log("Published Button Intercepted Successfully!");
                     applyFrame(1);
                     if (scrubHint) scrubHint.style.display = 'block';
                 });
+            } else {
+                console.warn("Warning: '#copy-published-btn' was not found in your HTML markup.");
             }
 
+            // 🏓 BUTTON 2 SAFETY CORRIDOR (Blocks null errors from crashing the page!)
             if (copyPreviewBtn) {
                 copyPreviewBtn.addEventListener('click', (e) => {
-                    e.preventDefault(); // Block default button actions or link jumps
+                    e.preventDefault(); 
+                    console.log("Preview Button Intercepted Successfully!");
                     applyFrame(1);
                     if (scrubHint) scrubHint.style.display = 'block';
                 });
+            } else {
+                console.warn("Warning: '#copy-preview-btn' was not found. Script crash prevented safely.");
             }
 
         // ============================================================================
