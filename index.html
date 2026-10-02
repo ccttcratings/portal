@@ -1715,9 +1715,11 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // 🛑 GLOBAL BYPASS ENGINE: LOCKS MANUAL SCRUBBING DURING PLAYBACK
             // =========================================================================
             let isAutoAnimating = false;
+            let isFeatureActivated = false; // Tracks if copy button was clicked yet
 
             // Mousewheel Scrolling Event Intercept Loops
             window.addEventListener('wheel', (e) => {
+                /*SCROLL*/ if (!isFeatureActivated) return; // REQUIRED TO CLICK BUTTON FIRST
                 /*SCROLL*/ if (isAutoAnimating) return; 
                 /*SCROLL*/ if (scrubHint && scrubHint.style.display === 'block') {
                 /*SCROLL*/     e.preventDefault();
@@ -1731,6 +1733,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             // Keyboard Arrow Key Scrubber Listeners
             window.addEventListener('keydown', (e) => {
+                /*SCROLL*/ if (!isFeatureActivated) return; // REQUIRED TO CLICK BUTTON FIRST
                 /*SCROLL*/ if (isAutoAnimating) return; 
                 /*SCROLL*/ if (scrubHint && scrubHint.style.display === 'block') {
                 /*SCROLL*/     if (e.code === 'ArrowDown' || e.code === 'ArrowRight') {
@@ -1744,31 +1747,35 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // Touch Swipe Scrubbing (Only active when exploring frames)
             let scrubStartY = 0;
             window.addEventListener('touchstart', (e) => {
+                /*SCROLL*/ if (!isFeatureActivated) return;
                 /*SCROLL*/ if (activeFrame > 0 && e.touches.length === 1) {
-                /*SCROLL*/     scrubStartY = e.touches[0].clientY;
+                /*SCROLL*/     scrubStartY = e.touches.clientY;
                 /*SCROLL*/ }
             }, {passive: false});
 
             window.addEventListener('touchmove', (e) => {
+                /*SCROLL*/ if (!isFeatureActivated) return;
                 /*SCROLL*/ if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
                 /*SCROLL*/     e.preventDefault(); 
                 /*SCROLL*/ }
             }, {passive: false});
 
             window.addEventListener('touchend', (e) => {
+                /*SCROLL*/ if (!isFeatureActivated) return;
                 /*SCROLL*/ if (activeFrame > 0 && scrubHint && scrubHint.style.display === 'block') {
-                /*SCROLL*/     let dy = e.changedTouches[0].clientY - scrubStartY;
+                /*SCROLL*/     let dy = e.changedTouches.clientY - scrubStartY;
                 /*SCROLL*/     if (dy > 30) applyFrame(activeFrame - 1); 
                 /*SCROLL*/     else if (dy < -30) applyFrame(activeFrame + 1); 
                 /*SCROLL*/ }
             });
+
 
             // =========================================================================
             // ▶️ AUTOPLAY ENGINE: CONTINUOUS FRAME-BY-FRAME LOOP ANIMATION
             // =========================================================================
             /*PLAY*/ let autoplayInterval = null; /*PLAY*/
             /*PLAY*/ const TOTAL_FRAMES = 120; /*PLAY*/ 
-            /*PLAY*/ const FRAME_DURATION = 50; /*PLAY*/ 
+            /*PLAY*/ const FRAME_DURATION = 30; /*PLAY*/ // ◄--- SPED UP FROM 50ms TO 30ms
 
             /*PLAY*/ function startAutoplay() { /*PLAY*/
             /*PLAY*/     if (autoplayInterval) return; /*PLAY*/
@@ -1789,7 +1796,22 @@ ballButtonTexture.offset.set(0.0, 0.0);
             /*PLAY*/     isAutoAnimating = false; /*PLAY*/
             /*PLAY*/ } /*PLAY*/
 
-            /*PLAY*/ startAutoplay(); /*PLAY*/
+
+            // =========================================================================
+            // 🕹️ TRIGGER ENGINE: ATTACHES TO THE "COPY" BUTTON ACTIONS
+            // =========================================================================
+            function activateFeature() {
+                isFeatureActivated = true;
+                /*PLAY*/ startAutoplay(); /*PLAY*/
+            }
+
+            // Target buttons by selecting common copy-button properties
+            // (Uses a fallback strategy checking for tags containing text "Copy")
+            document.querySelectorAll('button, .btn, #copyBtn').forEach(btn => {
+                if (btn.textContent.toLowerCase().includes('copy') || btn.textContent.toLowerCase().includes('url')) {
+                    btn.addEventListener('click', activateFeature);
+                }
+            });
 
         })();
 
