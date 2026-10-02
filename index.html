@@ -1646,7 +1646,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
                 
                 const positionVector = new THREE.Vector3();
-                innerCurveEngine.getPointAt(clippedProgress, positionVector);
+                
+                ballServeCurve.getPointAt(clippedProgress, positionVector);
                
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
