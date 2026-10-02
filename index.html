@@ -566,6 +566,7 @@
             }
         });
 
+
         // =========================================================================
         // 🎬 UNIFIED MULTI-ROUTING CLICK ENGINE
         // =========================================================================
@@ -579,18 +580,24 @@
 
             // 2. Snap the 3D viewport canvas directly into Frame 1
             applyFrame(1);
+            
+            // 3. CORE BRANCH ROUTER
+            if (!USE_AUTOMATION) {
+                // 🛑 MANUAL MODE: Open the gates, tell the user, and KILL all playback motors instantly!
+                if (scrubHint) {
+                    scrubHint.style.display = 'block';
+                    scrubHint.textContent = "Debug Active. Use Scroll Wheel!";
+                }
+                isAutoAnimating = false;
+                return; // Exits the function completely before the animation engine can even think about starting
+            }
+
+            // 🚀 AUTOMATION MODE: Lock the gates and launch the 60fps automated playback motor
             if (scrubHint) {
                 scrubHint.style.display = 'block';
-                scrubHint.textContent = USE_AUTOMATION ? "URL Copied! Playing Serve..." : "Debug Active. Use Scroll Wheel!";
+                scrubHint.textContent = "URL Copied! Playing Serve...";
             }
-
-            // 3. IF MANUAL DEBUGGING: Stop here! Leave scroll inputs unlocked and cancel redirects.
-            if (!USE_AUTOMATION) {
-                isAutoAnimating = false;
-                return;
-            }
-
-            // 4. IF AUTOMATED PRODUCTION: Lock inputs and fire the 60fps automated motor.
+            
             isAutoAnimating = true;
             let currentAnimFrame = 1;
             const maxPlaybackFrame = 94; // Your target clipped landing frame
@@ -617,6 +624,7 @@
                 }
             }
 
+            // Kickstart the playback motor ONLY if USE_AUTOMATION is true!
             requestAnimationFrame(playTimelineStep);
         }
 
@@ -637,7 +645,7 @@
                 executeDynamicPortalPipeline(this, previewUrl, false);
             };
         }
-
+		
     </script>
 
     <script>
