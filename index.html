@@ -1558,7 +1558,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             function applyFrame(frameNum) {
                 // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
-                const targetMaxFrames = 107; 
+                const targetMaxFrames = 132; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
 
@@ -1656,6 +1656,10 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 // To cut off MORE of the line, decrease this number (e.g., 0.80).
                 const clippedProgress = Math.min(0.75, motionProgress);
                 
+				if (activeFrame > 107) {
+                clippedProgress = trajectoryProgress;
+                }
+				
                 const positionVector = new THREE.Vector3();
                 innerCurveEngine.getPointAt(clippedProgress, positionVector);
                
@@ -1677,7 +1681,8 @@ ballButtonTexture.offset.set(0.0, 0.0);
                     const holdProgress = (activeFrame - 25) / 25;
                     tiltShiftOffset = 0.08 * holdProgress;
                 } 
-                else if (activeFrame > 50) {
+                // ◄--- UPDATE THIS NEXT LINE FROM > 50 TO INCLUDE THE NEW BOUNCE WINDOW
+                else if (activeFrame > 50 && activeFrame <= 132) {
                     tiltShiftOffset = 0.08;
                 }
 
