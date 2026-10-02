@@ -1558,7 +1558,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
 
             function applyFrame(frameNum) {
                 // TIMELINE BOUNDS: Configured cleanly for a super-smooth 107-frame sequence
-                const targetMaxFrames = 132; 
+                const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
 
@@ -1603,7 +1603,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 1. STAGE-ROUTED GEOMETRY & VISIBLE BOUNCE SIZING ENGINE
+                // 🚀 1. STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
@@ -1630,24 +1630,34 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
                 else {
                     // --- STAGE 4: 🏀 THE NEW BOUNCE UPWARD (Frames 108-132) ---
+                    // Normalizes your 25 new frames from 0.0 to 1.0
                     const leg4Normalized = (activeFrame - 108) / (132 - 108);
+                    
+                    // Pulls the ball back up along the exact same path line 
+                    // (Clamped to go back up from 0.75 table impact depth to 0.64 middle-table depth)
                     trajectoryProgress = THREE.MathUtils.lerp(0.75, 0.64, leg4Normalized);
+                    
+                    // Keeps the ball clearly visible by scaling it back up slightly as it rises
                     dynamicScale = THREE.MathUtils.lerp(0.10, 0.15, leg4Normalized);
                 }
 
                 // ============================================================
                 // 🎯 2. DEDICATED STATIC TRAJECTORY GENERATION ENGINE
                 // ============================================================
+                const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
+                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // Razor-thin safety gap
+                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); // Half-height curve pivot
+                const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
+
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
-                let clippedProgress = Math.min(0.75, motionProgress);
                 
-                if (activeFrame > 107) {
-                    clippedProgress = trajectoryProgress;
-                }
+                // 🎯 THE SURGICAL CLIPPING MOTOR:
+                // Caps progress at 0.88 (88% down your perfect line). 
+                // To cut off MORE of the line, decrease this number (e.g., 0.80).
+                const clippedProgress = Math.min(0.75, motionProgress);
                 
                 const positionVector = new THREE.Vector3();
-                
-                ballServeCurve.getPointAt(clippedProgress, positionVector);
+                innerCurveEngine.getPointAt(clippedProgress, positionVector);
                
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
@@ -1667,8 +1677,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
                     const holdProgress = (activeFrame - 25) / 25;
                     tiltShiftOffset = 0.08 * holdProgress;
                 } 
-                // ◄--- UPDATE THIS NEXT LINE FROM > 50 TO INCLUDE THE NEW BOUNCE WINDOW
-                else if (activeFrame > 50 && activeFrame <= 132) {
+                else if (activeFrame > 50) {
                     tiltShiftOffset = 0.08;
                 }
 
@@ -1776,7 +1785,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // =========================================================================
             // ▶️ AUTOPLAY ENGINE: CONTINUOUS FRAME-BY-FRAME LOOP ANIMATION
             // =========================================================================
-            //* <--- 💡 AUTOPLAY TOGGLE SWITCH! (Two slashes = ON | One slash = OFF)
+            /* <--- 💡 AUTOPLAY TOGGLE SWITCH! (Two slashes = ON | One slash = OFF)
             let autoplayInterval = null;
             const TOTAL_FRAMES = 132; 
             const FRAME_DURATION = 30; // Speed control (lower = faster)
@@ -1946,51 +1955,60 @@ ballButtonTexture.offset.set(0.0, 0.0);
                     var elapsed = now - lastTime;
                     lastTime = now;
 
-					vy *= Math.pow(friction, elapsed / 16);
-					if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
-					var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-					var scroll = window.scrollY;
-					var next = scroll + vy * elapsed;
-					if (next < 0) {
-					next = 0;
-					drag.animating = false;
-					window.scrollTo(0, next);
-					return;
-					} else if (next > maxScroll) {
-					next = maxScroll;
-					drag.animating = false;
-					window.scrollTo(0, next);
-					return;
-					}
-					window.scrollTo(0, next);
-					requestAnimationFrame(step);
-					}
-					requestAnimationFrame(step);
-					}
-					// Touch & Mouse Event Bindings
-					document.addEventListener('touchstart', function(e){
-					if(e.touches.length !== 1) return;
-					startPull(e.touches[0].clientY);
-					}, {passive: true});
-					document.addEventListener('touchmove', function(e){
-					if(!drag.active || e.touches.length !== 1) return;
-					movePull(e.touches[0].clientY);
-					}, {passive: true});
-					document.addEventListener('touchend', function(){
-					endPull();
-					}, {passive: true});
-					document.addEventListener('mousedown', function(e){
-					startPull(e.clientY);
-					});
-					document.addEventListener('mousemove', function(e){
-					if(!drag.active) return;
-					movePull(e.clientY);
-					});
-					document.addEventListener('mouseup', function(){
-					endPull();
-					});
-					})();
+                    vy *= Math.pow(friction, elapsed / 16);
+                    if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
 
+                    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+                    var scroll = window.scrollY;
+                    var next = scroll + vy * elapsed;
+
+                    if (next < 0) {
+                        next = 0;
+                        drag.animating = false;
+                        window.scrollTo(0, next);
+                        return;
+                    } else if (next > maxScroll) {
+                        next = maxScroll;
+                        drag.animating = false;
+                        window.scrollTo(0, next);
+                        return;
+                    }
+
+                    window.scrollTo(0, next);
+                    requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            }
+
+            // Touch & Mouse Event Bindings
+            document.addEventListener('touchstart', function(e){
+                if(e.touches.length !== 1) return;
+                startPull(e.touches[0].clientY);
+            }, {passive: true});
+
+            document.addEventListener('touchmove', function(e){
+                if(!drag.active || e.touches.length !== 1) return;
+                movePull(e.touches[0].clientY);
+            }, {passive: true});
+
+            document.addEventListener('touchend', function(){
+                endPull();
+            }, {passive: true});
+
+            document.addEventListener('mousedown', function(e){
+                startPull(e.clientY);
+            });
+
+            document.addEventListener('mousemove', function(e){
+                if(!drag.active) return;
+                movePull(e.clientY);
+            });
+
+            document.addEventListener('mouseup', function(){
+                endPull();
+            });
+
+})();
     </script>
 </body>
 </html>
