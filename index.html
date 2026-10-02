@@ -2070,60 +2070,51 @@ ballButtonTexture.offset.set(0.0, 0.0);
                     var elapsed = now - lastTime;
                     lastTime = now;
 
-                    vy *= Math.pow(friction, elapsed / 16);
-                    if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
+					vy *= Math.pow(friction, elapsed / 16);
+					if (Math.abs(vy) < 0.01) { drag.animating = false; return; }
+					var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+					var scroll = window.scrollY;
+					var next = scroll + vy * elapsed;
+					if (next < 0) {
+					next = 0;
+					drag.animating = false;
+					window.scrollTo(0, next);
+					return;
+					} else if (next > maxScroll) {
+					next = maxScroll;
+					drag.animating = false;
+					window.scrollTo(0, next);
+					return;
+					}
+					window.scrollTo(0, next);
+					requestAnimationFrame(step);
+					}
+					requestAnimationFrame(step);
+					}
+					// Touch & Mouse Event Bindings
+					document.addEventListener('touchstart', function(e){
+					if(e.touches.length !== 1) return;
+					startPull(e.touches[0].clientY);
+					}, {passive: true});
+					document.addEventListener('touchmove', function(e){
+					if(!drag.active || e.touches.length !== 1) return;
+					movePull(e.touches[0].clientY);
+					}, {passive: true});
+					document.addEventListener('touchend', function(){
+					endPull();
+					}, {passive: true});
+					document.addEventListener('mousedown', function(e){
+					startPull(e.clientY);
+					});
+					document.addEventListener('mousemove', function(e){
+					if(!drag.active) return;
+					movePull(e.clientY);
+					});
+					document.addEventListener('mouseup', function(){
+					endPull();
+					});
+					})();
 
-                    var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-                    var scroll = window.scrollY;
-                    var next = scroll + vy * elapsed;
-
-                    if (next < 0) {
-                        next = 0;
-                        drag.animating = false;
-                        window.scrollTo(0, next);
-                        return;
-                    } else if (next > maxScroll) {
-                        next = maxScroll;
-                        drag.animating = false;
-                        window.scrollTo(0, next);
-                        return;
-                    }
-
-                    window.scrollTo(0, next);
-                    requestAnimationFrame(step);
-                }
-                requestAnimationFrame(step);
-            }
-
-            // Touch & Mouse Event Bindings
-            document.addEventListener('touchstart', function(e){
-                if(e.touches.length !== 1) return;
-                startPull(e.touches[0].clientY);
-            }, {passive: true});
-
-            document.addEventListener('touchmove', function(e){
-                if(!drag.active || e.touches.length !== 1) return;
-                movePull(e.touches[0].clientY);
-            }, {passive: true});
-
-            document.addEventListener('touchend', function(){
-                endPull();
-            }, {passive: true});
-
-            document.addEventListener('mousedown', function(e){
-                startPull(e.clientY);
-            });
-
-            document.addEventListener('mousemove', function(e){
-                if(!drag.active) return;
-                movePull(e.clientY);
-            });
-
-            document.addEventListener('mouseup', function(){
-                endPull();
-            });
-
-})();
     </script>
 </body>
 </html>
