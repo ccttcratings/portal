@@ -1652,16 +1652,16 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
                 
                 // 🎯 THE SURGICAL CLIPPING MOTOR:
-                // Caps progress at 0.88 (88% down your perfect line). 
-                // To cut off MORE of the line, decrease this number (e.g., 0.80).
-                const clippedProgress = Math.min(0.75, motionProgress);
-                
-				if (activeFrame > 107) {
-                clippedProgress = trajectoryProgress;
+                // Caps progress at 0.75 ONLY for frames up to 107. 
+                // For the bounce (frames 108+), we let Stage 4 handle the trajectory.
+                let clippedProgress = Math.min(0.75, motionProgress);
+                if (activeFrame > 107) {
+                    clippedProgress = trajectoryProgress;
                 }
-				
+                
                 const positionVector = new THREE.Vector3();
                 innerCurveEngine.getPointAt(clippedProgress, positionVector);
+
                
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
