@@ -539,8 +539,10 @@
         // 🎛️ THE MASTER SYSTEM SWITCH (THE ONLY LINE YOU EVER NEED TO EDIT!)
         // =========================================================================
         // Set to true for automated production play. Set to false for manual frame scroller debugging!
-        const USE_AUTOMATION = false; 
+        const USE_AUTOMATION = true; 
 
+        const scrubHint = document.getElementById('scrub-hint');
+		
         // Internal runtime block flag (leave this as is)
         let isAutoAnimating = false;
 
@@ -1656,7 +1658,6 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // =========================================================================
             // FRAME CONTROLLER: 0 (100%), 1 to 107 (Mobile-Optimized Trajectory Engine)
             // =========================================================================
-            const scrubHint = document.getElementById('scrub-hint');
 
             // NEW CAMERA ANCHOR: Memorizes the original camera baseline angle right here
             const BASELINE_CAM_TILT = camera.rotation.x;
