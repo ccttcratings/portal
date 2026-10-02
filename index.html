@@ -1622,11 +1622,23 @@ ballButtonTexture.offset.set(0.0, 0.0);
                     const acceleratedShrinkEase = Math.pow(leg2Normalized, 0.4);
                     dynamicScale = THREE.MathUtils.lerp(0.45, 0.14, acceleratedShrinkEase);
                 } 
-                else {
+                else if (activeFrame > 50 && activeFrame <= 107) {
                     // --- STAGE 3: THE FINAL DIVE (Frames 51-107) ---
                     const leg3Normalized = (activeFrame - 51) / (targetMaxFrames - 51);
                     trajectoryProgress = 0.33 + (leg3Normalized * (1.0 - 0.33)); 
                     dynamicScale = THREE.MathUtils.lerp(0.14, 0.10, leg3Normalized);
+                }
+                else {
+                    // --- STAGE 4: 🏀 THE NEW BOUNCE UPWARD (Frames 108-132) ---
+                    // Normalizes your 25 new frames from 0.0 to 1.0
+                    const leg4Normalized = (activeFrame - 108) / (132 - 108);
+                    
+                    // Pulls the ball back up along the exact same path line 
+                    // (Clamped to go back up from 0.75 table impact depth to 0.64 middle-table depth)
+                    trajectoryProgress = THREE.MathUtils.lerp(0.75, 0.64, leg4Normalized);
+                    
+                    // Keeps the ball clearly visible by scaling it back up slightly as it rises
+                    dynamicScale = THREE.MathUtils.lerp(0.10, 0.15, leg4Normalized);
                 }
 
                 // ============================================================
@@ -1775,7 +1787,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
             // =========================================================================
             /* <--- 💡 AUTOPLAY TOGGLE SWITCH! (Two slashes = ON | One slash = OFF)
             let autoplayInterval = null;
-            const TOTAL_FRAMES = 120; 
+            const TOTAL_FRAMES = 132; 
             const FRAME_DURATION = 30; // Speed control (lower = faster)
 
             function startAutoplay() {
