@@ -1561,7 +1561,18 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 const targetMaxFrames = 107; 
                 activeFrame = Math.max(0, Math.min(targetMaxFrames, frameNum));
                 window.activeFrame = activeFrame;
+                if (activeFrame === 107 && isAutoAnimating) {
+                    // Instantly kills playback interval loops before redirecting
+                    if (typeof stopAutoplay === 'function') {
+                        stopAutoplay();
+                    }
+                    // Redirects your page tab straight to the published spreadsheet URL
+                    window.location.href = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQJIG3mdmAI8TQdjJfXpd1c3oWfykro2-rhYMMwHqXGoyfuGJGAkR88OMFqGJlYalDHqDUjyBC81PZH/pubhtml?headers=false&chrome=false";
+                    return; // Halts downstream 3D canvas rendering cycles
+                }
 
+
+				
                 const ballLayer = document.getElementById('ball-layer');
                 const card = document.querySelector('.card');
                 const container = document.getElementById('canvas-container');
