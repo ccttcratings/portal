@@ -1603,7 +1603,7 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 const globalProgress = (activeFrame - 1) / (targetMaxFrames - 1);
 
                 // ============================================================
-                // 🚀 1. STAGE-ROUTED GEOMETRY & CALIBRATED SIZING ENGINE
+                // 🚀 1. STAGE-ROUTED GEOMETRY & VISIBLE BOUNCE SIZING ENGINE
                 // ============================================================
                 let trajectoryProgress;
                 let dynamicScale;
@@ -1630,38 +1630,23 @@ ballButtonTexture.offset.set(0.0, 0.0);
                 }
                 else {
                     // --- STAGE 4: 🏀 THE NEW BOUNCE UPWARD (Frames 108-132) ---
-                    // Normalizes your 25 new frames from 0.0 to 1.0
                     const leg4Normalized = (activeFrame - 108) / (132 - 108);
-                    
-                    // Pulls the ball back up along the exact same path line 
-                    // (Clamped to go back up from 0.75 table impact depth to 0.64 middle-table depth)
                     trajectoryProgress = THREE.MathUtils.lerp(0.75, 0.64, leg4Normalized);
-                    
-                    // Keeps the ball clearly visible by scaling it back up slightly as it rises
                     dynamicScale = THREE.MathUtils.lerp(0.10, 0.15, leg4Normalized);
                 }
 
                 // ============================================================
                 // 🎯 2. DEDICATED STATIC TRAJECTORY GENERATION ENGINE
                 // ============================================================
-                const cStart = new THREE.Vector3(0, TABLE_H + 0.49, -0.71);
-                const cEnd   = new THREE.Vector3(-0.18, TABLE_H - 0.08, 2.74 - 0.005); // Razor-thin safety gap
-                const cCtrl  = new THREE.Vector3(-0.05, TABLE_H + 0.62, 2.74 / 2); // Half-height curve pivot
-                const innerCurveEngine = new THREE.QuadraticBezierCurve3(cStart, cCtrl, cEnd);
-
                 const motionProgress = Math.pow(trajectoryProgress, 1.20); 
-                
-                // 🎯 THE SURGICAL CLIPPING MOTOR:
-                // Caps progress at 0.75 ONLY for frames up to 107. 
-                // For the bounce (frames 108+), we let Stage 4 handle the trajectory.
                 let clippedProgress = Math.min(0.75, motionProgress);
+                
                 if (activeFrame > 107) {
                     clippedProgress = trajectoryProgress;
                 }
                 
                 const positionVector = new THREE.Vector3();
                 innerCurveEngine.getPointAt(clippedProgress, positionVector);
-
                
                 if (activeFrame === 1) {
                     positionVector.z = -0.58; 
